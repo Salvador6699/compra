@@ -20,10 +20,27 @@ export type Item = {
   note?: string;
   /** Imagen en formato Base64 data URL */
   image?: string;
+};export type TripItem = {
+  name: string;
+  category: Category;
+  preferredStore?: StoreName;
+  price?: number;
+};
+
+export type CompletedTrip = {
+  id: string;
+  date: string;
+  storeName?: StoreName | string;
+  storeTotals: Partial<Record<StoreName | "Otro", number>>;
+  grandTotal: number;
+  items: TripItem[];
+  receiptImage?: string;
+  note?: string;
 };
 
 export type Store = {
   items: Item[];
+  trips?: CompletedTrip[];
 };
 
 function makeId() {
@@ -41,11 +58,12 @@ function seedStore(): Store {
       preferredStore: s.preferredStore,
       prices: {},
     })),
+    trips: [],
   };
 }
 
 function loadStore(): Store {
-  if (typeof window === "undefined") return { items: [] };
+  if (typeof window === "undefined") return { items: [], trips: [] };
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return seedStore();
@@ -56,14 +74,14 @@ function loadStore(): Store {
       ...it,
       prices: it.prices ?? {},
     }));
-    return { items };
+    return { items, trips: parsed.trips ?? [] };
   } catch {
     return seedStore();
   }
 }
 
 export function useShoppingStore() {
-  const [store, setStore] = useState<Store>({ items: [] });
+  const [store, setStore] = useState<Store>({ items: [], trips: [] });
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -78,6 +96,7 @@ export function useShoppingStore() {
 
   const toggleInList = useCallback((id: string) => {
     setStore((s) => ({
+      ...s,
       items: s.items.map((it) =>
         it.id === id ? { ...it, inList: !it.inList, bought: it.inList ? false : it.bought } : it,
       ),
@@ -86,6 +105,7 @@ export function useShoppingStore() {
 
   const toggleBought = useCallback((id: string) => {
     setStore((s) => ({
+      ...s,
       items: s.items.map((it) => (it.id === id ? { ...it, bought: !it.bought } : it)),
     }));
   }, []);
@@ -105,6 +125,7 @@ export function useShoppingStore() {
         // evita duplicados case-insensitive
         if (s.items.some((it) => it.name.toLowerCase() === trimmed.toLowerCase())) {
           return {
+            ...s,
             items: s.items.map((it) =>
               it.name.toLowerCase() === trimmed.toLowerCase()
                 ? {
@@ -120,6 +141,7 @@ export function useShoppingStore() {
           };
         }
         return {
+          ...s,
           items: [
             ...s.items,
             {
@@ -141,7 +163,7 @@ export function useShoppingStore() {
   );
 
   const removeItem = useCallback((id: string) => {
-    setStore((s) => ({ items: s.items.filter((it) => it.id !== id) }));
+    setStore((s) => ({ ...s, items: s.items.filter((it) => it.id !== id) }));
   }, []);
 
   const updateItem = useCallback(
@@ -157,6 +179,7 @@ export function useShoppingStore() {
       },
     ) => {
       setStore((s) => ({
+        ...s,
         items: s.items.map((it) => {
           if (it.id !== id) return it;
           const nextName = patch.name !== undefined ? patch.name.trim() : it.name;
@@ -184,24 +207,53 @@ export function useShoppingStore() {
     [],
   );
 
-
   /** Termina la compra: lo comprado sale de la lista, lo no comprado se queda para la próxima. */
   const finishTrip = useCallback(() => {
     setStore((s) => ({
+      ...s,
       items: s.items.map((it) =>
         it.bought ? { ...it, inList: false, bought: false } : it,
       ),
     }));
   }, []);
 
+  /** Guarda un viaje de compra finalizado en el historial y saca lo comprado de la lista */
+  const saveCompletedTrip = useCallback(
+    (tripData: Omit<CompletedTrip, "id" | "date">) => {
+      const newTrip: CompletedTrip = {
+        ...tripData,
+        id: makeId(),
+        date: new Date().toISOString(),
+      };
+
+      setStore((s) => ({
+        ...s,
+        trips: [newTrip, ...(s.trips ?? [])],
+        items: s.items.map((it) =>
+          it.bought ? { ...it, inList: false, bought: false } : it,
+        ),
+      }));
+    },
+    [],
+  );
+
+  /** Elimina un viaje del historial */
+  const deleteTrip = useCallback((tripId: string) => {
+    setStore((s) => ({
+      ...s,
+      trips: (s.trips ?? []).filter((t) => t.id !== tripId),
+    }));
+  }, []);
+
   /** Pone TODO el catálogo en la lista (útil para revisar todo antes de comprar). */
   const selectAll = useCallback(() => {
-    setStore((s) => ({ items: s.items.map((it) => ({ ...it, inList: true })) }));
+    setStore((s) => ({ ...s, items: s.items.map((it) => ({ ...it, inList: true })) }));
   }, []);
 
   /** Vacía la lista de la compra (mantiene el catálogo). */
   const clearList = useCallback(() => {
     setStore((s) => ({
+      ...s,
       items: s.items.map((it) => ({ ...it, inList: false, bought: false })),
     }));
   }, []);
@@ -226,10 +278,13 @@ export function useShoppingStore() {
     removeItem,
     updateItem,
     finishTrip,
+    saveCompletedTrip,
+    deleteTrip,
     selectAll,
     clearList,
     restoreStore,
     resetToSeedCatalog,
   };
 }
+
 

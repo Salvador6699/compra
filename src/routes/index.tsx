@@ -1,18 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Calendar,
   Camera,
   Check,
   CheckCheck,
+  CheckCircle2,
   ChevronDown,
   ClipboardList,
   Coins,
   Download,
+  Eye,
   Filter,
   HardDrive,
+  History,
   Image as ImageIcon,
   Pencil,
   Plus,
+  Receipt,
   RotateCcw,
   Search,
   Settings,
@@ -26,7 +31,6 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
 
 /** Helper to compress uploaded images to max 400px width JPEG to conserve LocalStorage space */
 function compressImage(file: File, maxWidth = 400, quality = 0.8): Promise<string> {
@@ -81,7 +85,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import type { Item, Store } from "@/lib/use-shopping-store";
+import type { CompletedTrip, Item, Store, TripItem } from "@/lib/use-shopping-store";
 import { useShoppingStore } from "@/lib/use-shopping-store";
 import {
   CATEGORIES,
@@ -92,6 +96,7 @@ import {
 } from "@/lib/shopping-data";
 import { cn } from "@/lib/utils";
 import { BasketCalculator } from "@/components/basket-calculator";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -140,14 +145,15 @@ function Index() {
     removeItem,
     updateItem,
     finishTrip,
+    saveCompletedTrip,
+    deleteTrip,
     selectAll,
     clearList,
     restoreStore,
     resetToSeedCatalog,
   } = useShoppingStore();
 
-
-  const [tab, setTab] = useState<"compra" | "catalogo" | "ajustes">("compra");
+  const [tab, setTab] = useState<"compra" | "catalogo" | "historial" | "ajustes">("compra");
 
   const [groupBy, setGroupBy] = useState<"category" | "store">("category");
 
@@ -160,11 +166,16 @@ function Index() {
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
 
+  // Finish trip & receipt view modals
+  const [finishTripModalOpen, setFinishTripModalOpen] = useState(false);
+  const [viewingReceiptImage, setViewingReceiptImage] = useState<string | null>(null);
+
   // Single expanded category (Accordion mode)
   const [expandedCategory, setExpandedCategory] = useState<Category | null>(null);
 
   // Backup dialog
   const [backupOpen, setBackupOpen] = useState(false);
+
 
   const listItems = useMemo(
     () => store.items.filter((i) => i.inList),
@@ -405,18 +416,9 @@ function Index() {
                 </span>
               </div>
             )}
-
-            {/* Backup button */}
-            <button
-              type="button"
-              onClick={() => setBackupOpen(true)}
-              aria-label="Copia de seguridad"
-              className="h-9 w-9 rounded-xl border border-border/60 bg-background/60 grid place-items-center text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 shrink-0"
-            >
-              <HardDrive className="h-4 w-4" />
-            </button>
           </div>
         </div>
+
 
         {/* ── ACTIVE STORE FILTERS CHIPS BAR ── */}
         <div className="mx-auto max-w-2xl px-4 pb-2.5 pt-0.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar flex-wrap">
@@ -471,23 +473,9 @@ function Index() {
       </header>
 
       {/* ── MAIN ── */}
-      <main className="mx-auto max-w-2xl px-4 pt-4">
-        <Tabs value={tab} onValueChange={(v) => setTab(v as "compra" | "catalogo")}>
-          <TabsList className="grid grid-cols-2 w-full h-11 rounded-xl bg-muted/70 p-1">
-            <TabsTrigger
-              value="compra"
-              className="rounded-lg text-sm font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/90 data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-            >
-              <ShoppingCart className="h-4 w-4 mr-1.5" />
-              Compra de hoy ({pending.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="catalogo"
-              className="rounded-lg text-sm font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/90 data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200"
-            >
-              📋 Catálogo ({store.items.length})
-            </TabsTrigger>
-          </TabsList>
+      <main className="mx-auto max-w-2xl px-4 pt-3">
+        <Tabs value={tab} onValueChange={(v) => setTab(v as "compra" | "catalogo" | "ajustes")}>
+
 
           {/* ── COMPRA DE HOY ── */}
           <TabsContent value="compra" className="space-y-4 mt-4">
@@ -646,11 +634,23 @@ function Index() {
                         </li>
                       ))}
                     </ul>
+
+                    {/* Botón destacado para Finalizar y Guardar en Historial */}
+                    <div className="pt-2">
+                      <Button
+                        onClick={() => setFinishTripModalOpen(true)}
+                        className="w-full rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white font-bold shadow-md shadow-emerald-500/20 h-11 text-sm flex items-center justify-center gap-2"
+                      >
+                        <CheckCircle2 className="h-5 w-5" />
+                        Finalizar compra y guardar en historial ({done.length})
+                      </Button>
+                    </div>
                   </section>
                 )}
               </>
             )}
           </TabsContent>
+
 
           {/* ── CATÁLOGO ── */}
           <TabsContent value="catalogo" className="space-y-4 mt-4">
@@ -797,6 +797,158 @@ function Index() {
             </div>
           </TabsContent>
 
+          {/* ── HISTORIAL DE COMPRAS ── */}
+          <TabsContent value="historial" className="space-y-4 mt-4 animate-in fade-in-0 duration-300">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-bold flex items-center gap-2 text-foreground">
+                <Receipt className="h-4 w-4 text-primary" />
+                Historial de compras realizadas
+              </h2>
+              <span className="text-xs text-muted-foreground font-medium">
+                {(store.trips ?? []).length} compras guardadas
+              </span>
+            </div>
+
+            {(store.trips ?? []).length === 0 ? (
+              <EmptyState
+                title="Sin historial de compras"
+                description="Al finalizar tu compra en la pestaña 'Compra hoy', podrás guardar el resumen con desglose por supermercado y la foto del ticket aquí."
+                actionLabel="Ir a Compra hoy"
+                onAction={() => setTab("compra")}
+              />
+            ) : (
+              <div className="space-y-3">
+                {(store.trips ?? []).map((t) => {
+                  const formattedDate = new Date(t.date).toLocaleDateString("es-ES", {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+
+                  const primaryStoreBadge =
+                    t.storeName && t.storeName !== "Varios"
+                      ? STORE_BADGE_STYLE[t.storeName as StoreName]
+                      : { icon: "🛒", bg: "bg-muted", text: "text-muted-foreground" };
+
+                  return (
+                    <div
+                      key={t.id}
+                      className="rounded-2xl border border-border/70 bg-card p-4 space-y-3 shadow-sm hover:shadow-md transition-all duration-200"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "text-xs px-2.5 py-0.5 rounded-lg border font-bold flex items-center gap-1.5 shadow-sm",
+                                primaryStoreBadge.bg,
+                                primaryStoreBadge.text,
+                              )}
+                            >
+                              <span>{primaryStoreBadge.icon}</span>
+                              <span>{t.storeName ?? "Compra"}</span>
+                            </Badge>
+                            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                              <Calendar className="h-3.5 w-3.5" />
+                              {formattedDate}
+                            </span>
+                          </div>
+                          {t.note && (
+                            <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mt-1">
+                              🏷️ {t.note}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-sm font-extrabold text-primary">
+                            {t.grandTotal > 0 ? `${t.grandTotal.toFixed(2)}€` : "—"}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm("¿Eliminar este registro de compra del historial?")) {
+                                deleteTrip(t.id);
+                              }
+                            }}
+                            className="text-muted-foreground/40 hover:text-destructive p-1 rounded-lg hover:bg-destructive/10 transition-all"
+                            aria-label="Eliminar del historial"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Ticket Image & Store Totals */}
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1 border-t border-border/40">
+                        {t.receiptImage ? (
+                          <button
+                            type="button"
+                            onClick={() => setViewingReceiptImage(t.receiptImage!)}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all text-xs font-semibold text-primary"
+                          >
+                            <Receipt className="h-4 w-4" />
+                            <span>Ver Foto del Ticket</span>
+                            <Eye className="h-3.5 w-3.5 ml-0.5 opacity-70" />
+                          </button>
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground italic">Sin foto de ticket</span>
+                        )}
+
+                        {/* Breakdown per store */}
+                        {Object.keys(t.storeTotals ?? {}).length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {Object.entries(t.storeTotals).map(([st, val]) => {
+                              const isKnown = st !== "Otro";
+                              const badge = isKnown
+                                ? STORE_BADGE_STYLE[st as StoreName]
+                                : { icon: "📦", bg: "bg-muted", text: "text-muted-foreground" };
+                              return (
+                                <span
+                                  key={st}
+                                  className="text-[10px] px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground font-semibold"
+                                >
+                                  {badge.icon} {st}: {val ? `${val.toFixed(2)}€` : "—"}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Items List Collapsible */}
+                      {t.items && t.items.length > 0 && (
+                        <Collapsible>
+                          <CollapsibleTrigger className="w-full text-left text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 pt-1">
+                            <span>Ver {t.items.length} productos comprados</span>
+                            <ChevronDown className="h-3.5 w-3.5" />
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="pt-2 space-y-1 text-xs">
+                            {t.items.map((it, idx) => (
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between py-1 px-2 rounded-lg bg-muted/30 text-muted-foreground"
+                              >
+                                <span>{it.name}</span>
+                                {it.price ? (
+                                  <span className="font-semibold text-foreground">{it.price.toFixed(2)}€</span>
+                                ) : null}
+                              </div>
+                            ))}
+                          </CollapsibleContent>
+                        </Collapsible>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+
           {/* ── AJUSTES ── */}
           <TabsContent value="ajustes" className="space-y-4 mt-4 animate-in fade-in-0 duration-300">
             {/* Seccion Copia de Seguridad y Catálogo */}
@@ -908,7 +1060,7 @@ function Index() {
             type="button"
             onClick={() => setTab("compra")}
             className={cn(
-              "flex flex-col items-center gap-1 py-1.5 px-5 rounded-xl transition-all duration-200 relative",
+              "flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl transition-all duration-200 relative",
               tab === "compra"
                 ? "text-primary font-bold bg-primary/10"
                 : "text-muted-foreground hover:text-foreground font-medium",
@@ -930,7 +1082,7 @@ function Index() {
             type="button"
             onClick={() => setTab("catalogo")}
             className={cn(
-              "flex flex-col items-center gap-1 py-1.5 px-5 rounded-xl transition-all duration-200 relative",
+              "flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl transition-all duration-200 relative",
               tab === "catalogo"
                 ? "text-primary font-bold bg-primary/10"
                 : "text-muted-foreground hover:text-foreground font-medium",
@@ -945,12 +1097,34 @@ function Index() {
             <span className="text-[11px]">Catálogo</span>
           </button>
 
+          {/* Historial */}
+          <button
+            type="button"
+            onClick={() => setTab("historial")}
+            className={cn(
+              "flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl transition-all duration-200 relative",
+              tab === "historial"
+                ? "text-primary font-bold bg-primary/10"
+                : "text-muted-foreground hover:text-foreground font-medium",
+            )}
+          >
+            <div className="relative">
+              <Receipt className="h-5 w-5" />
+              {(store.trips ?? []).length > 0 && (
+                <span className="absolute -top-1.5 -right-2.5 h-4 px-1 rounded-full bg-emerald-600 text-white text-[10px] font-bold flex items-center justify-center min-w-4 shadow-sm">
+                  {(store.trips ?? []).length}
+                </span>
+              )}
+            </div>
+            <span className="text-[11px]">Historial</span>
+          </button>
+
           {/* Ajustes */}
           <button
             type="button"
             onClick={() => setTab("ajustes")}
             className={cn(
-              "flex flex-col items-center gap-1 py-1.5 px-5 rounded-xl transition-all duration-200 relative",
+              "flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl transition-all duration-200 relative",
               tab === "ajustes"
                 ? "text-primary font-bold bg-primary/10"
                 : "text-muted-foreground hover:text-foreground font-medium",
@@ -961,6 +1135,7 @@ function Index() {
           </button>
         </div>
       </nav>
+
 
 
       {/* ── MODALS ── */}
@@ -981,6 +1156,20 @@ function Index() {
         onSave={handleSaveItem}
       />
 
+      {/* Finish Trip Dialog */}
+      <FinishTripDialog
+        open={finishTripModalOpen}
+        onClose={() => setFinishTripModalOpen(false)}
+        boughtItems={done}
+        onSaveTrip={saveCompletedTrip}
+      />
+
+      {/* Full Ticket Receipt Viewer */}
+      <ReceiptViewerDialog
+        image={viewingReceiptImage}
+        onClose={() => setViewingReceiptImage(null)}
+      />
+
       {/* Backup Dialog */}
       <BackupDialog
         open={backupOpen}
@@ -992,6 +1181,7 @@ function Index() {
     </div>
   );
 }
+
 
 /* ── STORE FILTER DIALOG ── */
 function StoreFilterDialog({
@@ -1760,3 +1950,256 @@ function BackupDialog({
     </Dialog>
   );
 }
+
+/* ── FINISH TRIP DIALOG (Save purchase to history) ── */
+function FinishTripDialog({
+  open,
+  onClose,
+  boughtItems,
+  onSaveTrip,
+}: {
+  open: boolean;
+  onClose: () => void;
+  boughtItems: Item[];
+  onSaveTrip: (tripData: Omit<CompletedTrip, "id" | "date">) => void;
+}) {
+  const [storeName, setStoreName] = useState<StoreName | "Varios">("Mercadona");
+  const [receiptImage, setReceiptImage] = useState<string | null>(null);
+  const [note, setNote] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Calculate store breakdown and totals
+  const { storeTotals, grandTotal, itemsList } = useMemo(() => {
+    const totals: Partial<Record<StoreName | "Otro", number>> = {};
+    let grand = 0;
+    const items: TripItem[] = [];
+
+    for (const it of boughtItems) {
+      const store = it.preferredStore ?? "Otro";
+      const pricesList = it.prices ? Object.entries(it.prices).filter(([, p]) => p && p > 0) : [];
+      let itemPrice = 0;
+
+      if (it.preferredStore && it.prices?.[it.preferredStore]) {
+        itemPrice = it.prices[it.preferredStore]!;
+      } else if (pricesList.length > 0) {
+        itemPrice = pricesList.reduce((min, cur) => (cur[1]! < min[1]! ? cur : min))[1]!;
+      }
+
+      totals[store] = (totals[store] ?? 0) + itemPrice;
+      grand += itemPrice;
+
+      items.push({
+        name: it.name,
+        category: it.category,
+        preferredStore: it.preferredStore,
+        price: itemPrice > 0 ? itemPrice : undefined,
+      });
+    }
+
+    return { storeTotals: totals, grandTotal: grand, itemsList: items };
+  }, [boughtItems]);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const compressed = await compressImage(file, 800, 0.7);
+      setReceiptImage(compressed);
+    } catch {
+      // ignore
+    }
+    e.target.value = "";
+  }
+
+  function handleSave() {
+    onSaveTrip({
+      storeName,
+      storeTotals,
+      grandTotal,
+      items: itemsList,
+      receiptImage: receiptImage ?? undefined,
+      note: note.trim() || undefined,
+    });
+    setReceiptImage(null);
+    setNote("");
+    onClose();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="rounded-2xl max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-bold flex items-center gap-2">
+            <Receipt className="h-5 w-5 text-primary" />
+            Finalizar Compra y Guardar
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4 py-1">
+          {/* Summary Card */}
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-3.5 space-y-2">
+            <div className="flex items-center justify-between text-xs font-semibold">
+              <span className="text-muted-foreground">{boughtItems.length} productos comprados</span>
+              <span className="text-sm font-bold text-primary">
+                {grandTotal > 0 ? `${grandTotal.toFixed(2)}€` : "Total sin estimar"}
+              </span>
+            </div>
+
+            {/* Per Store Breakdown */}
+            {Object.keys(storeTotals).length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {Object.entries(storeTotals).map(([st, val]) => {
+                  const isKnown = st !== "Otro";
+                  const badge = isKnown
+                    ? STORE_BADGE_STYLE[st as StoreName]
+                    : { icon: "📦", bg: "bg-muted", text: "text-muted-foreground" };
+                  return (
+                    <Badge
+                      key={st}
+                      variant="outline"
+                      className={cn(
+                        "text-[10px] px-2 py-0.5 rounded-md font-medium border",
+                        badge.bg,
+                        badge.text,
+                      )}
+                    >
+                      {badge.icon} {st}: {val ? `${val.toFixed(2)}€` : "—"}
+                    </Badge>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Store Selector */}
+          <div className="space-y-1.5">
+            <Label>Supermercado principal de la compra</Label>
+            <Select value={storeName} onValueChange={(v) => setStoreName(v as StoreName | "Varios")}>
+              <SelectTrigger className="rounded-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Varios">🛒 Varios supermercados</SelectItem>
+                {STORES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {STORE_BADGE_STYLE[s].icon} {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Receipt Image */}
+          <div className="space-y-1.5 pt-1">
+            <Label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+              <Camera className="h-3.5 w-3.5 text-primary" />
+              Foto del Ticket de Compra (opcional)
+            </Label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            {receiptImage ? (
+              <div className="relative w-full h-40 rounded-xl overflow-hidden border border-border/60 bg-muted/30 group shadow-sm">
+                <img src={receiptImage} alt="Ticket de compra" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setReceiptImage(null)}
+                  className="absolute top-2 right-2 bg-destructive/90 text-destructive-foreground p-1.5 rounded-lg shadow hover:bg-destructive transition-all"
+                  aria-label="Quitar foto ticket"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    if (fileInputRef.current) {
+                      fileInputRef.current.removeAttribute("capture");
+                      fileInputRef.current.click();
+                    }
+                  }}
+                  className="rounded-xl text-xs font-medium border-border/60 bg-muted/20 hover:bg-accent"
+                >
+                  <ImageIcon className="h-4 w-4 mr-1.5 text-muted-foreground" />
+                  Elegir de galería
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    if (fileInputRef.current) {
+                      fileInputRef.current.setAttribute("capture", "environment");
+                      fileInputRef.current.click();
+                    }
+                  }}
+                  className="rounded-xl text-xs font-semibold border-primary/30 text-primary bg-primary/5 hover:bg-primary/10"
+                >
+                  <Camera className="h-4 w-4 mr-1.5 text-primary" />
+                  Hacer foto ticket
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Optional Note */}
+          <div className="space-y-1.5">
+            <Label htmlFor="trip-note">Nota sobre esta compra (opcional)</Label>
+            <Input
+              id="trip-note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Ej: Compra mensual de despensa..."
+              className="rounded-xl"
+            />
+          </div>
+        </div>
+
+        <DialogFooter className="pt-2">
+          <Button variant="outline" onClick={onClose} className="rounded-xl">
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleSave}
+            className="rounded-xl bg-gradient-to-r from-primary to-primary/90 font-semibold shadow-md"
+          >
+            Guardar en Historial
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ── RECEIPT VIEWER DIALOG ── */
+function ReceiptViewerDialog({
+  image,
+  onClose,
+}: {
+  image: string | null;
+  onClose: () => void;
+}) {
+  return (
+    <Dialog open={!!image} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="rounded-2xl max-w-lg p-3 bg-card border-border/80">
+        <DialogHeader className="px-2 pt-2 flex flex-row items-center justify-between">
+          <DialogTitle className="text-sm font-bold flex items-center gap-2">
+            <Receipt className="h-4 w-4 text-primary" /> Ticket de Compra
+          </DialogTitle>
+        </DialogHeader>
+        {image && (
+          <div className="max-h-[75vh] overflow-y-auto rounded-xl border border-border/60 bg-muted/20 p-1">
+            <img src={image} alt="Ticket completo" className="w-full h-auto rounded-lg" />
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
