@@ -18,6 +18,8 @@ export type Item = {
   prices?: Partial<Record<StoreName, number>>;
   /** Nota u oferta del producto */
   note?: string;
+  /** Imagen en formato Base64 data URL */
+  image?: string;
 };
 
 export type Store = {
@@ -95,6 +97,7 @@ export function useShoppingStore() {
       preferredStore?: StoreName,
       prices?: Partial<Record<StoreName, number>>,
       note?: string,
+      image?: string,
     ) => {
       const trimmed = name.trim();
       if (!trimmed) return;
@@ -110,6 +113,7 @@ export function useShoppingStore() {
                     preferredStore: preferredStore ?? it.preferredStore,
                     prices: prices ? { ...it.prices, ...prices } : it.prices,
                     note: note !== undefined ? note : it.note,
+                    image: image !== undefined ? image : it.image,
                   }
                 : it,
             ),
@@ -127,6 +131,7 @@ export function useShoppingStore() {
               preferredStore,
               prices: prices ?? {},
               note,
+              image,
             },
           ],
         };
@@ -148,6 +153,7 @@ export function useShoppingStore() {
         preferredStore?: StoreName | null;
         prices?: Partial<Record<StoreName, number>>;
         note?: string;
+        image?: string | null;
       },
     ) => {
       setStore((s) => ({
@@ -165,12 +171,19 @@ export function useShoppingStore() {
                 : patch.preferredStore ?? it.preferredStore,
             prices: patch.prices ?? it.prices,
             note: patch.note !== undefined ? patch.note : it.note,
+            image:
+              patch.image === null
+                ? undefined
+                : patch.image !== undefined
+                  ? patch.image
+                  : it.image,
           };
         }),
       }));
     },
     [],
   );
+
 
   /** Termina la compra: lo comprado sale de la lista, lo no comprado se queda para la próxima. */
   const finishTrip = useCallback(() => {

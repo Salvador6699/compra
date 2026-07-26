@@ -1,15 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Camera,
   Check,
+  CheckCheck,
   ChevronDown,
+  ClipboardList,
   Coins,
   Download,
   Filter,
   HardDrive,
+  Image as ImageIcon,
   Pencil,
   Plus,
+  RotateCcw,
   Search,
+  Settings,
   ShoppingBasket,
   ShoppingCart,
   Sparkles,
@@ -20,6 +26,38 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+
+/** Helper to compress uploaded images to max 400px width JPEG to conserve LocalStorage space */
+function compressImage(file: File, maxWidth = 400, quality = 0.8): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -102,12 +140,15 @@ function Index() {
     removeItem,
     updateItem,
     finishTrip,
+    selectAll,
     clearList,
     restoreStore,
     resetToSeedCatalog,
   } = useShoppingStore();
 
-  const [tab, setTab] = useState<"compra" | "catalogo">("compra");
+
+  const [tab, setTab] = useState<"compra" | "catalogo" | "ajustes">("compra");
+
   const [groupBy, setGroupBy] = useState<"category" | "store">("category");
 
   // Multi-store filter state
@@ -253,6 +294,7 @@ function Index() {
     preferredStore: StoreName | null,
     prices: Partial<Record<StoreName, number>>,
     note: string,
+    image?: string | null,
   ) {
     if (editingItem) {
       updateItem(editingItem.id, {
@@ -261,6 +303,7 @@ function Index() {
         preferredStore,
         prices,
         note,
+        image,
       });
     } else {
       addItem(
@@ -269,11 +312,13 @@ function Index() {
         preferredStore === null ? undefined : preferredStore,
         prices,
         note,
+        image ?? undefined,
       );
     }
     setItemDialogOpen(false);
     setEditingItem(null);
   }
+
 
   const totalItemsCount = listItems.length;
   const boughtCount = done.length;
@@ -692,7 +737,16 @@ function Index() {
                               {it.inList && <Check className="h-3.5 w-3.5" />}
                             </button>
 
+                            {it.image && (
+                              <img
+                                src={it.image}
+                                alt={it.name}
+                                className="h-9 w-9 rounded-lg object-cover border border-border/60 shrink-0 shadow-xs"
+                              />
+                            )}
+
                             <div className="flex-1 min-w-0">
+
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-sm font-medium text-foreground">{it.name}</span>
                                 {it.preferredStore && (
@@ -742,8 +796,172 @@ function Index() {
               })}
             </div>
           </TabsContent>
+
+          {/* ── AJUSTES ── */}
+          <TabsContent value="ajustes" className="space-y-4 mt-4 animate-in fade-in-0 duration-300">
+            {/* Seccion Copia de Seguridad y Catálogo */}
+            <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3 shadow-sm">
+              <h2 className="text-sm font-bold flex items-center gap-2 text-foreground">
+                <HardDrive className="h-4 w-4 text-primary" />
+                Copia de seguridad y Catálogo
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Guarda tus productos y precios o restaura el catálogo oficial en cualquier momento.
+              </p>
+
+              <div className="space-y-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setBackupOpen(true)}
+                  className="w-full flex items-center gap-3 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-3 text-left hover:border-primary/40 hover:bg-primary/5 transition-all group"
+                >
+                  <div className="h-9 w-9 rounded-xl bg-blue-500/10 text-blue-600 grid place-items-center shrink-0">
+                    <Download className="h-4.5 w-4.5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold">Gestor de Copias (.json)</p>
+                    <p className="text-[11px] text-muted-foreground">Descargar o subir archivo de copia</p>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (
+                      confirm(
+                        "¿Restablecer todo el catálogo con la lista oficial consolidada de tus tickets?\n\nSe actualizará la lista de productos al catálogo oficial base.",
+                      )
+                    ) {
+                      resetToSeedCatalog();
+                    }
+                  }}
+                  className="w-full flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-3.5 py-3 text-left hover:border-emerald-500/60 hover:bg-emerald-500/10 transition-all group"
+                >
+                  <div className="h-9 w-9 rounded-xl bg-emerald-500/15 text-emerald-600 grid place-items-center shrink-0">
+                    <Sparkles className="h-4.5 w-4.5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                      Restaurar Catálogo Base Oficial
+                    </p>
+                    <p className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80">
+                      Recupera los ~115 productos acordados de los tickets
+                    </p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Acciones Rápidas de Lista */}
+            <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3 shadow-sm">
+              <h2 className="text-sm font-bold flex items-center gap-2 text-foreground">
+                <ShoppingCart className="h-4 w-4 text-primary" />
+                Gestión de la Compra
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (confirm("¿Poner TODOS los productos del catálogo en la lista de hoy?")) {
+                      selectAll();
+                      setTab("compra");
+                    }
+                  }}
+                  className="rounded-xl text-xs font-semibold border-border/60 justify-start h-10"
+                >
+                  <CheckCheck className="h-4 w-4 mr-2 text-emerald-600" />
+                  Seleccionar todo el catálogo
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (confirm("¿Vaciar la lista de la compra de hoy? (Los productos se mantienen en el catálogo)")) {
+                      clearList();
+                    }
+                  }}
+                  className="rounded-xl text-xs font-semibold border-border/60 text-destructive hover:bg-destructive/10 justify-start h-10"
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Vaciar lista de hoy
+                </Button>
+              </div>
+            </div>
+
+            {/* Info App */}
+            <div className="rounded-2xl border border-border/50 bg-muted/30 p-4 text-center space-y-1">
+              <p className="text-xs font-semibold text-foreground">Mi Lista de la Compra v2.0</p>
+              <p className="text-[11px] text-muted-foreground">
+                {store.items.length} productos en catálogo · {listItems.length} en la compra
+              </p>
+            </div>
+          </TabsContent>
         </Tabs>
       </main>
+
+      {/* ── FIXED BOTTOM NAVIGATION BAR ── */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/60 shadow-xl">
+        <div className="mx-auto max-w-2xl px-4 py-1.5 flex items-center justify-around">
+          {/* Compra hoy */}
+          <button
+            type="button"
+            onClick={() => setTab("compra")}
+            className={cn(
+              "flex flex-col items-center gap-1 py-1.5 px-5 rounded-xl transition-all duration-200 relative",
+              tab === "compra"
+                ? "text-primary font-bold bg-primary/10"
+                : "text-muted-foreground hover:text-foreground font-medium",
+            )}
+          >
+            <div className="relative">
+              <ShoppingCart className="h-5 w-5" />
+              {pending.length > 0 && (
+                <span className="absolute -top-1.5 -right-2.5 h-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center min-w-4 shadow-sm">
+                  {pending.length}
+                </span>
+              )}
+            </div>
+            <span className="text-[11px]">Compra hoy</span>
+          </button>
+
+          {/* Catálogo */}
+          <button
+            type="button"
+            onClick={() => setTab("catalogo")}
+            className={cn(
+              "flex flex-col items-center gap-1 py-1.5 px-5 rounded-xl transition-all duration-200 relative",
+              tab === "catalogo"
+                ? "text-primary font-bold bg-primary/10"
+                : "text-muted-foreground hover:text-foreground font-medium",
+            )}
+          >
+            <div className="relative">
+              <ClipboardList className="h-5 w-5" />
+              <span className="absolute -top-1.5 -right-2.5 h-4 px-1 rounded-full bg-muted text-muted-foreground text-[10px] font-bold flex items-center justify-center border border-border/50 min-w-4">
+                {store.items.length}
+              </span>
+            </div>
+            <span className="text-[11px]">Catálogo</span>
+          </button>
+
+          {/* Ajustes */}
+          <button
+            type="button"
+            onClick={() => setTab("ajustes")}
+            className={cn(
+              "flex flex-col items-center gap-1 py-1.5 px-5 rounded-xl transition-all duration-200 relative",
+              tab === "ajustes"
+                ? "text-primary font-bold bg-primary/10"
+                : "text-muted-foreground hover:text-foreground font-medium",
+            )}
+          >
+            <Settings className="h-5 w-5" />
+            <span className="text-[11px]">Ajustes</span>
+          </button>
+        </div>
+      </nav>
+
 
       {/* ── MODALS ── */}
 
@@ -911,6 +1129,7 @@ function ItemFormDialog({
     preferredStore: StoreName | null,
     prices: Partial<Record<StoreName, number>>,
     note: string,
+    image?: string | null,
   ) => void;
 }) {
   const [name, setName] = useState("");
@@ -918,6 +1137,8 @@ function ItemFormDialog({
   const [preferredStore, setPreferredStore] = useState<StoreName | "NONE">("NONE");
   const [prices, setPrices] = useState<Partial<Record<StoreName, string>>>({});
   const [note, setNote] = useState("");
+  const [image, setImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -926,6 +1147,7 @@ function ItemFormDialog({
         setCategory(item.category);
         setPreferredStore(item.preferredStore ?? "NONE");
         setNote(item.note ?? "");
+        setImage(item.image ?? null);
 
         const strPrices: Partial<Record<StoreName, string>> = {};
         if (item.prices) {
@@ -940,9 +1162,22 @@ function ItemFormDialog({
         setPreferredStore("NONE");
         setPrices({});
         setNote("");
+        setImage(null);
       }
     }
   }, [item, open]);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const compressed = await compressImage(file);
+      setImage(compressed);
+    } catch {
+      // ignore
+    }
+    e.target.value = "";
+  }
 
   function handleSave() {
     if (!name.trim()) return;
@@ -963,6 +1198,7 @@ function ItemFormDialog({
       preferredStore === "NONE" ? null : preferredStore,
       parsedPrices,
       note.trim(),
+      image,
     );
   }
 
@@ -992,6 +1228,65 @@ function ItemFormDialog({
               autoFocus
               className="rounded-xl"
             />
+          </div>
+
+          {/* Image Attachment */}
+          <div className="space-y-1.5 pt-1">
+            <Label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+              <Camera className="h-3.5 w-3.5 text-primary" />
+              Foto o imagen del producto (opcional)
+            </Label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            {image ? (
+              <div className="relative w-full h-36 rounded-xl overflow-hidden border border-border/60 bg-muted/30 group shadow-sm">
+                <img src={image} alt="Vista previa del producto" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setImage(null)}
+                  className="absolute top-2 right-2 bg-destructive/90 text-destructive-foreground p-1.5 rounded-lg shadow hover:bg-destructive transition-all"
+                  aria-label="Quitar foto"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    if (fileInputRef.current) {
+                      fileInputRef.current.removeAttribute("capture");
+                      fileInputRef.current.click();
+                    }
+                  }}
+                  className="rounded-xl text-xs font-medium border-border/60 bg-muted/20 hover:bg-accent"
+                >
+                  <ImageIcon className="h-4 w-4 mr-1.5 text-muted-foreground" />
+                  Elegir de galería
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    if (fileInputRef.current) {
+                      fileInputRef.current.setAttribute("capture", "environment");
+                      fileInputRef.current.click();
+                    }
+                  }}
+                  className="rounded-xl text-xs font-semibold border-primary/30 text-primary bg-primary/5 hover:bg-primary/10"
+                >
+                  <Camera className="h-4 w-4 mr-1.5 text-primary" />
+                  Hacer foto
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Category & Preferred Store */}
@@ -1032,6 +1327,7 @@ function ItemFormDialog({
               </Select>
             </div>
           </div>
+
 
           {/* Note */}
           <div className="space-y-1.5">
@@ -1126,8 +1422,17 @@ function ItemRow({
         }}
         className="flex-1 flex items-center gap-3 cursor-pointer min-w-0"
       >
-        <span className="h-6 w-6 rounded-full border-2 border-muted-foreground/30 group-hover:border-primary/60 transition-colors shrink-0" />
+        {item.image ? (
+          <img
+            src={item.image}
+            alt={item.name}
+            className="h-10 w-10 rounded-xl object-cover border border-border/60 shrink-0 shadow-xs"
+          />
+        ) : (
+          <span className="h-6 w-6 rounded-full border-2 border-muted-foreground/30 group-hover:border-primary/60 transition-colors shrink-0" />
+        )}
         <div className="min-w-0">
+
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-semibold text-foreground">{item.name}</span>
             {storeBadge && item.preferredStore && (
