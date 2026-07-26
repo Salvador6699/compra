@@ -619,7 +619,7 @@ function Index() {
             <>
               <span className="text-[11px] text-muted-foreground font-medium mr-0.5">Filtrando:</span>
               {Array.from(selectedStores).map((s) => {
-                const badge = (s && STORE_BADGE_STYLE[s as StoreName]) || { icon: "🏪", bg: "bg-muted", text: "text-muted-foreground" };
+                const badge = (s && STORE_BADGE_STYLE[s as StoreName]) || { bg: "bg-muted", text: "text-muted-foreground" };
                 return (
                   <Badge
                     key={s}
@@ -630,7 +630,7 @@ function Index() {
                       badge.text,
                     )}
                   >
-                    <span>{badge.icon}</span>
+                    <DynamicIcon icon={getStoreIcon(s)} fallback="🏪" className="h-3.5 w-3.5 object-cover rounded-sm" />
                     <span>{s}</span>
                     <button
                       type="button"
@@ -740,6 +740,7 @@ function Index() {
                           <ItemRow
                             key={it.id}
                             item={it}
+                            getStoreIcon={getStoreIcon}
                             onToggleBought={() => toggleBought(it.id)}
                             onToggleInList={() => toggleInList(it.id)}
                             onEdit={() => handleOpenEditModal(it)}
@@ -781,6 +782,7 @@ function Index() {
                             <ItemRow
                               key={it.id}
                               item={it}
+                              getStoreIcon={getStoreIcon}
                               onToggleBought={() => toggleBought(it.id)}
                               onToggleInList={() => toggleInList(it.id)}
                               onEdit={() => handleOpenEditModal(it)}
@@ -958,18 +960,22 @@ function Index() {
 
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-sm font-medium text-foreground">{it.name}</span>
-                                {it.preferredStore && (
-                                  <Badge
-                                    variant="outline"
-                                    className={cn(
-                                      "text-[10px] px-1.5 py-0 h-4 border font-medium",
-                                      STORE_BADGE_STYLE[it.preferredStore].bg,
-                                      STORE_BADGE_STYLE[it.preferredStore].text,
-                                    )}
-                                  >
-                                    {STORE_BADGE_STYLE[it.preferredStore].icon} {it.preferredStore}
-                                  </Badge>
-                                )}
+                                {it.preferredStore && (() => {
+                                  const sb = STORE_BADGE_STYLE[it.preferredStore] || { bg: "bg-muted", text: "text-muted-foreground" };
+                                  return (
+                                    <Badge
+                                      variant="outline"
+                                      className={cn(
+                                        "text-[10px] px-1.5 py-0 h-4 border font-medium flex items-center gap-0.5",
+                                        sb.bg,
+                                        sb.text,
+                                      )}
+                                    >
+                                      <DynamicIcon icon={getStoreIcon(it.preferredStore)} fallback="🏪" className="h-3 w-3 object-cover rounded-sm" />
+                                      <span>{it.preferredStore}</span>
+                                    </Badge>
+                                  );
+                                })()}
                               </div>
                               {it.note && (
                                 <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
@@ -1040,7 +1046,7 @@ function Index() {
                   const primaryStoreBadge =
                     t.storeName && t.storeName !== "Varios"
                       ? STORE_BADGE_STYLE[t.storeName as StoreName]
-                      : { icon: "🛒", bg: "bg-muted", text: "text-muted-foreground" };
+                      : { bg: "bg-muted", text: "text-muted-foreground" };
 
                   return (
                     <div
@@ -1054,11 +1060,11 @@ function Index() {
                               variant="outline"
                               className={cn(
                                 "text-xs px-2.5 py-0.5 rounded-lg border font-bold flex items-center gap-1.5 shadow-sm",
-                                primaryStoreBadge.bg,
-                                primaryStoreBadge.text,
+                                primaryStoreBadge?.bg ?? "bg-muted",
+                                primaryStoreBadge?.text ?? "text-muted-foreground",
                               )}
                             >
-                              <span>{primaryStoreBadge.icon}</span>
+                              <DynamicIcon icon={getStoreIcon(t.storeName ?? "")} fallback="🛒" className="h-4 w-4 object-cover rounded-md" />
                               <span>{t.storeName ?? "Compra"}</span>
                             </Badge>
                             <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
@@ -1111,20 +1117,15 @@ function Index() {
                         {/* Breakdown per store */}
                         {Object.keys(t.storeTotals ?? {}).length > 0 && (
                           <div className="flex flex-wrap gap-1">
-                            {Object.entries(t.storeTotals).map(([st, val]) => {
-                              const isKnown = st !== "Otro";
-                              const badge = isKnown
-                                ? STORE_BADGE_STYLE[st as StoreName]
-                                : { icon: "📦", bg: "bg-muted", text: "text-muted-foreground" };
-                              return (
-                                <span
-                                  key={st}
-                                  className="text-[10px] px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground font-semibold"
-                                >
-                                  {badge.icon} {st}: {val ? `${val.toFixed(2)}€` : "—"}
-                                </span>
-                              );
-                            })}
+                            {Object.entries(t.storeTotals).map(([st, val]) => (
+                              <span
+                                key={st}
+                                className="text-[10px] px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground font-semibold inline-flex items-center gap-1"
+                              >
+                                <DynamicIcon icon={getStoreIcon(st)} fallback="🏪" className="h-3 w-3 object-cover rounded-sm" />
+                                {st}: {val ? `${val.toFixed(2)}€` : "—"}
+                              </span>
+                            ))}
                           </div>
                         )}
                       </div>
@@ -1741,7 +1742,7 @@ function StoreFilterDialog({
                   )}
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="text-base">{icon}</span>
+                    <DynamicIcon icon={icon} fallback="🏪" className="h-5 w-5 object-cover rounded-md shrink-0" />
                     <span className="font-semibold">{s}</span>
                   </div>
                   <div
@@ -2160,16 +2161,23 @@ function ItemFormDialog({
 /* ── Item Row Component for Shopping List ── */
 function ItemRow({
   item,
+  getStoreIcon,
   onToggleBought,
   onToggleInList,
   onEdit,
 }: {
   item: Item;
+  getStoreIcon?: (st: string) => string;
   onToggleBought: () => void;
   onToggleInList: () => void;
   onEdit: () => void;
 }) {
-  const storeBadge = item.preferredStore ? STORE_BADGE_STYLE[item.preferredStore] : null;
+  const storeBadge = item.preferredStore
+    ? (STORE_BADGE_STYLE[item.preferredStore] || { bg: "bg-muted", text: "text-muted-foreground" })
+    : null;
+  const storeIconResolved = item.preferredStore
+    ? (getStoreIcon ? getStoreIcon(item.preferredStore) : (STORE_BADGE_STYLE[item.preferredStore]?.icon ?? "🏪"))
+    : null;
 
   // Best price calculation
   const pricesList = item.prices ? Object.entries(item.prices).filter(([, p]) => p && p > 0) : [];
@@ -2206,12 +2214,13 @@ function ItemRow({
               <Badge
                 variant="outline"
                 className={cn(
-                  "text-[10px] px-1.5 py-0 h-4 border font-medium",
+                  "text-[10px] px-1.5 py-0 h-4 border font-medium flex items-center gap-0.5",
                   storeBadge.bg,
                   storeBadge.text,
                 )}
               >
-                {storeBadge.icon} {item.preferredStore}
+                <DynamicIcon icon={storeIconResolved ?? "🏪"} fallback="🏪" className="h-3 w-3 object-cover rounded-sm" />
+                <span>{item.preferredStore}</span>
               </Badge>
             )}
             {bestPrice && (
