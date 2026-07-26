@@ -1,0 +1,1469 @@
+{
+  "items": [
+    {
+      "id": "0bxgemz4ms1j7n1w",
+      "name": "Azúcar",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 0.85
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "txvsjo3mms1j7n1w",
+      "name": "Cacao instantáneo",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 3.75
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "pvwrwjjtms1j7n1w",
+      "name": "Infusión",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 2.89
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "0ljaposwms1j7n1w",
+      "name": "Macarrones",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.15
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "9ojvrltrms1j7n1w",
+      "name": "Espirales vegetales",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.59
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "u5ntvjk3ms1j7n1w",
+      "name": "Fideuá",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 0.8
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "tyfthztoms1j7n1w",
+      "name": "Sal",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 0.35
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "jeiiodbwms1j7n1w",
+      "name": "Tomate frito",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 0.39
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "89oo8o63ms1j7n1w",
+      "name": "Tomate triturado",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 0.49
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "y3hswu6rms1j7n1w",
+      "name": "Arroz redondo",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.15
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "8zw9a2udms1j7n1w",
+      "name": "Arroz basmati",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 3
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "k5ti09zqms1j7n1w",
+      "name": "Base de pizza",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.5
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "dilpl7w0ms1j7n1w",
+      "name": "Café molido mezcla",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 4.9
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "iivwyz2kms1j7n1w",
+      "name": "Café cappuccino",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 0.75,
+        "Lidl": 0.95,
+        "Family Cash": 1.95
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "llh0s01xms1j7n1w",
+      "name": "Ñoquis",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "wj1ztczgms1j7n1w",
+      "name": "Noodles",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.45
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "fr7pt6wbms1j7n1w",
+      "name": "Hélices de vegetales",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 0.95
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "a238g00ems1j7n1w",
+      "name": "Guisantes",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.2
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "1qnr26rems1j7n1w",
+      "name": "Miel",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 2.69
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "3b3yk0zums1j7n1w",
+      "name": "Garbanzos cocidos",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 0.75
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "mzzxfsaxms1j7n1w",
+      "name": "Macarrones integral",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.79
+      },
+      "preferredStore": "Family Cash",
+      "note": ""
+    },
+    {
+      "id": "alfzd0omms1j7n1w",
+      "name": "Mayonesa",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.09
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "ahf07v0ims1j7n1w",
+      "name": "Salsa de quesos",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.45
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "ytytp8rdms1j7n1w",
+      "name": "Salsa de trufa",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.45
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "coqz8h1fms1j7n1w",
+      "name": "Aceitunas rellenas",
+      "category": "Despensa",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 2.99
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "ziz7kae6ms1j7n1w",
+      "name": "Pan de aceite",
+      "category": "Panadería",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.51
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "l87ai4tgms1j7n1w",
+      "name": "Pan cristal",
+      "category": "Panadería",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.85
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "tlfq9cpjms1j7n1w",
+      "name": "Pan integral",
+      "category": "Panadería",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.25
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "yv3mx919ms1j7n1w",
+      "name": "Bacon",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.2
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "t1e4276ims1j7n1w",
+      "name": "Hamburguesa",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.65
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "9465uc24ms1j7n1w",
+      "name": "Carrillada de vacuno",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 7.32
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "j4mxaq3ims1j7n1w",
+      "name": "Costilla de cerdo",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 4.99
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "jtjhavunms1j7n1w",
+      "name": "Carne picada de cerdo",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 3.99
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "i7rp5wzems1j7n1w",
+      "name": "Carne picada de vacuno",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.65
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "h4fjjqcems1j7n1w",
+      "name": "Panceta",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 4.99
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "07uhdapjms1j7n1w",
+      "name": "Fuet Espetec",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 4.89
+      },
+      "preferredStore": "Family Cash",
+      "note": ""
+    },
+    {
+      "id": "333mjbfvms1j7n1w",
+      "name": "Mortadela con aceitunas",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.25
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "ov625t2ems1j7n1w",
+      "name": "Chistorra",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.9
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "siwoazvums1j7n1w",
+      "name": "Chorizo",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 4.2
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "p2yjk7uxms1j7n1w",
+      "name": "Chorizo picante",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 4.2
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "6zd3jjltms1j7n1w",
+      "name": "Espinazo de cerdo",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.3
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "z4u4z7hgms1j7n1w",
+      "name": "Guanciale",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.99
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "4uok5au7ms1j7n1w",
+      "name": "Hueso de vacuno",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 4.53
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "8ttwxxrcms1j7n1w",
+      "name": "Jamón cocido",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.25
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "29wqx5y9ms1j7n1w",
+      "name": "Pechuga de pollo",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 5.99
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "m9w18n7bms1j7n1w",
+      "name": "Jamoncitos de pollo",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 3.3
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "l86a6aerms1j7n1w",
+      "name": "Pechuga de pavo",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.85
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "hiu9tzfdms1j7n1w",
+      "name": "Osobuco",
+      "category": "Carne y embutidos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.94
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "oslnbugcms1j7n1w",
+      "name": "Atún en lata",
+      "category": "Pescado",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 2.59
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "vb6nfxgums1j7n1w",
+      "name": "Melva",
+      "category": "Pescado",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 2.89
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "8c0szoejms1j7n1w",
+      "name": "Salmón",
+      "category": "Pescado",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 5.95
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "e9ctp7lqms1j7n1w",
+      "name": "Calamar troceado",
+      "category": "Pescado",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 5.9
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "8lkznxnfms1j7n1w",
+      "name": "Bebida de almendras",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 6.9
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "aakr4svems1j7n1w",
+      "name": "Batido de vainilla",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.3
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "qmckugkyms1j7n1w",
+      "name": "Huevos",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Eroski": 3.49,
+        "Family Cash": 4.79
+      },
+      "preferredStore": "Eroski"
+    },
+    {
+      "id": "pjab5lubms1j7n1w",
+      "name": "Queso brie",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.65
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "ytdbncfems1j7n1w",
+      "name": "Queso en dados",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.15
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "9pcumuzkms1j7n1w",
+      "name": "Queso rallado",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.6
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "zijqti2tms1j7n1w",
+      "name": "Queso semicurado",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 2,
+        "Mercadona": 2.55
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "ujcsu45ums1j7n1w",
+      "name": "Queso para untar finas hierbas",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.75
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "i7uemstdms1j7n1w",
+      "name": "Queso Grana Padano",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 3.51
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "alitxai5ms1j7n1w",
+      "name": "Queso bola",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 3.9
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "hc0mu25sms1j7n1w",
+      "name": "Leche entera",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.56
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "4pyfhgf0ms1j7n1w",
+      "name": "Leche desnatada",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.39
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "z5tbenxdms1j7n1w",
+      "name": "Mantequilla",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 0.75
+      },
+      "pre3VTZ1XferredStore": "Family Cash"
+    },
+    {
+      "id": "m93pkmnsms1j7n1w",
+      "name": "Nata para cocinar",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.55
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "8dnpmmawms1j7n1w",
+      "name": "Yogur natural azúcar de caña",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.05
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "938sx299ms1j7n1w",
+      "name": "Kéfir",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.1
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "lobtzg0mms1j7n1w",
+      "name": "Queso fresco batido",
+      "category": "Lácteos y huevos",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.1
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "gy20vzs9ms1j7n1w",
+      "name": "Plátano",
+      "category": "Frutas y verduras",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.25,
+        "Eroski": 1.65
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "nay5gshlms1j7n1w",
+      "name": "Champiñones",
+      "category": "Frutas y verduras",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.91
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "f1s5d8z8ms1j7n1w",
+      "name": "Espinacas",
+      "category": "Frutas y verduras",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.15
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "q3c73qj0ms1j7n1w",
+      "name": "Patatas",
+      "category": "Frutas y verduras",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 2.29,
+        "Mercadona": 4.65
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "kiuy3p6hms1j7n1w",
+      "name": "Pera",
+      "category": "Frutas y verduras",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.45
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "ms6ot62qms1j7n1w",
+      "name": "Calabaza",
+      "category": "Frutas y verduras",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 0.85
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "n1dfinjrms1j7n1w",
+      "name": "Zanahoria",
+      "category": "Frutas y verduras",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 0.8
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "ok37ospcms1j7n1w",
+      "name": "Ensalada",
+      "category": "Frutas y verduras",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.8
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "1iljl1p8ms1j7n1w",
+      "name": "Melón Sapo",
+      "category": "Frutas y verduras",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "ccz885bhms1j7n1w",
+      "name": "Espagueti carbonara",
+      "category": "Platos preparados",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.2
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "ct6oyuikms1j7n1w",
+      "name": "Pizza atún bacon",
+      "category": "Platos preparados",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.9
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "z4kfvbafms1j7n1w",
+      "name": "Pizza frankfurt",
+      "category": "Platos preparados",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.9
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "ck3xkehoms1j7n1w",
+      "name": "Pizza jamón serrano",
+      "category": "Platos preparados",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.9
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "h90m3dkqms1j7n1w",
+      "name": "Pizza pepperoni",
+      "category": "Platos preparados",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.9
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "j82shr7kms1j7n1w",
+      "name": "Cocido",
+      "category": "Platos preparados",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.75
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "8dnf3ezgms1j7n1w",
+      "name": "Pelota de cocido",
+      "category": "Platos preparados",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.02
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "vnlf5cibms1j7n1w",
+      "name": "Lasaña de pavo",
+      "category": "Platos preparados",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.55
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "tjn78ib4ms1j7n1w",
+      "name": "Crema de verduras",
+      "category": "Platos preparados",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 0.95
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "sl2edl3gms1j7n1w",
+      "name": "Ensaladilla rusa",
+      "category": "Platos preparados",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.8
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "cbmbbdorms1j7n1w",
+      "name": "Empanadillas",
+      "category": "Platos preparados",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Consum": 1.99
+      },
+      "preferredStore": "Consum"
+    },
+    {
+      "id": "sywxf9c3ms1j7n1w",
+      "name": "Pasta pollo pesto",
+      "category": "Platos preparados",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.4
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "j46ci1qrms1j7n1w",
+      "name": "Caldo casero",
+      "category": "Platos preparados",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 0.95
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "u4fugzocms1j7n1w",
+      "name": "Zumo con leche",
+      "category": "Bebidas",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.29
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "olwpe1gdms1j7n1w",
+      "name": "Agua",
+      "category": "Bebidas",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 0.7
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "64w3s952ms1j7n1w",
+      "name": "Nestea maracuya",
+      "category": "Bebidas",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 0.65,
+        "Mercadona": 1
+      },
+      "preferredStore": "Family Cash",
+      "note": ""
+    },
+    {
+      "id": "o7b4ax05ms1j7n1w",
+      "name": "Refresco de piña",
+      "category": "Bebidas",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.69
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "11pd82zpms1j7n1w",
+      "name": "Bebida isotónica",
+      "category": "Bebidas",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 0.75
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "wvs17rg4ms1j7n1w",
+      "name": "Monster",
+      "category": "Bebidas",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 0.68,
+        "Family Cash": 1.79
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "ci2z4wlums1j7n1w",
+      "name": "Bombón almendrado",
+      "category": "Snacks y dulces",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.9
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "710oqaf1ms1j7n1w",
+      "name": "Tarrina de leche merengada",
+      "category": "Snacks y dulces",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.95
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "19osg9ytms1j7n1w",
+      "name": "SuperSándwich nata",
+      "category": "Snacks y dulces",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.9
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "a5gc2k5wms1j7n1w",
+      "name": "Dochi tarta de la abuela",
+      "category": "Snacks y dulces",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 3
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "ld3zklyams1j7n1w",
+      "name": "Palomitas",
+      "category": "Snacks y dulces",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 0.75
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "44h2lrtnms1j7n1w",
+      "name": "Patatas fritas",
+      "category": "Snacks y dulces",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 0.8,
+        "Family Cash": 1.15
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "qs9pmh8ims1j7n1w",
+      "name": "Snacks",
+      "category": "Snacks y dulces",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 0.79,
+        "Consum": 1.99
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "rl66itccms1j7n1w",
+      "name": "Pipas",
+      "category": "Snacks y dulces",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.32,
+        "Family Cash": 3.99
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "wjb22l9zms1j7n1w",
+      "name": "Galletas",
+      "category": "Snacks y dulces",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.85
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "0nvwsr9ems1j7n1w",
+      "name": "Mousse de chocolate",
+      "category": "Snacks y dulces",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.2
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "f38te1xsms1j7n1w",
+      "name": "Natillas con galleta",
+      "category": "Snacks y dulces",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.15,
+        "Family Cash": 2.89
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "46pbnll7ms1j7n1w",
+      "name": "Arena para gatos",
+      "category": "Mascotas",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.45
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "55zfivcums1j7n1w",
+      "name": "Sopa gatos Felix",
+      "category": "Mascotas",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.99
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "6g4ybfg7ms1j7n1w",
+      "name": "Húmedo gatos Felix",
+      "category": "Mascotas",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 2.79
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "d3msmvpmms1j7n1w",
+      "name": "Pienso gatos Catisfacti",
+      "category": "Mascotas",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "5tadre1gms1j7n1w",
+      "name": "Guantes",
+      "category": "herramientas",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 0.65
+      },
+      "preferredStore": "Family Cash",
+      "note": ""
+    },
+    {
+      "id": "0b2gbtbems1j7n1w",
+      "name": "Detergente lavadora",
+      "category": "Hogar y limpieza",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.95
+      },
+      "preferredStore": "Family Cash",
+      "note": ""
+    },
+    {
+      "id": "nu7og679ms1j7n1w",
+      "name": "Papel de cocina",
+      "category": "Hogar y limpieza",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.2
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "wbzx6ubrms1j7n1w",
+      "name": "Papel higiénico",
+      "category": "Hogar y limpieza",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.3
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "43x56lygms1j7n1w",
+      "name": "Bolsas de congelación zip",
+      "category": "Hogar y limpieza",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.2
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "hr6bxreems1j7n1w",
+      "name": "Suavizante ropa",
+      "category": "Hogar y limpieza",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.39
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "jgpaoznsms1j7n1w",
+      "name": "Lavavajillas",
+      "category": "Hogar y limpieza",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 1.3
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "uo311y3gms1j7n1w",
+      "name": "Limpiacristales",
+      "category": "Hogar y limpieza",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.3
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "lqkbnv15ms1j7n1w",
+      "name": "Fregona microfibra",
+      "category": "Hogar y limpieza",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Mercadona": 2.7
+      },
+      "preferredStore": "Mercadona"
+    },
+    {
+      "id": "wyyqammnms1j7n1w",
+      "name": "Fregasuelos",
+      "category": "Hogar y limpieza",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.85
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "9mcms983ms1j7n1w",
+      "name": "Limpiador WC",
+      "category": "Hogar y limpieza",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.89
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "z99pjvotms1j7n1w",
+      "name": "Torcamans",
+      "category": "Hogar y limpieza",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 3.95
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "6rtmzg0zms1j7n1w",
+      "name": "Jabón de manos",
+      "category": "Hogar y limpieza",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 0.89
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "335lmlvnms1j7n1w",
+      "name": "Detergente lavadora",
+      "category": "Hogar y limpieza",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 5.99
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "t28t4vaxms1j7n1w",
+      "name": "Vela vaso aromática",
+      "category": "Hogar y limpieza",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.75
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "yobds93bms1j7n1w",
+      "name": "Mascarilla capilar",
+      "category": "Cuidado personal",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 1.89
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "65nelmznms1j7n1w",
+      "name": "Desodorante roll-on",
+      "category": "Cuidado personal",
+      "inList": false,
+      "bought": false,
+      "prices": {
+        "Family Cash": 0.75
+      },
+      "preferredStore": "Family Cash"
+    },
+    {
+      "id": "tqxljb9qms1kebjc",
+      "name": "Pimiento congelado variado",
+      "category": "Platos preparados",
+      "inList": false,
+      "bought": false,
+      "preferredStore": "Mercadona",
+      "prices": {},
+      "note": ""
+    }
+  ],
+  "trips": [],
+  "customCategories": [
+    "herramientas"
+  ],
+  "customStores": [],
+  "categoryIcons": {
+    "herramientas": "=Ø'Ý",
+    "Snacks y dulces": "<Øß"
+  },
+  "storeIcons": {},
+  "deletedCategories": [
+    "Otros"
+  ],
+  "deletedStores": [
+    "Alcampo",
+    "Aldi",
+    "Dia",
+    "Otro"
+  ]
+}

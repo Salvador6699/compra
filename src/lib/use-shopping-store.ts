@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { SEED_ITEMS, type Category, type StoreName } from "./shopping-data";
 
-const STORAGE_KEY = "shopping-app:v2";
+const STORAGE_KEY = "shopping-app:v4";
 
 
 export type Item = {
@@ -20,7 +20,9 @@ export type Item = {
   note?: string;
   /** Imagen en formato Base64 data URL */
   image?: string;
-};export type TripItem = {
+};
+
+export type TripItem = {
   name: string;
   category: Category;
   preferredStore?: StoreName;
@@ -41,6 +43,12 @@ export type CompletedTrip = {
 export type Store = {
   items: Item[];
   trips?: CompletedTrip[];
+  customCategories?: string[];
+  customStores?: string[];
+  categoryIcons?: Record<string, string>;
+  storeIcons?: Record<string, string>;
+  deletedCategories?: string[];
+  deletedStores?: string[];
 };
 
 function makeId() {
@@ -56,32 +64,76 @@ function seedStore(): Store {
       inList: true,
       bought: false,
       preferredStore: s.preferredStore,
-      prices: {},
+      prices: s.prices ?? {},
     })),
     trips: [],
+    customCategories: [],
+    customStores: [],
+    categoryIcons: {},
+    storeIcons: {},
+    deletedCategories: [],
+    deletedStores: [],
   };
 }
 
 function loadStore(): Store {
-  if (typeof window === "undefined") return { items: [], trips: [] };
+  if (typeof window === "undefined") return seedStore();
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return seedStore();
     const parsed = JSON.parse(raw) as Store;
-    if (!parsed?.items) return seedStore();
-    // Asegurar compatibilidad de estructura
-    const items = parsed.items.map((it) => ({
-      ...it,
-      prices: it.prices ?? {},
-    }));
-    return { items, trips: parsed.trips ?? [] };
+    if (!parsed?.items || !Array.isArray(parsed.items)) return seedStore();
+
+    // Map seed prices & stores by item name
+    const seedMap = new Map(
+      SEED_ITEMS.map((i) => [i.name.toLowerCase(), { prices: i.prices ?? {}, preferredStore: i.preferredStore }]),
+    );
+
+    const items = parsed.items
+      .filter((it) => it && typeof it === "object" && it.id && it.name)
+      .map((it) => {
+        const seedData = seedMap.get(it.name.toLowerCase());
+        return {
+          ...it,
+          preferredStore: it.preferredStore ?? seedData?.preferredStore,
+          prices: { ...(seedData?.prices ?? {}), ...(it.prices ?? {}) },
+        };
+      });
+
+    if (items.length === 0) return seedStore();
+    return {
+      items,
+      trips: Array.isArray(parsed.trips) ? parsed.trips : [],
+      customCategories: Array.isArray(parsed.customCategories) ? parsed.customCategories : [],
+      customStores: Array.isArray(parsed.customStores) ? parsed.customStores : [],
+      categoryIcons: parsed.categoryIcons && typeof parsed.categoryIcons === "object" ? parsed.categoryIcons : {},
+      storeIcons: parsed.storeIcons && typeof parsed.storeIcons === "object" ? parsed.storeIcons : {},
+      deletedCategories: Array.isArray(parsed.deletedCategories) ? parsed.deletedCategories : [],
+      deletedStores: Array.isArray(parsed.deletedStores) ? parsed.deletedStores : [],
+    };
   } catch {
     return seedStore();
   }
 }
 
+
+export function capitalize(str: string): string {
+  const trimmed = str.trim();
+  if (!trimmed) return "";
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+}
+
 export function useShoppingStore() {
-  const [store, setStore] = useState<Store>({ items: [], trips: [] });
+  const [store, setStore] = useState<Store>({
+    items: [],
+    trips: [],
+    customCategories: [],
+    customStores: [],
+    categoryIcons: {},
+    storeIcons: {},
+    deletedCategories: [],
+    deletedStores: [],
+  });
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -91,8 +143,219 @@ export function useShoppingStore() {
 
   useEffect(() => {
     if (!hydrated) return;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    } catch (e) {
+      console.warn("No se pudo guardar en localStorage:", e);
+    }
   }, [store, hydrated]);
+
+  const addCustomCategory = useCallback((catName: string, icon?: string) => {
+    const trimmed = capitalize(catName);
+    if (!trimmed) return;
+    setStore((s) => {
+      const current = s.customCategories ?? [];
+      const deleted = s.deletedCategories ?? [];
+      const nextDeleted = deleted.filter((c) => c !== trimmed);
+      const nextCustom = current.includes(trimmed) ? current : [...current, trimmed];
+      const nextIcons = { ...s.categoryIcons };
+      if (icon?.trim()) {
+        nextIcons[trimmed] = icon.trim();
+      }
+      return {
+        ...s,
+        customCategories: nextCustom,
+        deletedCategories: nextDeleted,
+        categoryIcons: nextIcons,
+      };
+    });
+  }, []);
+
+  const updateCategoryIcon = useCallback((catName: string, icon: string) => {
+    const trimmedCat = capitalize(catName);
+    const trimmedIcon = icon.trim();
+    if (!trimmedCat || !trimmedIcon) return;
+    setStore((s) => ({
+      ...s,
+      categoryIcons: { ...(s.categoryIcons ?? {}), [trimmedCat]: trimmedIcon },
+    }));
+  }, []);
+
+  const renameCategory = useCallback((oldName: string, newName: string, icon?: string) => {
+    const trimmedNew = capitalize(newName);
+    if (!trimmedNew) return;
+
+    setStore((s) => {
+      const nextIcons = { ...(s.categoryIcons ?? {}) };
+      if (icon !== undefined) {
+        if (icon.trim()) nextIcons[trimmedNew] = icon.trim();
+        else delete nextIcons[trimmedNew];
+      }
+
+      if (oldName === trimmedNew) {
+        return { ...s, categoryIcons: nextIcons };
+      }
+
+      if (icon === undefined && nextIcons[oldName]) {
+        nextIcons[trimmedNew] = nextIcons[oldName];
+        delete nextIcons[oldName];
+      } else if (nextIcons[oldName]) {
+        delete nextIcons[oldName];
+      }
+
+      const nextItems = s.items.map((it) =>
+        it.category === oldName ? { ...it, category: trimmedNew as Category } : it,
+      );
+
+      const nextCustom = (s.customCategories ?? [])
+        .filter((c) => c !== oldName && c !== trimmedNew)
+        .concat(trimmedNew);
+      const nextDeleted = (s.deletedCategories ?? []).filter((c) => c !== oldName && c !== trimmedNew);
+
+      return {
+        ...s,
+        items: nextItems,
+        customCategories: nextCustom,
+        deletedCategories: nextDeleted,
+        categoryIcons: nextIcons,
+      };
+    });
+  }, []);
+
+  const removeCategory = useCallback((catName: string) => {
+    setStore((s) => {
+      const isUsed = s.items.some((it) => it.category === catName);
+      if (isUsed) return s;
+
+      const nextCustom = (s.customCategories ?? []).filter((c) => c !== catName);
+      const nextDeleted = Array.from(new Set([...(s.deletedCategories ?? []), catName]));
+      const nextIcons = { ...s.categoryIcons };
+      delete nextIcons[catName];
+
+      return {
+        ...s,
+        customCategories: nextCustom,
+        deletedCategories: nextDeleted,
+        categoryIcons: nextIcons,
+      };
+    });
+  }, []);
+
+  const addCustomStore = useCallback((storeName: string, icon?: string) => {
+    const trimmed = capitalize(storeName);
+    if (!trimmed) return;
+    setStore((s) => {
+      const current = s.customStores ?? [];
+      const deleted = s.deletedStores ?? [];
+      const nextDeleted = deleted.filter((st) => st !== trimmed);
+      const nextCustom = current.includes(trimmed) ? current : [...current, trimmed];
+      const nextIcons = { ...s.storeIcons };
+      if (icon?.trim()) {
+        nextIcons[trimmed] = icon.trim();
+      }
+      return {
+        ...s,
+        customStores: nextCustom,
+        deletedStores: nextDeleted,
+        storeIcons: nextIcons,
+      };
+    });
+  }, []);
+
+  const updateStoreIcon = useCallback((storeName: string, icon: string) => {
+    const trimmedStore = capitalize(storeName);
+    const trimmedIcon = icon.trim();
+    if (!trimmedStore || !trimmedIcon) return;
+    setStore((s) => ({
+      ...s,
+      storeIcons: { ...(s.storeIcons ?? {}), [trimmedStore]: trimmedIcon },
+    }));
+  }, []);
+
+  const renameStore = useCallback((oldName: string, newName: string, icon?: string) => {
+    const trimmedNew = capitalize(newName);
+    if (!trimmedNew) return;
+
+    setStore((s) => {
+      const nextIcons = { ...(s.storeIcons ?? {}) };
+      if (icon !== undefined) {
+        if (icon.trim()) nextIcons[trimmedNew] = icon.trim();
+        else delete nextIcons[trimmedNew];
+      }
+
+      if (oldName === trimmedNew) {
+        return { ...s, storeIcons: nextIcons };
+      }
+
+      if (icon === undefined && nextIcons[oldName]) {
+        nextIcons[trimmedNew] = nextIcons[oldName];
+        delete nextIcons[oldName];
+      } else if (nextIcons[oldName]) {
+        delete nextIcons[oldName];
+      }
+
+      const nextItems = s.items.map((it) => {
+        let updatedStore = it.preferredStore;
+        if (it.preferredStore === oldName) {
+          updatedStore = trimmedNew as StoreName;
+        }
+
+        let updatedPrices = it.prices;
+        if (it.prices && it.prices[oldName as StoreName] !== undefined) {
+          updatedPrices = { ...it.prices };
+          updatedPrices[trimmedNew as StoreName] = updatedPrices[oldName as StoreName];
+          delete updatedPrices[oldName as StoreName];
+        }
+
+        return {
+          ...it,
+          preferredStore: updatedStore,
+          prices: updatedPrices,
+        };
+      });
+
+      const nextCustom = (s.customStores ?? [])
+        .filter((st) => st !== oldName && st !== trimmedNew)
+        .concat(trimmedNew);
+      const nextDeleted = (s.deletedStores ?? []).filter((st) => st !== oldName && st !== trimmedNew);
+
+      return {
+        ...s,
+        items: nextItems,
+        customStores: nextCustom,
+        deletedStores: nextDeleted,
+        storeIcons: nextIcons,
+      };
+    });
+  }, []);
+
+  const removeStore = useCallback((storeName: string) => {
+    setStore((s) => {
+      const isUsed = s.items.some(
+        (it) =>
+          it.preferredStore === storeName ||
+          (it.prices && it.prices[storeName as StoreName] !== undefined && it.prices[storeName as StoreName]! > 0),
+      );
+      if (isUsed) return s;
+
+      const nextCustom = (s.customStores ?? []).filter((st) => st !== storeName);
+      const nextDeleted = Array.from(new Set([...(s.deletedStores ?? []), storeName]));
+      const nextIcons = { ...s.storeIcons };
+      delete nextIcons[storeName];
+
+      return {
+        ...s,
+        customStores: nextCustom,
+        deletedStores: nextDeleted,
+        storeIcons: nextIcons,
+      };
+    });
+  }, []);
+
+
+
+
+
 
   const toggleInList = useCallback((id: string) => {
     setStore((s) => ({
@@ -119,7 +382,7 @@ export function useShoppingStore() {
       note?: string,
       image?: string,
     ) => {
-      const trimmed = name.trim();
+      const trimmed = capitalize(name);
       if (!trimmed) return;
       setStore((s) => {
         // evita duplicados case-insensitive
@@ -182,7 +445,7 @@ export function useShoppingStore() {
         ...s,
         items: s.items.map((it) => {
           if (it.id !== id) return it;
-          const nextName = patch.name !== undefined ? patch.name.trim() : it.name;
+          const nextName = patch.name !== undefined ? capitalize(patch.name) : it.name;
           if (!nextName) return it;
           return {
             ...it,
@@ -284,7 +547,21 @@ export function useShoppingStore() {
     clearList,
     restoreStore,
     resetToSeedCatalog,
+    addCustomCategory,
+    updateCategoryIcon,
+    renameCategory,
+    removeCategory,
+    removeCustomCategory: removeCategory,
+    addCustomStore,
+    updateStoreIcon,
+    renameStore,
+    removeStore,
+    removeCustomStore: removeStore,
   };
 }
+
+
+
+
 
 

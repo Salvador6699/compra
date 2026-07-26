@@ -118,22 +118,185 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+/* ── Helper component to render an Emoji or a resized Custom Image Icon ── */
+function DynamicIcon({
+  icon,
+  fallback = "📦",
+  className = "h-4 w-4 rounded object-cover shrink-0 inline-block",
+}: {
+  icon?: string;
+  fallback?: string;
+  className?: string;
+}) {
+  if (!icon) return <span className="text-base leading-none">{fallback}</span>;
+  const isImg =
+    icon.startsWith("data:image/") ||
+    icon.startsWith("http://") ||
+    icon.startsWith("https://") ||
+    icon.startsWith("blob:") ||
+    icon.length > 30;
+  if (isImg) {
+    return (
+      <img
+        src={icon}
+        alt=""
+        className={cn("object-cover rounded-md shrink-0 inline-block align-middle", className)}
+      />
+    );
+  }
+  return <span className="text-base leading-none inline-block align-middle">{icon}</span>;
+}
+
+/* ── EDIT CATEGORY OR STORE DIALOG (Name & Icon: Emoji or Image Upload) ── */
+function EditCategoryOrStoreDialog({
+  open,
+  type,
+  currentName,
+  currentIcon,
+  onSave,
+  onClose,
+}: {
+  open: boolean;
+  type: "category" | "store";
+  currentName: string;
+  currentIcon: string;
+  onSave: (newName: string, newIcon: string) => void;
+  onClose: () => void;
+}) {
+  const [name, setName] = useState("");
+  const [icon, setIcon] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open) {
+      setName(currentName || "");
+      setIcon(currentIcon || "");
+    }
+  }, [open, currentName, currentIcon]);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      // Compress image icon down to max 128px width
+      const compressed = await compressImage(file, 128, 0.85);
+      setIcon(compressed);
+    } catch {
+      // ignore
+    }
+    e.target.value = "";
+  }
+
+  function handleSave() {
+    if (!name.trim()) return;
+    onSave(name.trim(), icon);
+    onClose();
+  }
+
+  const titleText = type === "category" ? `Editar categoría "${currentName}"` : `Editar supermercado "${currentName}"`;
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="rounded-2xl max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="text-base font-bold flex items-center gap-2">
+            <Pencil className="h-4 w-4 text-primary" />
+            {titleText}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4 py-2">
+          {/* Preview Header */}
+          <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/40 border border-border/50">
+            <div className="h-10 w-10 rounded-xl bg-background border border-border grid place-items-center shadow-xs overflow-hidden shrink-0">
+              <DynamicIcon icon={icon} fallback="📦" className="h-7 w-7 object-cover rounded-lg" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground">Vista previa</span>
+              <p className="text-sm font-bold truncate text-foreground">{name || "Sin nombre"}</p>
+            </div>
+          </div>
+
+          {/* Name Field */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold">Nombre</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Escribe el nombre..."
+              className="rounded-xl text-xs"
+            />
+          </div>
+
+          {/* Icon Option 1: Emoji */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold">Icono (Emoji)</Label>
+            <Input
+              value={icon.startsWith("data:") ? "" : icon}
+              onChange={(e) => setIcon(e.target.value)}
+              placeholder="Ej: 🍦, 💊, 🏬..."
+              className="rounded-xl text-xs text-center"
+            />
+          </div>
+
+          <div className="relative flex py-1 items-center">
+            <div className="flex-grow border-t border-border/50"></div>
+            <span className="flex-shrink mx-2 text-[10px] uppercase font-semibold text-muted-foreground">O foto / imagen</span>
+            <div className="flex-grow border-t border-border/50"></div>
+          </div>
+
+          {/* Icon Option 2: Image Upload */}
+          <div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full rounded-xl text-xs font-semibold border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 gap-2"
+            >
+              <Upload className="h-4 w-4" />
+              Subir foto desde galería / PC
+            </Button>
+          </div>
+        </div>
+
+        <DialogFooter className="gap-2 sm:justify-between pt-1">
+          <Button type="button" variant="outline" onClick={onClose} className="rounded-xl text-xs flex-1">
+            Cancelar
+          </Button>
+          <Button type="button" onClick={handleSave} disabled={!name.trim()} className="rounded-xl text-xs px-4 flex-1 bg-primary font-semibold">
+            Guardar Cambios
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
 /* ── Emoji map for each category ── */
-const CATEGORY_EMOJI: Record<Category, string> = {
-  "Despensa": "🫙",
-  "Panadería": "🥖",
+const CATEGORY_EMOJI: Record<string, string> = {
+  "Bebidas": "🧃",
   "Carne y embutidos": "🥩",
-  "Pescado": "🐟",
-  "Lácteos y huevos": "🥛",
+  "Cuidado personal": "🧼",
+  "Despensa": "🥫",
   "Frutas y verduras": "🥦",
-  "Platos preparados": "🍝",
-  "Bebidas": "🥤",
-  "Snacks y dulces": "🍿",
-  "Mascotas": "🐱",
   "Hogar y limpieza": "🧹",
-  "Cuidado personal": "🧴",
+  "Lácteos y huevos": "🥚",
+  "Mascotas": "🐾",
   "Otros": "📦",
+  "Panadería": "🥖",
+  "Pescado": "🐟",
+  "Platos preparados": "🍱",
+  "Snacks y dulces": "🍿",
 };
+
 
 function Index() {
   const {
@@ -151,14 +314,24 @@ function Index() {
     clearList,
     restoreStore,
     resetToSeedCatalog,
+    addCustomCategory,
+    updateCategoryIcon,
+    renameCategory,
+    removeCategory,
+    addCustomStore,
+    updateStoreIcon,
+    renameStore,
+    removeStore,
   } = useShoppingStore();
+
+
 
   const [tab, setTab] = useState<"compra" | "catalogo" | "historial" | "ajustes">("compra");
 
   const [groupBy, setGroupBy] = useState<"category" | "store">("category");
 
   // Multi-store filter state
-  const [selectedStores, setSelectedStores] = useState<Set<StoreName>>(new Set());
+  const [selectedStores, setSelectedStores] = useState<Set<string>>(new Set());
   const [storeFilterOpen, setStoreFilterOpen] = useState(false);
 
   // Search & Item Form modal
@@ -171,10 +344,58 @@ function Index() {
   const [viewingReceiptImage, setViewingReceiptImage] = useState<string | null>(null);
 
   // Single expanded category (Accordion mode)
-  const [expandedCategory, setExpandedCategory] = useState<Category | null>(null);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   // Backup dialog
   const [backupOpen, setBackupOpen] = useState(false);
+
+  // Edit Icon dialog
+  const [editingIconTarget, setEditingIconTarget] = useState<{
+    type: "category" | "store";
+    name: string;
+    icon: string;
+  } | null>(null);
+
+  // Inputs for adding custom categories and stores in Ajustes
+  const [newCatInput, setNewCatInput] = useState("");
+  const [newCatIconInput, setNewCatIconInput] = useState("");
+  const [newStoreInput, setNewStoreInput] = useState("");
+  const [newStoreIconInput, setNewStoreIconInput] = useState("");
+
+
+  const getCategoryIcon = useCallback(
+    (cat: string) => {
+      if (store.categoryIcons && store.categoryIcons[cat]) return store.categoryIcons[cat];
+      if (CATEGORY_EMOJI[cat]) return CATEGORY_EMOJI[cat];
+      return "📦";
+    },
+    [store.categoryIcons],
+  );
+
+  const getStoreIcon = useCallback(
+    (st: string) => {
+      if (store.storeIcons && store.storeIcons[st]) return store.storeIcons[st];
+      if (STORE_BADGE_STYLE[st as StoreName]?.icon) return STORE_BADGE_STYLE[st as StoreName].icon;
+      return "🏪";
+    },
+    [store.storeIcons],
+  );
+
+  const allCategories = useMemo(() => {
+    const deleted = new Set(store.deletedCategories ?? []);
+    const set = new Set([...CATEGORIES, ...(store.customCategories ?? [])]);
+    return Array.from(set)
+      .filter((c) => !deleted.has(c))
+      .sort((a, b) => a.localeCompare(b, "es"));
+  }, [store.customCategories, store.deletedCategories]);
+
+  const allStores = useMemo(() => {
+    const deleted = new Set(store.deletedStores ?? []);
+    const set = new Set([...STORES, ...(store.customStores ?? [])]);
+    return Array.from(set)
+      .filter((s) => !deleted.has(s))
+      .sort((a, b) => a.localeCompare(b, "es"));
+  }, [store.customStores, store.deletedStores]);
 
 
   const listItems = useMemo(
@@ -213,17 +434,17 @@ function Index() {
 
   // Group pending items by Category
   const groupedByCategory = useMemo(() => {
-    const map = new Map<Category, typeof pending>();
+    const map = new Map<string, typeof pending>();
     for (const it of pending) {
       const arr = map.get(it.category) ?? [];
       arr.push(it);
       map.set(it.category, arr);
     }
-    return CATEGORIES.filter((c) => map.has(c)).map((c) => ({
+    return allCategories.filter((c) => map.has(c)).map((c) => ({
       category: c,
       items: (map.get(c) ?? []).sort((a, b) => a.name.localeCompare(b.name, "es")),
     }));
-  }, [pending]);
+  }, [pending, allCategories]);
 
   // Group pending items by Store
   const groupedByStore = useMemo(() => {
@@ -238,7 +459,7 @@ function Index() {
     const result: { storeKey: string; items: typeof pending }[] = [];
     
     // First active stores in order
-    for (const s of STORES) {
+    for (const s of allStores) {
       if (map.has(s)) {
         result.push({
           storeKey: s,
@@ -257,35 +478,33 @@ function Index() {
     }
 
     return result;
-  }, [pending]);
+  }, [pending, allStores]);
 
   const groupedCatalog = useMemo(() => {
-    const map = new Map<Category, typeof filteredCatalog>();
+    const map = new Map<string, typeof filteredCatalog>();
     for (const it of filteredCatalog) {
       const arr = map.get(it.category) ?? [];
       arr.push(it);
       map.set(it.category, arr);
     }
-    return CATEGORIES.filter((c) => map.has(c)).map((c) => ({
+    return allCategories.filter((c) => map.has(c)).map((c) => ({
       category: c,
       items: (map.get(c) ?? []).sort((a, b) => a.name.localeCompare(b.name, "es")),
     }));
-  }, [filteredCatalog]);
+  }, [filteredCatalog, allCategories]);
 
-  // Auto-expand category when searching
+
+  // Auto-expand first category when searching
   useEffect(() => {
     const q = search.trim();
-    if (q) {
-      if (groupedCatalog.length > 0) {
-        setExpandedCategory(groupedCatalog[0].category);
-      }
-    } else {
-      setExpandedCategory(null);
+    if (q && groupedCatalog.length > 0) {
+      setExpandedCategory(groupedCatalog[0].category);
     }
-  }, [search, groupedCatalog]);
+  }, [search]);
+
 
   // Accordion toggle handler: only 1 category open at a time
-  function toggleCategory(category: Category) {
+  function toggleCategory(category: string) {
     setExpandedCategory((prev) => (prev === category ? null : category));
   }
 
@@ -320,12 +539,13 @@ function Index() {
       addItem(
         name,
         category,
-        preferredStore === null ? undefined : preferredStore,
+        preferredStore ?? undefined,
         prices,
         note,
         image ?? undefined,
       );
     }
+
     setItemDialogOpen(false);
     setEditingItem(null);
   }
@@ -347,82 +567,48 @@ function Index() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24 text-foreground selection:bg-primary/20">
-      {/* ── HEADER ── */}
-      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-lg">
+    <div className="min-h-screen bg-background text-foreground pb-24 font-sans antialiased transition-colors duration-300">
+      {/* Header */}
+      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border/60 shadow-xs">
         <div className="mx-auto max-w-2xl px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-primary/80 grid place-items-center text-primary-foreground shadow-sm shadow-primary/30">
+            <div className="h-9 w-9 rounded-2xl bg-gradient-to-tr from-primary to-emerald-400 grid place-items-center text-primary-foreground shadow-sm">
               <ShoppingBasket className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-base font-bold leading-tight">Mi Lista de la Compra</h1>
-              <p className="text-xs text-muted-foreground">
-                {listItems.length === 0
-                  ? "Catálogo listo"
-                  : `${pending.length} pendientes · ${done.length} en carrito`}
+              <h1 className="text-base font-extrabold tracking-tight">Mi Lista de la Compra</h1>
+              <p className="text-[11px] text-muted-foreground font-medium">
+                {listItems.length} en la compra · {store.items.length} en catálogo
               </p>
             </div>
           </div>
 
-          {/* Right Header Actions */}
           <div className="flex items-center gap-2">
-            {/* Filter button */}
-            <button
-              type="button"
+            {/* Filter by Stores button */}
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setStoreFilterOpen(true)}
               className={cn(
-                "h-9 px-3 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 border flex items-center gap-1.5 shadow-sm",
+                "rounded-xl text-xs font-semibold h-9 px-3 gap-1.5 border-border/60 transition-all shadow-xs",
                 selectedStores.size > 0
                   ? "bg-primary/10 border-primary/40 text-primary"
-                  : "bg-card border-border/60 text-foreground hover:border-primary/30",
+                  : "bg-card text-muted-foreground hover:text-foreground",
               )}
             >
-              <Filter className="h-3.5 w-3.5 text-primary" />
-              <span>Tiendas</span>
-              {selectedStores.size > 0 && selectedStores.size < STORES.length && (
-                <Badge className="h-4.5 px-1.5 bg-primary text-primary-foreground text-[10px] rounded-full">
-                  {selectedStores.size}
-                </Badge>
-              )}
-            </button>
-
-            {totalItemsCount > 0 && (
-              <div className="relative h-9 w-9 grid place-items-center">
-                <svg className="h-9 w-9 -rotate-90" viewBox="0 0 36 36">
-                  <circle
-                    cx="18"
-                    cy="18"
-                    r="15"
-                    fill="none"
-                    stroke="currentColor"
-                    className="text-muted/60"
-                    strokeWidth="3"
-                  />
-                  <circle
-                    cx="18"
-                    cy="18"
-                    r="15"
-                    fill="none"
-                    stroke="currentColor"
-                    className="text-primary transition-all duration-500 ease-out"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeDasharray={`${progress * 0.942} 100`}
-                  />
-                </svg>
-                <span className="absolute inset-0 grid place-items-center text-[10px] font-bold text-foreground">
-                  {progress}%
-                </span>
-              </div>
-            )}
+              <Filter className="h-3.5 w-3.5" />
+              <span>
+                {selectedStores.size === 0
+                  ? "Todas las tiendas"
+                  : `${selectedStores.size} ${selectedStores.size === 1 ? "tienda" : "tiendas"}`}
+              </span>
+            </Button>
           </div>
         </div>
 
-
-        {/* ── ACTIVE STORE FILTERS CHIPS BAR ── */}
+        {/* Selected Store Badges strip */}
         <div className="mx-auto max-w-2xl px-4 pb-2.5 pt-0.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar flex-wrap">
-          {selectedStores.size === 0 || selectedStores.size === STORES.length ? (
+          {selectedStores.size === 0 || selectedStores.size === allStores.length ? (
             <Badge
               variant="outline"
               className="text-[11px] px-2.5 py-0.5 rounded-lg border-muted bg-muted/40 font-medium text-muted-foreground"
@@ -433,7 +619,7 @@ function Index() {
             <>
               <span className="text-[11px] text-muted-foreground font-medium mr-0.5">Filtrando:</span>
               {Array.from(selectedStores).map((s) => {
-                const badge = STORE_BADGE_STYLE[s];
+                const badge = (s && STORE_BADGE_STYLE[s as StoreName]) || { icon: "🏪", bg: "bg-muted", text: "text-muted-foreground" };
                 return (
                   <Badge
                     key={s}
@@ -453,7 +639,7 @@ function Index() {
                         next.delete(s);
                         setSelectedStores(next);
                       }}
-                      className="hover:opacity-75 p-0.5 rounded ml-0.5"
+                      className="ml-1 hover:opacity-75"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -483,38 +669,55 @@ function Index() {
             <BasketCalculator items={listItems} />
 
             {listItems.length > 0 && (
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  Organizar vista por:
-                </span>
-                <div className="inline-flex rounded-lg bg-muted p-1 gap-1 border border-border/40">
-                  <button
-                    type="button"
-                    onClick={() => setGroupBy("category")}
-                    className={cn(
-                      "px-2.5 py-1 text-xs font-semibold rounded-md transition-all",
-                      groupBy === "category"
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    🥦 Categoría
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setGroupBy("store")}
-                    className={cn(
-                      "px-2.5 py-1 text-xs font-semibold rounded-md transition-all",
-                      groupBy === "store"
-                        ? "bg-background text-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    🛒 Supermercado
-                  </button>
+              <div className="flex items-center justify-between pt-1 gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground hidden sm:inline">
+                    Organizar por:
+                  </span>
+                  <div className="inline-flex rounded-lg bg-muted p-1 gap-1 border border-border/40">
+                    <button
+                      type="button"
+                      onClick={() => setGroupBy("category")}
+                      className={cn(
+                        "px-2.5 py-1 text-xs font-semibold rounded-md transition-all",
+                        groupBy === "category"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      🥦 Categoría
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setGroupBy("store")}
+                      className={cn(
+                        "px-2.5 py-1 text-xs font-semibold rounded-md transition-all",
+                        groupBy === "store"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      🛒 Supermercado
+                    </button>
+                  </div>
                 </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (confirm("¿Vaciar la lista de la compra de hoy? (Los productos seguirán guardados en el catálogo)")) {
+                      clearList();
+                    }
+                  }}
+                  className="rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 border-destructive/30 h-8 gap-1.5 px-3"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span>Vaciar compra</span>
+                </Button>
               </div>
             )}
+
 
             {listItems.length === 0 ? (
               <EmptyState
@@ -529,7 +732,7 @@ function Index() {
                 {groupBy === "category" &&
                   groupedByCategory.map(({ category, items }) => (
                     <section key={category} className="animate-in fade-in-0 duration-300">
-                      <CategoryTitle emoji={CATEGORY_EMOJI[category]} count={items.length}>
+                      <CategoryTitle icon={getCategoryIcon(category)} count={items.length}>
                         {category}
                       </CategoryTitle>
                       <ul className="space-y-2">
@@ -550,9 +753,11 @@ function Index() {
                 {groupBy === "store" &&
                   groupedByStore.map(({ storeKey, items }) => {
                     const isKnownStore = storeKey !== "Sin supermercado asignado";
-                    const badge = isKnownStore
-                      ? STORE_BADGE_STYLE[storeKey as StoreName]
-                      : { icon: "📦", bg: "bg-muted", text: "text-muted-foreground" };
+                    const badge = (isKnownStore && STORE_BADGE_STYLE[storeKey as StoreName]) || {
+                      icon: "🏪",
+                      bg: "bg-muted",
+                      text: "text-muted-foreground",
+                    };
 
                     return (
                       <section key={storeKey} className="animate-in fade-in-0 duration-300">
@@ -565,11 +770,12 @@ function Index() {
                               badge.text,
                             )}
                           >
-                            <span>{badge.icon}</span>
+                            <DynamicIcon icon={getStoreIcon(storeKey)} fallback="🏪" className="h-4 w-4 object-cover rounded-md" />
                             <span>{storeKey}</span>
                             <span className="opacity-80">({items.length})</span>
                           </Badge>
                         </div>
+
                         <ul className="space-y-2">
                           {items.map((it) => (
                             <ItemRow
@@ -689,12 +895,15 @@ function Index() {
                   >
                     <CollapsibleTrigger className="w-full group">
                       <div className="flex items-center gap-2.5 rounded-xl bg-card border border-border/60 px-3.5 py-2.5 shadow-sm hover:shadow-md hover:border-primary/25 transition-all duration-200 cursor-pointer">
-                        <span className="text-lg leading-none" aria-hidden>
-                          {CATEGORY_EMOJI[category]}
-                        </span>
+                        <DynamicIcon
+                          icon={getCategoryIcon(category)}
+                          fallback="📦"
+                          className="h-5 w-5 object-cover rounded-md"
+                        />
                         <span className="flex-1 text-left text-sm font-semibold text-foreground">
                           {category}
                         </span>
+
                         {inListCount > 0 && (
                           <Badge className="text-[10px] px-1.5 py-0 h-5 bg-primary/15 text-primary border-0 font-semibold">
                             {inListCount} en lista
@@ -951,8 +1160,245 @@ function Index() {
 
           {/* ── AJUSTES ── */}
           <TabsContent value="ajustes" className="space-y-4 mt-4 animate-in fade-in-0 duration-300">
+            {/* Gestión de Categorías y Supermercados Personalizados */}
+            <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-4 shadow-sm">
+              <h2 className="text-sm font-bold flex items-center gap-2 text-foreground">
+                <Tag className="h-4 w-4 text-primary" />
+                Categorías y Supermercados Personalizados
+              </h2>
+
+              {/* Añadir Categoría */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold flex items-center justify-between">
+                  <span>Añadir nueva categoría</span>
+                  <span className="text-[10px] text-muted-foreground font-normal">
+                    {allCategories.length} categorías activas
+                  </span>
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Icono (ej: 🍦)"
+                    value={newCatIconInput}
+                    onChange={(e) => setNewCatIconInput(e.target.value)}
+                    className="w-24 rounded-xl text-xs text-center"
+                  />
+                  <Input
+                    placeholder="Ej: Congelados, Farmacia, Bebé..."
+                    value={newCatInput}
+                    onChange={(e) => setNewCatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && newCatInput.trim()) {
+                        addCustomCategory(newCatInput, newCatIconInput);
+                        setNewCatInput("");
+                        setNewCatIconInput("");
+                      }
+                    }}
+                    className="rounded-xl text-xs flex-1"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (newCatInput.trim()) {
+                        addCustomCategory(newCatInput, newCatIconInput);
+                        setNewCatInput("");
+                        setNewCatIconInput("");
+                      }
+                    }}
+                    disabled={!newCatInput.trim()}
+                    className="rounded-xl text-xs shrink-0 bg-primary font-semibold"
+                  >
+                    <Plus className="h-3.5 w-3.5 mr-1" />
+                    Añadir
+                  </Button>
+                </div>
+
+                {/* Lista Completa de Categorías Activas */}
+                <div className="flex flex-wrap gap-1.5 pt-2">
+                  {allCategories.map((cat) => {
+                    const count = store.items.filter((i) => i.category === cat).length;
+                    const icon = getCategoryIcon(cat);
+                    return (
+                      <span
+                        key={cat}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-card text-xs font-semibold border border-border/60 shadow-xs"
+                      >
+                        <DynamicIcon icon={icon} fallback="📦" className="h-4.5 w-4.5 object-cover rounded-md" />
+                        <span>{cat}</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          ({count} p.)
+                        </span>
+                        
+                        {/* Botón editar icono (Emoji o Foto) */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingIconTarget({
+                              type: "category",
+                              name: cat,
+                              icon: getCategoryIcon(cat),
+                            });
+                          }}
+                          title="Cambiar icono (Emoji o Imagen)"
+                          className="text-muted-foreground/60 hover:text-foreground p-0.5 rounded hover:bg-muted ml-0.5"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </button>
+
+                        {/* Botón eliminar */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (count > 0) {
+                              alert(
+                                `No se puede eliminar la categoría "${cat}" porque tiene ${count} producto(s) vinculado(s) en el catálogo.`,
+                              );
+                            } else if (confirm(`¿Eliminar la categoría "${cat}"?`)) {
+                              removeCategory(cat);
+                            }
+                          }}
+                          title={
+                            count > 0
+                              ? `Tiene ${count} productos ligados`
+                              : `Eliminar categoría ${cat}`
+                          }
+                          className={cn(
+                            "p-0.5 rounded hover:bg-destructive/10 transition-colors",
+                            count > 0
+                              ? "text-muted-foreground/30 cursor-not-allowed"
+                              : "text-muted-foreground hover:text-destructive",
+                          )}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Añadir Supermercado */}
+              <div className="space-y-2 pt-3 border-t border-border/40">
+                <Label className="text-xs font-semibold flex items-center justify-between">
+                  <span>Añadir nuevo supermercado / tienda</span>
+                  <span className="text-[10px] text-muted-foreground font-normal">
+                    {allStores.length} tiendas activas
+                  </span>
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Icono (ej: 🏪)"
+                    value={newStoreIconInput}
+                    onChange={(e) => setNewStoreIconInput(e.target.value)}
+                    className="w-24 rounded-xl text-xs text-center"
+                  />
+                  <Input
+                    placeholder="Ej: AhorraMas, Hipercor, Coviran..."
+                    value={newStoreInput}
+                    onChange={(e) => setNewStoreInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && newStoreInput.trim()) {
+                        addCustomStore(newStoreInput, newStoreIconInput);
+                        setNewStoreInput("");
+                        setNewStoreIconInput("");
+                      }
+                    }}
+                    className="rounded-xl text-xs flex-1"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (newStoreInput.trim()) {
+                        addCustomStore(newStoreInput, newStoreIconInput);
+                        setNewStoreInput("");
+                        setNewStoreIconInput("");
+                      }
+                    }}
+                    disabled={!newStoreInput.trim()}
+                    className="rounded-xl text-xs shrink-0 bg-primary font-semibold"
+                  >
+                    <Plus className="h-3.5 w-3.5 mr-1" />
+                    Añadir
+                  </Button>
+                </div>
+
+                {/* Lista Completa de Supermercados Activos */}
+                <div className="flex flex-wrap gap-1.5 pt-2">
+                  {allStores.map((st) => {
+                    const count = store.items.filter(
+                      (i) =>
+                        i.preferredStore === st ||
+                        (i.prices &&
+                          i.prices[st as StoreName] !== undefined &&
+                          i.prices[st as StoreName]! > 0),
+                    ).length;
+                    const icon = getStoreIcon(st);
+
+                    return (
+                      <span
+                        key={st}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-card text-xs font-semibold border border-border/60 shadow-xs"
+                      >
+                        <DynamicIcon icon={icon} fallback="🏪" className="h-4.5 w-4.5 object-cover rounded-md" />
+                        <span>{st}</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          ({count} p.)
+                        </span>
+
+                        {/* Botón editar icono (Emoji o Foto) */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingIconTarget({
+                              type: "store",
+                              name: st,
+                              icon: getStoreIcon(st),
+                            });
+                          }}
+                          title="Cambiar icono (Emoji o Imagen)"
+                          className="text-muted-foreground/60 hover:text-foreground p-0.5 rounded hover:bg-muted ml-0.5"
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </button>
+
+                        {/* Botón eliminar */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (count > 0) {
+                              alert(
+                                `No se puede eliminar la tienda "${st}" porque tiene ${count} producto(s) vinculado(s) en el catálogo.`,
+                              );
+                            } else if (confirm(`¿Eliminar la tienda "${st}"?`)) {
+                              removeStore(st);
+                            }
+                          }}
+                          title={
+                            count > 0
+                              ? `Tiene ${count} productos ligados`
+                              : `Eliminar tienda ${st}`
+                          }
+                          className={cn(
+                            "p-0.5 rounded hover:bg-destructive/10 transition-colors",
+                            count > 0
+                              ? "text-muted-foreground/30 cursor-not-allowed"
+                              : "text-muted-foreground hover:text-destructive",
+                          )}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+
+
+            </div>
+
+
             {/* Seccion Copia de Seguridad y Catálogo */}
             <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3 shadow-sm">
+
               <h2 className="text-sm font-bold flex items-center gap-2 text-foreground">
                 <HardDrive className="h-4 w-4 text-primary" />
                 Copia de seguridad y Catálogo
@@ -1143,18 +1589,29 @@ function Index() {
       {/* Store Filter Dialog */}
       <StoreFilterDialog
         open={storeFilterOpen}
+        allStores={allStores}
+        getStoreIcon={getStoreIcon}
         onClose={() => setStoreFilterOpen(false)}
         selectedStores={selectedStores}
         onChangeSelectedStores={setSelectedStores}
       />
 
+
       {/* Item Form Dialog (Add / Edit Product) */}
       <ItemFormDialog
         open={itemDialogOpen}
         item={editingItem}
+        allCategories={allCategories}
+        allStores={allStores}
+        getCategoryIcon={getCategoryIcon}
+        getStoreIcon={getStoreIcon}
+        onAddCategory={addCustomCategory}
+        onAddStore={addCustomStore}
         onClose={() => setItemDialogOpen(false)}
         onSave={handleSaveItem}
       />
+
+
 
       {/* Finish Trip Dialog */}
       <FinishTripDialog
@@ -1178,6 +1635,26 @@ function Index() {
         onRestore={restoreStore}
         onResetToSeed={resetToSeedCatalog}
       />
+
+      {/* Edit Category or Store Dialog (name + icon) */}
+      <EditCategoryOrStoreDialog
+        open={!!editingIconTarget}
+        type={editingIconTarget?.type ?? "category"}
+        currentName={editingIconTarget?.name ?? ""}
+        currentIcon={editingIconTarget?.icon ?? ""}
+        onClose={() => setEditingIconTarget(null)}
+        onSave={(newName, newIcon) => {
+          if (!editingIconTarget) return;
+          const oldName = editingIconTarget.name;
+          if (editingIconTarget.type === "category") {
+            renameCategory(oldName, newName, newIcon);
+          } else {
+            renameStore(oldName, newName, newIcon);
+          }
+        }}
+      />
+
+
     </div>
   );
 }
@@ -1187,17 +1664,21 @@ function Index() {
 function StoreFilterDialog({
   open,
   onClose,
+  allStores,
+  getStoreIcon,
   selectedStores,
   onChangeSelectedStores,
 }: {
   open: boolean;
   onClose: () => void;
-  selectedStores: Set<StoreName>;
-  onChangeSelectedStores: (stores: Set<StoreName>) => void;
+  allStores: string[];
+  getStoreIcon: (store: string) => string;
+  selectedStores: Set<string>;
+  onChangeSelectedStores: (stores: Set<string>) => void;
 }) {
-  const isAll = selectedStores.size === 0 || selectedStores.size === STORES.length;
+  const isAll = selectedStores.size === 0 || selectedStores.size === allStores.length;
 
-  function toggleStore(s: StoreName) {
+  function toggleStore(s: string) {
     const next = new Set(selectedStores);
     if (next.has(s)) {
       next.delete(s);
@@ -1244,8 +1725,8 @@ function StoreFilterDialog({
           </button>
 
           <div className="border-t border-border/50 my-2 pt-2 space-y-1.5 max-h-[50vh] overflow-y-auto pr-1">
-            {STORES.map((s) => {
-              const badge = STORE_BADGE_STYLE[s];
+            {allStores.map((s) => {
+              const icon = getStoreIcon(s);
               const isChecked = !isAll && selectedStores.has(s);
               return (
                 <button
@@ -1260,7 +1741,7 @@ function StoreFilterDialog({
                   )}
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="text-base">{badge.icon}</span>
+                    <span className="text-base">{icon}</span>
                     <span className="font-semibold">{s}</span>
                   </div>
                   <div
@@ -1279,23 +1760,13 @@ function StoreFilterDialog({
           </div>
         </div>
 
-        <DialogFooter className="flex-row gap-2 sm:justify-between pt-1">
+
+        <DialogFooter className="pt-2">
           <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={selectAll}
-            className="rounded-xl text-xs flex-1"
-          >
-            Limpiar filtro
-          </Button>
-          <Button
-            type="button"
-            size="sm"
             onClick={onClose}
-            className="rounded-xl text-xs px-6 flex-1 bg-primary text-primary-foreground"
+            className="w-full rounded-xl bg-primary text-primary-foreground font-semibold"
           >
-            Aplicar
+            Aplicar Filtro
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1303,15 +1774,28 @@ function StoreFilterDialog({
   );
 }
 
+
 /* ── ITEM FORM DIALOG (Add / Edit Product) ── */
 function ItemFormDialog({
   open,
   item,
+  allCategories,
+  allStores,
+  getCategoryIcon,
+  getStoreIcon,
+  onAddCategory,
+  onAddStore,
   onClose,
   onSave,
 }: {
   open: boolean;
   item: Item | null;
+  allCategories: string[];
+  allStores: string[];
+  getCategoryIcon: (cat: string) => string;
+  getStoreIcon: (store: string) => string;
+  onAddCategory: (name: string) => void;
+  onAddStore: (name: string) => void;
   onClose: () => void;
   onSave: (
     name: string,
@@ -1323,15 +1807,26 @@ function ItemFormDialog({
   ) => void;
 }) {
   const [name, setName] = useState("");
-  const [category, setCategory] = useState<Category>("Despensa");
-  const [preferredStore, setPreferredStore] = useState<StoreName | "NONE">("NONE");
-  const [prices, setPrices] = useState<Partial<Record<StoreName, string>>>({});
+  const [category, setCategory] = useState<string>("Despensa");
+  const [preferredStore, setPreferredStore] = useState<string>("NONE");
+  const [prices, setPrices] = useState<Record<string, string>>({});
   const [note, setNote] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [showAddCategoryInput, setShowAddCategoryInput] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+
+  const [showAddStoreInput, setShowAddStoreInput] = useState(false);
+  const [newStoreName, setNewStoreName] = useState("");
+
   useEffect(() => {
     if (open) {
+      setShowAddCategoryInput(false);
+      setShowAddStoreInput(false);
+      setNewCatName("");
+      setNewStoreName("");
+
       if (item) {
         setName(item.name);
         setCategory(item.category);
@@ -1339,23 +1834,23 @@ function ItemFormDialog({
         setNote(item.note ?? "");
         setImage(item.image ?? null);
 
-        const strPrices: Partial<Record<StoreName, string>> = {};
+        const strPrices: Record<string, string> = {};
         if (item.prices) {
           for (const [k, v] of Object.entries(item.prices)) {
-            if (v !== undefined) strPrices[k as StoreName] = String(v);
+            if (v !== undefined) strPrices[k] = String(v);
           }
         }
         setPrices(strPrices);
       } else {
         setName("");
-        setCategory("Despensa");
+        setCategory(allCategories[0] || "Despensa");
         setPreferredStore("NONE");
         setPrices({});
         setNote("");
         setImage(null);
       }
     }
-  }, [item, open]);
+  }, [item, open, allCategories]);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -1367,6 +1862,24 @@ function ItemFormDialog({
       // ignore
     }
     e.target.value = "";
+  }
+
+  function handleCreateCategoryInline() {
+    const trimmed = newCatName.trim();
+    if (!trimmed) return;
+    onAddCategory(trimmed);
+    setCategory(trimmed);
+    setNewCatName("");
+    setShowAddCategoryInput(false);
+  }
+
+  function handleCreateStoreInline() {
+    const trimmed = newStoreName.trim();
+    if (!trimmed) return;
+    onAddStore(trimmed);
+    setPreferredStore(trimmed);
+    setNewStoreName("");
+    setShowAddStoreInput(false);
   }
 
   function handleSave() {
@@ -1384,8 +1897,8 @@ function ItemFormDialog({
 
     onSave(
       name,
-      category,
-      preferredStore === "NONE" ? null : preferredStore,
+      category as Category,
+      preferredStore === "NONE" ? null : (preferredStore as StoreName),
       parsedPrices,
       note.trim(),
       image,
@@ -1480,41 +1993,102 @@ function ItemFormDialog({
           </div>
 
           {/* Category & Preferred Store */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Categoría */}
             <div className="space-y-1.5">
-              <Label>Categoría</Label>
-              <Select value={category} onValueChange={(v) => setCategory(v as Category)}>
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {CATEGORY_EMOJI[c]} {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center justify-between">
+                <Label>Categoría</Label>
+                <button
+                  type="button"
+                  onClick={() => setShowAddCategoryInput(!showAddCategoryInput)}
+                  className="text-[11px] font-semibold text-primary hover:underline"
+                >
+                  + Nueva
+                </button>
+              </div>
+
+              {showAddCategoryInput ? (
+                <div className="flex gap-1">
+                  <Input
+                    placeholder="Categoría..."
+                    value={newCatName}
+                    onChange={(e) => setNewCatName(e.target.value)}
+                    className="h-9 text-xs rounded-xl"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleCreateCategoryInline}
+                    className="h-9 text-xs rounded-xl px-2.5 bg-primary"
+                  >
+                    OK
+                  </Button>
+                </div>
+              ) : (
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allCategories.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {getCategoryIcon(c)} {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
+            {/* Tienda Preferida */}
             <div className="space-y-1.5">
-              <Label>Tienda preferida</Label>
-              <Select
-                value={preferredStore}
-                onValueChange={(v) => setPreferredStore(v as StoreName | "NONE")}
-              >
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Sin tienda" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="NONE">Sin preferencia</SelectItem>
-                  {STORES.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {STORE_BADGE_STYLE[s].icon} {s}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center justify-between">
+                <Label>Tienda preferida</Label>
+                <button
+                  type="button"
+                  onClick={() => setShowAddStoreInput(!showAddStoreInput)}
+                  className="text-[11px] font-semibold text-primary hover:underline"
+                >
+                  + Nueva
+                </button>
+              </div>
+
+              {showAddStoreInput ? (
+                <div className="flex gap-1">
+                  <Input
+                    placeholder="Tienda..."
+                    value={newStoreName}
+                    onChange={(e) => setNewStoreName(e.target.value)}
+                    className="h-9 text-xs rounded-xl"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleCreateStoreInline}
+                    className="h-9 text-xs rounded-xl px-2.5 bg-primary"
+                  >
+                    OK
+                  </Button>
+                </div>
+              ) : (
+                <Select
+                  value={preferredStore}
+                  onValueChange={setPreferredStore}
+                >
+                  <SelectTrigger className="rounded-xl">
+                    <SelectValue placeholder="Sin tienda" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="NONE">Sin preferencia</SelectItem>
+                    {allStores.map((s) => {
+                      const icon = getStoreIcon(s);
+                      return (
+                        <SelectItem key={s} value={s}>
+                          {icon} {s}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
 
@@ -1538,12 +2112,13 @@ function ItemFormDialog({
               Precios conocidos por supermercado (€)
             </Label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {STORES.map((s) => {
-                const badge = STORE_BADGE_STYLE[s];
+              {allStores.map((s) => {
+                const icon = getStoreIcon(s);
                 return (
                   <div key={s} className="space-y-1 bg-muted/40 p-2 rounded-xl border border-border/40">
                     <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-                      {badge.icon} {s}
+                      <span>{icon}</span>
+                      <span>{s}</span>
                     </span>
                     <Input
                       type="number"
@@ -1562,6 +2137,8 @@ function ItemFormDialog({
             </div>
           </div>
         </div>
+
+
 
         <DialogFooter className="pt-2">
           <Button variant="outline" onClick={onClose} className="rounded-xl">
@@ -1676,21 +2253,22 @@ function ItemRow({
 /* ── Category Title Component ── */
 function CategoryTitle({
   children,
-  emoji,
+  icon,
   count,
 }: {
   children: React.ReactNode;
-  emoji: string;
+  icon?: string;
   count: number;
 }) {
   return (
     <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 mb-2">
-      <span className="text-sm normal-case">{emoji}</span>
+      <DynamicIcon icon={icon} fallback="📦" className="h-4.5 w-4.5 object-cover rounded-md" />
       <span>{children}</span>
       <span className="text-[10px] text-muted-foreground/70 font-normal">({count})</span>
     </h2>
   );
 }
+
 
 /* ── Empty State Component ── */
 function EmptyState({
