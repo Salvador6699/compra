@@ -2,15 +2,18 @@ import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { STORE_BADGE_STYLE, STORES, type StoreName } from "@/lib/shopping-data";
+import { STORES, type StoreName } from "@/lib/shopping-data";
 import type { Item } from "@/lib/use-shopping-store";
 import { ChevronDown, ChevronUp, Lightbulb, Sparkles, Store, TrendingDown } from "lucide-react";
+import { DynamicIcon } from "@/components/dynamic-icon";
 
 interface BasketCalculatorProps {
   items: Item[];
+  allStores: string[];
+  getStoreIcon: (st: string) => string;
 }
 
-export function BasketCalculator({ items }: BasketCalculatorProps) {
+export function BasketCalculator({ items, allStores, getStoreIcon }: BasketCalculatorProps) {
   const [openDetails, setOpenDetails] = useState(false);
 
   // Filter only items in list that are pending (not bought)
@@ -20,13 +23,13 @@ export function BasketCalculator({ items }: BasketCalculatorProps) {
   const storeStats = useMemo(() => {
     if (pendingItems.length === 0) return [];
 
-    return STORES.map((storeName) => {
+    return allStores.map((storeName) => {
       let total = 0;
       let itemsWithPriceCount = 0;
       const itemDetails: { name: string; price: number }[] = [];
 
       for (const item of pendingItems) {
-        const price = item.prices?.[storeName];
+        const price = item.prices?.[storeName as StoreName];
         if (price !== undefined && price > 0) {
           total += price;
           itemsWithPriceCount++;
@@ -61,12 +64,12 @@ export function BasketCalculator({ items }: BasketCalculatorProps) {
       let minPrice: number | null = null;
       let bestStore: StoreName | null = null;
 
-      for (const storeName of STORES) {
-        const p = item.prices[storeName];
+      for (const storeName of allStores) {
+        const p = item.prices[storeName as StoreName];
         if (p !== undefined && p > 0) {
           if (minPrice === null || p < minPrice) {
             minPrice = p;
-            bestStore = storeName;
+            bestStore = storeName as StoreName;
           }
         }
       }
@@ -145,7 +148,7 @@ export function BasketCalculator({ items }: BasketCalculatorProps) {
           <div className="rounded-xl border bg-card p-3.5 shadow-sm space-y-1.5">
             <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
               <span>Supermercado más barato (1 sola tienda)</span>
-              <span className="text-base">{STORE_BADGE_STYLE[winner.storeName].icon}</span>
+              <DynamicIcon icon={getStoreIcon(winner.storeName)} fallback="🏪" className="h-5 w-5" />
             </div>
             <div className="flex items-baseline justify-between">
               <span className="text-lg font-bold text-foreground">{winner.storeName}</span>
@@ -200,7 +203,7 @@ export function BasketCalculator({ items }: BasketCalculatorProps) {
           <CollapsibleContent className="mt-3 space-y-2">
             {storeStats.map((stat, idx) => {
               const diffVsWinner = stat.total - winner.total;
-              const badgeStyle = STORE_BADGE_STYLE[stat.storeName];
+              const icon = getStoreIcon(stat.storeName);
 
               return (
                 <div
@@ -208,7 +211,7 @@ export function BasketCalculator({ items }: BasketCalculatorProps) {
                   className="flex items-center justify-between rounded-lg border bg-card px-3 py-2 text-sm"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-base">{badgeStyle.icon}</span>
+                    <DynamicIcon icon={icon} fallback="🏪" className="h-4 w-4" />
                     <span className="font-medium text-foreground">{stat.storeName}</span>
                     {idx === 0 && (
                       <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 border-emerald-500/30">

@@ -1,0 +1,22 @@
+﻿<!DOCTYPE html>
+<html>
+<head><title>Inject Trips</title></head>
+<body>
+<h2>Inyectando viajes en shopping-app:v4...</h2>
+<pre id="out"></pre>
+<script>
+const STORAGE_KEY = "shopping-app:v4";
+function makeId() { return Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+const trips = [{"id":"x","date":"2026-05-01T12:09:00.000Z","storeName":"Eroski","storeTotals":{"Eroski":3.49},"grandTotal":3.49,"note":"Eroski City Alzira","items":[{"name":"Huevos","category":"Lacteos y huevos","preferredStore":"Eroski","price":3.49}]},{"id":"x","date":"2026-05-02T11:49:00.000Z","storeName":"Family Cash","storeTotals":{"Family Cash":82.17},"grandTotal":82.17,"items":[{"name":"Agua","category":"Bebidas","preferredStore":"Family Cash","price":0.70},{"name":"Refresco de pina","category":"Bebidas","preferredStore":"Family Cash","price":1.69},{"name":"Leche desnatada","category":"Lacteos y huevos","preferredStore":"Family Cash","price":1.45},{"name":"Humedo gatos Felix","category":"Mascotas","preferredStore":"Family Cash","price":6.99},{"name":"Arena para gatos","category":"Mascotas","preferredStore":"Family Cash","price":1.65},{"name":"Espirales vegetales","category":"Despensa","preferredStore":"Family Cash","price":0.95},{"name":"Macarrones","category":"Despensa","preferredStore":"Family Cash","price":1.15},{"name":"Humedo gatos Felix","category":"Mascotas","preferredStore":"Family Cash","price":2.79},{"name":"Huevos","category":"Lacteos y huevos","preferredStore":"Family Cash","price":4.99},{"name":"Pienso gatos Catisfacti","category":"Mascotas","preferredStore":"Family Cash","price":1.75},{"name":"Mortadela con aceitunas","category":"Carne y embutidos","preferredStore":"Family Cash","price":1.25},{"name":"Aceitunas rellenas","category":"Despensa","preferredStore":"Family Cash","price":2.99},{"name":"Atun en lata","category":"Despensa","preferredStore":"Family Cash","price":2.59},{"name":"Azucar","category":"Despensa","preferredStore":"Family Cash","price":0.89},{"name":"Guanciale","category":"Carne y embutidos","preferredStore":"Family Cash","price":1.99},{"name":"Queso para untar finas hierbas","category":"Lacteos y huevos","preferredStore":"Family Cash","price":1.75},{"name":"Suavizante ropa","category":"Hogar y limpieza","preferredStore":"Family Cash","price":2.09},{"name":"Nestea maracuya","category":"Bebidas","preferredStore":"Family Cash","price":0.89},{"name":"Zumo con leche","category":"Bebidas","preferredStore":"Family Cash","price":1.29},{"name":"Tomate triturado","category":"Despensa","preferredStore":"Family Cash","price":0.55}]}];
+trips.forEach(t => { t.id = makeId(); });
+try {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  let st = {};
+  try { st = JSON.parse(raw) || {}; } catch(e2){}
+  st.trips = [...(Array.isArray(st.trips)?st.trips:[]), ...trips];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(st));
+  document.getElementById('out').textContent = 'OK: ' + trips.length + ' trips injected. Total: ' + st.trips.length;
+} catch(e) { document.getElementById('out').textContent = 'ERR: ' + e; }
+</script>
+</body>
+</html>

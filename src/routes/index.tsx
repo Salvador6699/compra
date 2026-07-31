@@ -32,7 +32,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-/** Helper to compress uploaded images to max 400px width JPEG to conserve LocalStorage space */
+import { DynamicIcon } from "@/components/dynamic-icon";
+
+/** Helper to compress uploaded images to max 400px width WebP to conserve LocalStorage space */
 function compressImage(file: File, maxWidth = 400, quality = 0.8): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -52,7 +54,7 @@ function compressImage(file: File, maxWidth = 400, quality = 0.8): Promise<strin
         canvas.height = height;
         const ctx = canvas.getContext("2d");
         ctx?.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", quality));
+        resolve(canvas.toDataURL("image/webp", quality));
       };
       img.onerror = reject;
       img.src = e.target?.result as string;
@@ -118,34 +120,6 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-/* ── Helper component to render an Emoji or a resized Custom Image Icon ── */
-function DynamicIcon({
-  icon,
-  fallback = "📦",
-  className = "h-4 w-4 rounded object-cover shrink-0 inline-block",
-}: {
-  icon?: string;
-  fallback?: string;
-  className?: string;
-}) {
-  if (!icon) return <span className="text-base leading-none">{fallback}</span>;
-  const isImg =
-    icon.startsWith("data:image/") ||
-    icon.startsWith("http://") ||
-    icon.startsWith("https://") ||
-    icon.startsWith("blob:") ||
-    icon.length > 30;
-  if (isImg) {
-    return (
-      <img
-        src={icon}
-        alt=""
-        className={cn("object-cover rounded-md shrink-0 inline-block align-middle", className)}
-      />
-    );
-  }
-  return <span className="text-base leading-none inline-block align-middle">{icon}</span>;
-}
 
 /* ── EDIT CATEGORY OR STORE DIALOG (Name & Icon: Emoji or Image Upload) ── */
 function EditCategoryOrStoreDialog({
@@ -666,7 +640,7 @@ function Index() {
           {/* ── COMPRA DE HOY ── */}
           <TabsContent value="compra" className="space-y-4 mt-4">
             {/* Basket Comparator Card */}
-            <BasketCalculator items={listItems} />
+            <BasketCalculator items={listItems} allStores={allStores} getStoreIcon={getStoreIcon} />
 
             {listItems.length > 0 && (
               <div className="flex items-center justify-between pt-1 gap-2 flex-wrap">
@@ -1620,6 +1594,8 @@ function Index() {
         onClose={() => setFinishTripModalOpen(false)}
         boughtItems={done}
         onSaveTrip={saveCompletedTrip}
+        allStores={allStores}
+        getStoreIcon={getStoreIcon}
       />
 
       {/* Full Ticket Receipt Viewer */}
@@ -2083,7 +2059,10 @@ function ItemFormDialog({
                       const icon = getStoreIcon(s);
                       return (
                         <SelectItem key={s} value={s}>
-                          {icon} {s}
+                          <div className="flex items-center gap-1.5">
+                            <DynamicIcon icon={icon} fallback="🏪" className="h-4 w-4" />
+                            <span>{s}</span>
+                          </div>
                         </SelectItem>
                       );
                     })}
@@ -2118,7 +2097,7 @@ function ItemFormDialog({
                 return (
                   <div key={s} className="space-y-1 bg-muted/40 p-2 rounded-xl border border-border/40">
                     <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-                      <span>{icon}</span>
+                      <DynamicIcon icon={icon} fallback="🏪" className="h-3.5 w-3.5" />
                       <span>{s}</span>
                     </span>
                     <Input
@@ -2544,11 +2523,15 @@ function FinishTripDialog({
   onClose,
   boughtItems,
   onSaveTrip,
+  allStores,
+  getStoreIcon,
 }: {
   open: boolean;
   onClose: () => void;
   boughtItems: Item[];
   onSaveTrip: (tripData: Omit<CompletedTrip, "id" | "date">) => void;
+  allStores: string[];
+  getStoreIcon: (st: string) => string;
 }) {
   const [storeName, setStoreName] = useState<StoreName | "Varios">("Mercadona");
   const [receiptImage, setReceiptImage] = useState<string | null>(null);
@@ -2667,11 +2650,17 @@ function FinishTripDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Varios">🛒 Varios supermercados</SelectItem>
-                {STORES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {STORE_BADGE_STYLE[s].icon} {s}
-                  </SelectItem>
-                ))}
+                {allStores.map((s) => {
+                  const icon = getStoreIcon(s);
+                  return (
+                    <SelectItem key={s} value={s}>
+                      <div className="flex items-center gap-1.5">
+                        <DynamicIcon icon={icon} fallback="🏪" className="h-4 w-4" />
+                        <span>{s}</span>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>

@@ -1055,5 +1055,28 @@ export const BASE_CATALOG_WITH_PRICES: BaseCatalogItem[] = [
     "name": "Pimiento congelado variado",
     "category": "Platos preparados",
     "preferredStore": "Mercadona"
+  },
+  {
+    "name": "Mini empanadillas de queso",
+    "category": "Snacks y dulces",
+    "preferredStore": "Consum",
+    "prices": {
+      "Consum": 1.99
+    }
+  },
+  {
+    "name": "Jamón serrano",
+    "category": "Carne y embutidos",
+    "preferredStore": "Mercadona"
+  },
+  {
+    "name": "Toallitas de baño",
+    "category": "Cuidado personal",
+    "preferredStore": "Family Cash"
+  },
+  {
+    "name": "Queso en lonchas",
+    "category": "Lácteos y huevos",
+    "preferredStore": "Mercadona"
   }
 ];

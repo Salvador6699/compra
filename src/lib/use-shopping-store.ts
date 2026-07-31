@@ -61,7 +61,7 @@ function seedStore(): Store {
       id: makeId(),
       name: s.name,
       category: s.category,
-      inList: true,
+      inList: false,
       bought: false,
       preferredStore: s.preferredStore,
       prices: s.prices ?? {},
