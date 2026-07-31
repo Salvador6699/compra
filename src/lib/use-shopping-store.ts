@@ -49,6 +49,8 @@ export type Store = {
   storeIcons?: Record<string, string>;
   deletedCategories?: string[];
   deletedStores?: string[];
+  syncUrl?: string;
+  lastSyncDate?: string;
 };
 
 function makeId() {
@@ -73,6 +75,7 @@ function seedStore(): Store {
     storeIcons: {},
     deletedCategories: [],
     deletedStores: [],
+    syncUrl: "http://plantr753:zGTk9J8N@www.listacompra.es.mialias.net/get_prices.php",
   };
 }
 
@@ -140,6 +143,9 @@ export function useShoppingStore() {
     setStore(loadStore());
     setHydrated(true);
   }, []);
+
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -532,6 +538,75 @@ export function useShoppingStore() {
     setStore(newSeed);
   }, []);
 
+  const setSyncUrl = useCallback((url: string) => {
+    setStore((s) => ({ ...s, syncUrl: url }));
+  }, []);
+
+  const syncCatalogPrices = useCallback(async () => {
+    if (!store.syncUrl) {
+      setSyncError("No hay URL configurada.");
+      return;
+    }
+    setIsSyncing(true);
+    setSyncError(null);
+    try {
+      let fetchUrl = store.syncUrl;
+      const headers: Record<string, string> = {};
+      
+      try {
+        const urlObj = new URL(store.syncUrl);
+        if (urlObj.username || urlObj.password) {
+          headers['Authorization'] = 'Basic ' + btoa(`${urlObj.username}:${urlObj.password}`);
+          urlObj.username = '';
+          urlObj.password = '';
+          fetchUrl = urlObj.toString();
+        }
+      } catch (e) {
+        // Ignorar si la URL es inválida aquí, fallará en el fetch
+      }
+
+      const res = await fetch(fetchUrl, { 
+        cache: "no-store",
+        headers
+      });
+      
+      if (!res.ok) throw new Error("Error HTTP " + res.status);
+      const data = await res.json();
+      
+      // Expected data format: Array<{ name: string, prices: { StoreName: number } }>
+      // Or Record<string, { StoreName: number }>
+      if (!data || typeof data !== "object") throw new Error("Formato inválido");
+      
+      setStore((s) => {
+        const newItems = s.items.map(item => {
+          // Normalize names to match or just use direct match
+          let match = Array.isArray(data) 
+            ? data.find((d: any) => d.name?.toLowerCase() === item.name.toLowerCase())
+            : data[item.name] || data[item.name.toLowerCase()];
+            
+          if (match && match.prices) {
+            return {
+              ...item,
+              prices: { ...item.prices, ...match.prices }
+            };
+          }
+          return item;
+        });
+        
+        return {
+          ...s,
+          items: newItems,
+          lastSyncDate: new Date().toISOString()
+        };
+      });
+    } catch (e: any) {
+      console.error("Sync error:", e);
+      setSyncError(e.message || "Error desconocido al sincronizar.");
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [store.syncUrl]);
+
   return {
     store,
     hydrated,
@@ -547,6 +622,10 @@ export function useShoppingStore() {
     clearList,
     restoreStore,
     resetToSeedCatalog,
+    setSyncUrl,
+    syncCatalogPrices,
+    isSyncing,
+    syncError,
     addCustomCategory,
     updateCategoryIcon,
     renameCategory,

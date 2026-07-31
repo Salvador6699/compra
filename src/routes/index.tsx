@@ -296,6 +296,10 @@ function Index() {
     updateStoreIcon,
     renameStore,
     removeStore,
+    setSyncUrl,
+    syncCatalogPrices,
+    isSyncing,
+    syncError,
   } = useShoppingStore();
 
 
@@ -1370,6 +1374,51 @@ function Index() {
 
             </div>
 
+            {/* Sincronización con Servidor Central (PHP/MySQL) */}
+            <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3 shadow-sm">
+              <h2 className="text-sm font-bold flex items-center gap-2 text-foreground">
+                <HardDrive className="h-4 w-4 text-primary" />
+                Sincronización de Precios
+              </h2>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Conecta con tu servidor central (PHP/MySQL) para descargar los últimos precios del catálogo. 
+                Si eres el administrador, sube aquí tus precios extraídos (scraping).
+              </p>
+              
+              <div className="space-y-2 pt-1">
+                <Label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">URL del Servidor</Label>
+                <div className="flex gap-2">
+                  <Input 
+                    type="url" 
+                    placeholder="https://tuhosting.com/get_prices.php" 
+                    value={store.syncUrl || ""} 
+                    onChange={(e) => setSyncUrl(e.target.value)}
+                    className="flex-1 rounded-xl text-xs bg-muted/30"
+                  />
+                  <Button 
+                    type="button"
+                    onClick={syncCatalogPrices}
+                    disabled={isSyncing || !store.syncUrl}
+                    className="rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                  >
+                    {isSyncing ? (
+                      <RotateCcw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                    ) : (
+                      <Download className="h-3.5 w-3.5 mr-1.5" />
+                    )}
+                    {isSyncing ? "Sincronizando..." : "Sincronizar"}
+                  </Button>
+                </div>
+                {syncError && (
+                  <p className="text-[11px] text-destructive font-medium mt-1">Error: {syncError}</p>
+                )}
+                {store.lastSyncDate && !syncError && (
+                  <p className="text-[10px] text-muted-foreground mt-1 text-right">
+                    Última sincronización: {new Date(store.lastSyncDate).toLocaleString()}
+                  </p>
+                )}
+              </div>
+            </div>
 
             {/* Seccion Copia de Seguridad y Catálogo */}
             <div className="rounded-2xl border border-border/70 bg-card p-4 space-y-3 shadow-sm">
