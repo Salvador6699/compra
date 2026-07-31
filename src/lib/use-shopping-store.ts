@@ -147,6 +147,7 @@ export function useShoppingStore() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
 
+  // Debounced server sync
   useEffect(() => {
     if (!hydrated) return;
     try {
@@ -154,6 +155,31 @@ export function useShoppingStore() {
     } catch (e) {
       console.warn("No se pudo guardar en localStorage:", e);
     }
+
+    // Push to server automatically
+    if (!store.syncUrl) return;
+    const saveUrl = store.syncUrl.replace('get_prices.php', 'save_state.php').replace('get_state.php', 'save_state.php');
+    
+    const timeoutId = setTimeout(async () => {
+      try {
+        const fetchUrl = new URL(saveUrl);
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (fetchUrl.username || fetchUrl.password) {
+          headers["Authorization"] = "Basic " + btoa(`${fetchUrl.username}:${fetchUrl.password}`);
+          fetchUrl.username = "";
+          fetchUrl.password = "";
+        }
+        await fetch(fetchUrl.toString(), {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ state_json: JSON.stringify(store) }),
+        });
+      } catch (err) {
+        console.error("Error pushing state to server", err);
+      }
+    }, 1500); // 1.5 second debounce
+
+    return () => clearTimeout(timeoutId);
   }, [store, hydrated]);
 
   const addCustomCategory = useCallback((catName: string, icon?: string) => {
@@ -550,52 +576,70 @@ export function useShoppingStore() {
     setIsSyncing(true);
     setSyncError(null);
     try {
-      let fetchUrl = store.syncUrl;
+      // Auto-migrate old get_prices.php to new get_state.php
+      const stateUrlStr = store.syncUrl.replace('get_prices.php', 'get_state.php');
+      let fetchUrl = stateUrlStr;
       const headers: Record<string, string> = {};
       
       try {
-        const urlObj = new URL(store.syncUrl);
+        const urlObj = new URL(stateUrlStr);
         if (urlObj.username || urlObj.password) {
           headers['Authorization'] = 'Basic ' + btoa(`${urlObj.username}:${urlObj.password}`);
           urlObj.username = '';
           urlObj.password = '';
           fetchUrl = urlObj.toString();
         }
-      } catch (e) {
-        // Ignorar si la URL es inválida aquí, fallará en el fetch
-      }
+      } catch (e) {}
 
-      const res = await fetch(fetchUrl, { 
-        cache: "no-store",
-        headers
-      });
+      const res = await fetch(fetchUrl, { cache: "no-store", headers });
       
       if (!res.ok) throw new Error("Error HTTP " + res.status);
       const data = await res.json();
       
-      // Expected data format: Array<{ name: string, prices: { StoreName: number } }>
-      // Or Record<string, { StoreName: number }>
+      if (data.empty) {
+        console.log("No hay estado global todavía.");
+        setIsSyncing(false);
+        return;
+      }
+
       if (!data || typeof data !== "object") throw new Error("Formato inválido");
       
       setStore((s) => {
-        const newItems = s.items.map(item => {
-          // Normalize names to match or just use direct match
-          let match = Array.isArray(data) 
-            ? data.find((d: any) => d.name?.toLowerCase() === item.name.toLowerCase())
-            : data[item.name] || data[item.name.toLowerCase()];
-            
-          if (match && match.prices) {
+        // Keep local trips, syncUrl, and active items list state?
+        // Wait, if we overwrite items entirely, we lose "inList" and "bought" local state!
+        // We MUST preserve local `inList` and `bought` status for each item ID!
+        
+        const localItemsMap = new Map(s.items.map(i => [i.name.toLowerCase(), i]));
+        
+        const mergedItems = (data.items || []).map((remoteItem: any) => {
+          const localItem = localItemsMap.get(remoteItem.name.toLowerCase());
+          if (localItem) {
             return {
-              ...item,
-              prices: { ...item.prices, ...match.prices }
+              ...remoteItem,
+              inList: localItem.inList,
+              bought: localItem.bought
             };
           }
-          return item;
+          return remoteItem;
         });
-        
+
+        // Add any local items that are not in remote yet (just in case they haven't synced)
+        const remoteNames = new Set(mergedItems.map((i: any) => i.name.toLowerCase()));
+        for (const item of s.items) {
+          if (!remoteNames.has(item.name.toLowerCase())) {
+            mergedItems.push(item);
+          }
+        }
+
         return {
           ...s,
-          items: newItems,
+          items: mergedItems,
+          customCategories: data.customCategories || [],
+          customStores: data.customStores || [],
+          categoryIcons: data.categoryIcons || {},
+          storeIcons: data.storeIcons || {},
+          deletedCategories: data.deletedCategories || [],
+          deletedStores: data.deletedStores || [],
           lastSyncDate: new Date().toISOString()
         };
       });
