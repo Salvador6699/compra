@@ -23,6 +23,9 @@ if ($action === 'get_all') {
     $categories = [];
     $categoryIcons = [];
     $res = $conn->query("SELECT name, icon FROM categories");
+    if (!$res) {
+        die(json_encode(["error" => "Error SQL en categories: " . $conn->error]));
+    }
     while($row = $res->fetch_assoc()) {
         $categories[] = $row['name'];
         if ($row['icon']) $categoryIcons[$row['name']] = $row['icon'];
@@ -32,6 +35,9 @@ if ($action === 'get_all') {
     $stores = [];
     $storeIcons = [];
     $res = $conn->query("SELECT name, icon FROM stores");
+    if (!$res) {
+        die(json_encode(["error" => "Error SQL en stores: " . $conn->error]));
+    }
     while($row = $res->fetch_assoc()) {
         $stores[] = $row['name'];
         if ($row['icon']) $storeIcons[$row['name']] = $row['icon'];
@@ -40,13 +46,18 @@ if ($action === 'get_all') {
     // 3. Get Scraped Prices
     $scraped_prices = [];
     $res = $conn->query("SELECT product_name, store_name, price FROM product_prices");
-    while($p = $res->fetch_assoc()) {
-        $scraped_prices[$p['product_name']][$p['store_name']] = (float)$p['price'];
+    if ($res) {
+        while($p = $res->fetch_assoc()) {
+            $scraped_prices[$p['product_name']][$p['store_name']] = (float)$p['price'];
+        }
     }
 
     // 4. Get Products
     $items = [];
     $res = $conn->query("SELECT id, name, category_name, preferred_store, in_list, bought FROM products");
+    if (!$res) {
+        die(json_encode(["error" => "Error SQL en products: " . $conn->error]));
+    }
     while($row = $res->fetch_assoc()) {
         $name = $row['name'];
         $item = [
