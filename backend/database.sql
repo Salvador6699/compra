@@ -1,10 +1,12 @@
 CREATE TABLE IF NOT EXISTS `categories` (
   `name` varchar(100) NOT NULL,
+  `icon` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `stores` (
   `name` varchar(100) NOT NULL,
+  `icon` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
