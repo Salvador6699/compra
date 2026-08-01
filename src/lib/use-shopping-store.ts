@@ -80,43 +80,7 @@ function seedStore(): Store {
 }
 
 function loadStore(): Store {
-  if (typeof window === "undefined") return seedStore();
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return seedStore();
-    const parsed = JSON.parse(raw) as Store;
-    if (!parsed?.items || !Array.isArray(parsed.items)) return seedStore();
-
-    // Map seed prices & stores by item name
-    const seedMap = new Map(
-      SEED_ITEMS.map((i) => [i.name.toLowerCase(), { prices: i.prices ?? {}, preferredStore: i.preferredStore }]),
-    );
-
-    const items = parsed.items
-      .filter((it) => it && typeof it === "object" && it.id && it.name)
-      .map((it) => {
-        const seedData = seedMap.get(it.name.toLowerCase());
-        return {
-          ...it,
-          preferredStore: it.preferredStore ?? seedData?.preferredStore,
-          prices: { ...(seedData?.prices ?? {}), ...(it.prices ?? {}) },
-        };
-      });
-
-    if (items.length === 0) return seedStore();
-    return {
-      items,
-      trips: Array.isArray(parsed.trips) ? parsed.trips : [],
-      customCategories: Array.isArray(parsed.customCategories) ? parsed.customCategories : [],
-      customStores: Array.isArray(parsed.customStores) ? parsed.customStores : [],
-      categoryIcons: parsed.categoryIcons && typeof parsed.categoryIcons === "object" ? parsed.categoryIcons : {},
-      storeIcons: parsed.storeIcons && typeof parsed.storeIcons === "object" ? parsed.storeIcons : {},
-      deletedCategories: Array.isArray(parsed.deletedCategories) ? parsed.deletedCategories : [],
-      deletedStores: Array.isArray(parsed.deletedStores) ? parsed.deletedStores : [],
-    };
-  } catch {
-    return seedStore();
-  }
+  return seedStore();
 }
 
 
@@ -144,17 +108,29 @@ export function useShoppingStore() {
     setHydrated(true);
   }, []);
 
+  // Auto-pull from server when hydrated
+  useEffect(() => {
+    if (hydrated && store.syncUrl) {
+      // Small timeout to let syncCatalogPrices function be ready
+      setTimeout(() => {
+        syncCatalogPrices();
+      }, 100);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
+
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
 
   // Debounced server sync
   useEffect(() => {
     if (!hydrated) return;
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-    } catch (e) {
-      console.warn("No se pudo guardar en localStorage:", e);
-    }
+    // localStorage is disabled
+    // try {
+    //   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    // } catch (e) {
+    //   console.warn("No se pudo guardar en localStorage:", e);
+    // }
 
     // Push to server automatically
     if (!store.syncUrl) return;
@@ -605,35 +581,13 @@ export function useShoppingStore() {
       if (!data || typeof data !== "object") throw new Error("Formato inválido");
       
       setStore((s) => {
-        // Keep local trips, syncUrl, and active items list state?
-        // Wait, if we overwrite items entirely, we lose "inList" and "bought" local state!
-        // We MUST preserve local `inList` and `bought` status for each item ID!
+        // Adopt the full remote state directly since localStorage is disabled
+        const mergedItems = data.items || [];
         
-        const localItemsMap = new Map(s.items.map(i => [i.name.toLowerCase(), i]));
-        
-        const mergedItems = (data.items || []).map((remoteItem: any) => {
-          const localItem = localItemsMap.get(remoteItem.name.toLowerCase());
-          if (localItem) {
-            return {
-              ...remoteItem,
-              inList: localItem.inList,
-              bought: localItem.bought
-            };
-          }
-          return remoteItem;
-        });
-
-        // Add any local items that are not in remote yet (just in case they haven't synced)
-        const remoteNames = new Set(mergedItems.map((i: any) => i.name.toLowerCase()));
-        for (const item of s.items) {
-          if (!remoteNames.has(item.name.toLowerCase())) {
-            mergedItems.push(item);
-          }
-        }
-
         return {
           ...s,
           items: mergedItems,
+          trips: data.trips || [],
           customCategories: data.customCategories || [],
           customStores: data.customStores || [],
           categoryIcons: data.categoryIcons || {},
