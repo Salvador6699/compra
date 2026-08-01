@@ -304,9 +304,21 @@ function Index() {
 
 
 
-  const [tab, setTab] = useState<"compra" | "catalogo" | "historial" | "ajustes">("compra");
+  const [tab, setTab] = useState<"compra" | "catalogo" | "historial" | "ajustes">(() => {
+    return (localStorage.getItem("ui_tab") as any) || "compra";
+  });
 
-  const [groupBy, setGroupBy] = useState<"category" | "store">("category");
+  const [groupBy, setGroupBy] = useState<"category" | "store">(() => {
+    return (localStorage.getItem("ui_groupBy") as any) || "category";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("ui_tab", tab);
+  }, [tab]);
+
+  useEffect(() => {
+    localStorage.setItem("ui_groupBy", groupBy);
+  }, [groupBy]);
 
   // Multi-store filter state
   const [selectedStores, setSelectedStores] = useState<Set<string>>(new Set());
@@ -1397,7 +1409,7 @@ function Index() {
                   />
                   <Button 
                     type="button"
-                    onClick={syncCatalogPrices}
+                    onClick={() => syncCatalogPrices(false)}
                     disabled={isSyncing || !store.syncUrl}
                     className="rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
                   >
