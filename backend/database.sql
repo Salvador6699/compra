@@ -1,3 +1,27 @@
+CREATE TABLE IF NOT EXISTS `categories` (
+  `name` varchar(100) NOT NULL,
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `stores` (
+  `name` varchar(100) NOT NULL,
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `products` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `category_name` varchar(100) DEFAULT NULL,
+  `preferred_store` varchar(100) DEFAULT NULL,
+  `in_list` tinyint(1) NOT NULL DEFAULT 0,
+  `bought` tinyint(1) NOT NULL DEFAULT 0,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_name` (`name`),
+  FOREIGN KEY (`category_name`) REFERENCES `categories`(`name`) ON UPDATE CASCADE ON DELETE SET NULL,
+  FOREIGN KEY (`preferred_store`) REFERENCES `stores`(`name`) ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT IGNORE INTO stores (name) VALUES ('Mercadona');
 INSERT IGNORE INTO stores (name) VALUES ('Consum');
 INSERT IGNORE INTO stores (name) VALUES ('Eroski');
