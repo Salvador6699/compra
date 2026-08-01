@@ -122,45 +122,34 @@ export function useShoppingStore() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
 
-  // Debounced server sync
-  useEffect(() => {
-    if (!hydrated) return;
-    // localStorage is disabled
-    // try {
-    //   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-    // } catch (e) {
-    //   console.warn("No se pudo guardar en localStorage:", e);
-    // }
+  // The state is now pushed individually per action, so we don't push the full JSON anymore.
 
-    // Push to server automatically
+  const callApi = useCallback(async (action: string, payload: any) => {
     if (!store.syncUrl) return;
-    const saveUrl = store.syncUrl.replace('get_prices.php', 'save_state.php').replace('get_state.php', 'save_state.php');
-    
-    const timeoutId = setTimeout(async () => {
-      try {
-        const fetchUrl = new URL(saveUrl);
-        const headers: Record<string, string> = { "Content-Type": "application/json" };
-        if (fetchUrl.username || fetchUrl.password) {
-          headers["Authorization"] = "Basic " + btoa(`${fetchUrl.username}:${fetchUrl.password}`);
-          fetchUrl.username = "";
-          fetchUrl.password = "";
-        }
-        await fetch(fetchUrl.toString(), {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ state_json: JSON.stringify(store) }),
-        });
-      } catch (err) {
-        console.error("Error pushing state to server", err);
+    const apiUrlStr = store.syncUrl.replace('get_prices.php', 'api.php').replace('get_state.php', 'api.php');
+    try {
+      const urlObj = new URL(apiUrlStr);
+      urlObj.searchParams.set('action', action);
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (urlObj.username || urlObj.password) {
+        headers["Authorization"] = "Basic " + btoa(`${urlObj.username}:${urlObj.password}`);
+        urlObj.username = "";
+        urlObj.password = "";
       }
-    }, 1500); // 1.5 second debounce
-
-    return () => clearTimeout(timeoutId);
-  }, [store, hydrated]);
+      await fetch(urlObj.toString(), {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload)
+      });
+    } catch (e) {
+      console.error("API error", e);
+    }
+  }, [store.syncUrl]);
 
   const addCustomCategory = useCallback((catName: string, icon?: string) => {
     const trimmed = capitalize(catName);
     if (!trimmed) return;
+    callApi('add_category', { name: trimmed, icon: icon?.trim() });
     setStore((s) => {
       const current = s.customCategories ?? [];
       const deleted = s.deletedCategories ?? [];
@@ -177,21 +166,24 @@ export function useShoppingStore() {
         categoryIcons: nextIcons,
       };
     });
-  }, []);
+  }, [callApi]);
 
   const updateCategoryIcon = useCallback((catName: string, icon: string) => {
     const trimmedCat = capitalize(catName);
     const trimmedIcon = icon.trim();
     if (!trimmedCat || !trimmedIcon) return;
+    callApi('update_category_icon', { name: trimmedCat, icon: trimmedIcon });
     setStore((s) => ({
       ...s,
       categoryIcons: { ...(s.categoryIcons ?? {}), [trimmedCat]: trimmedIcon },
     }));
-  }, []);
+  }, [callApi]);
 
   const renameCategory = useCallback((oldName: string, newName: string, icon?: string) => {
     const trimmedNew = capitalize(newName);
     if (!trimmedNew) return;
+    
+    callApi('rename_category', { oldName, newName: trimmedNew, icon: icon?.trim() });
 
     setStore((s) => {
       const nextIcons = { ...(s.categoryIcons ?? {}) };
@@ -228,12 +220,14 @@ export function useShoppingStore() {
         categoryIcons: nextIcons,
       };
     });
-  }, []);
+  }, [callApi]);
 
   const removeCategory = useCallback((catName: string) => {
     setStore((s) => {
       const isUsed = s.items.some((it) => it.category === catName);
       if (isUsed) return s;
+
+      callApi('delete_category', { name: catName });
 
       const nextCustom = (s.customCategories ?? []).filter((c) => c !== catName);
       const nextDeleted = Array.from(new Set([...(s.deletedCategories ?? []), catName]));
@@ -247,11 +241,12 @@ export function useShoppingStore() {
         categoryIcons: nextIcons,
       };
     });
-  }, []);
+  }, [callApi]);
 
   const addCustomStore = useCallback((storeName: string, icon?: string) => {
     const trimmed = capitalize(storeName);
     if (!trimmed) return;
+    callApi('add_store', { name: trimmed, icon: icon?.trim() });
     setStore((s) => {
       const current = s.customStores ?? [];
       const deleted = s.deletedStores ?? [];
@@ -268,21 +263,24 @@ export function useShoppingStore() {
         storeIcons: nextIcons,
       };
     });
-  }, []);
+  }, [callApi]);
 
   const updateStoreIcon = useCallback((storeName: string, icon: string) => {
     const trimmedStore = capitalize(storeName);
     const trimmedIcon = icon.trim();
     if (!trimmedStore || !trimmedIcon) return;
+    callApi('update_store_icon', { name: trimmedStore, icon: trimmedIcon });
     setStore((s) => ({
       ...s,
       storeIcons: { ...(s.storeIcons ?? {}), [trimmedStore]: trimmedIcon },
     }));
-  }, []);
+  }, [callApi]);
 
   const renameStore = useCallback((oldName: string, newName: string, icon?: string) => {
     const trimmedNew = capitalize(newName);
     if (!trimmedNew) return;
+    
+    callApi('rename_store', { oldName, newName: trimmedNew, icon: icon?.trim() });
 
     setStore((s) => {
       const nextIcons = { ...(s.storeIcons ?? {}) };
@@ -335,7 +333,7 @@ export function useShoppingStore() {
         storeIcons: nextIcons,
       };
     });
-  }, []);
+  }, [callApi]);
 
   const removeStore = useCallback((storeName: string) => {
     setStore((s) => {
@@ -345,6 +343,8 @@ export function useShoppingStore() {
           (it.prices && it.prices[storeName as StoreName] !== undefined && it.prices[storeName as StoreName]! > 0),
       );
       if (isUsed) return s;
+      
+      callApi('delete_store', { name: storeName });
 
       const nextCustom = (s.customStores ?? []).filter((st) => st !== storeName);
       const nextDeleted = Array.from(new Set([...(s.deletedStores ?? []), storeName]));
@@ -358,7 +358,7 @@ export function useShoppingStore() {
         storeIcons: nextIcons,
       };
     });
-  }, []);
+  }, [callApi]);
 
 
 
@@ -366,20 +366,32 @@ export function useShoppingStore() {
 
 
   const toggleInList = useCallback((id: string) => {
-    setStore((s) => ({
-      ...s,
-      items: s.items.map((it) =>
-        it.id === id ? { ...it, inList: !it.inList, bought: it.inList ? false : it.bought } : it,
-      ),
-    }));
-  }, []);
+    setStore((s) => {
+      const item = s.items.find(it => it.id === id);
+      if (item) {
+        callApi('update_product', { name: item.name, inList: item.inList ? 0 : 1 });
+      }
+      return {
+        ...s,
+        items: s.items.map((it) =>
+          it.id === id ? { ...it, inList: !it.inList, bought: it.inList ? false : it.bought } : it,
+        ),
+      };
+    });
+  }, [callApi]);
 
   const toggleBought = useCallback((id: string) => {
-    setStore((s) => ({
-      ...s,
-      items: s.items.map((it) => (it.id === id ? { ...it, bought: !it.bought } : it)),
-    }));
-  }, []);
+    setStore((s) => {
+      const item = s.items.find(it => it.id === id);
+      if (item) {
+        callApi('update_product', { name: item.name, bought: item.bought ? 0 : 1 });
+      }
+      return {
+        ...s,
+        items: s.items.map((it) => (it.id === id ? { ...it, bought: !it.bought } : it)),
+      };
+    });
+  }, [callApi]);
 
   const addItem = useCallback(
     (
@@ -392,6 +404,9 @@ export function useShoppingStore() {
     ) => {
       const trimmed = capitalize(name);
       if (!trimmed) return;
+      
+      callApi('add_product', { name: trimmed, category, preferredStore });
+
       setStore((s) => {
         // evita duplicados case-insensitive
         if (s.items.some((it) => it.name.toLowerCase() === trimmed.toLowerCase())) {
@@ -430,12 +445,18 @@ export function useShoppingStore() {
         };
       });
     },
-    [],
+    [callApi],
   );
 
   const removeItem = useCallback((id: string) => {
-    setStore((s) => ({ ...s, items: s.items.filter((it) => it.id !== id) }));
-  }, []);
+    setStore((s) => {
+      const item = s.items.find(it => it.id === id);
+      if (item) {
+        callApi('delete_product', { name: item.name });
+      }
+      return { ...s, items: s.items.filter((it) => it.id !== id) };
+    });
+  }, [callApi]);
 
   const updateItem = useCallback(
     (
@@ -449,44 +470,55 @@ export function useShoppingStore() {
         image?: string | null;
       },
     ) => {
-      setStore((s) => ({
-        ...s,
-        items: s.items.map((it) => {
-          if (it.id !== id) return it;
-          const nextName = patch.name !== undefined ? capitalize(patch.name) : it.name;
-          if (!nextName) return it;
-          return {
-            ...it,
-            name: nextName,
-            category: patch.category ?? it.category,
-            preferredStore:
-              patch.preferredStore === null
-                ? undefined
-                : patch.preferredStore ?? it.preferredStore,
-            prices: patch.prices ?? it.prices,
-            note: patch.note !== undefined ? patch.note : it.note,
-            image:
-              patch.image === null
-                ? undefined
-                : patch.image !== undefined
-                  ? patch.image
-                  : it.image,
-          };
-        }),
-      }));
+      setStore((s) => {
+        const item = s.items.find(it => it.id === id);
+        if (item) {
+          callApi('update_product', { 
+            name: item.name, 
+            category: patch.category, 
+            preferredStore: patch.preferredStore === null ? undefined : patch.preferredStore 
+          });
+        }
+        return {
+          ...s,
+          items: s.items.map((it) => {
+            if (it.id !== id) return it;
+            const nextName = patch.name !== undefined ? capitalize(patch.name) : it.name;
+            if (!nextName) return it;
+            return {
+              ...it,
+              name: nextName,
+              category: patch.category ?? it.category,
+              preferredStore:
+                patch.preferredStore === null
+                  ? undefined
+                  : patch.preferredStore ?? it.preferredStore,
+              prices: patch.prices ?? it.prices,
+              note: patch.note !== undefined ? patch.note : it.note,
+              image:
+                patch.image === null
+                  ? undefined
+                  : patch.image !== undefined
+                    ? patch.image
+                    : it.image,
+            };
+          }),
+        };
+      });
     },
-    [],
+    [callApi],
   );
 
   /** Termina la compra: lo comprado sale de la lista, lo no comprado se queda para la próxima. */
   const finishTrip = useCallback(() => {
+    callApi('finish_trip', {});
     setStore((s) => ({
       ...s,
       items: s.items.map((it) =>
         it.bought ? { ...it, inList: false, bought: false } : it,
       ),
     }));
-  }, []);
+  }, [callApi]);
 
   /** Guarda un viaje de compra finalizado en el historial y saca lo comprado de la lista */
   const saveCompletedTrip = useCallback(
@@ -497,6 +529,8 @@ export function useShoppingStore() {
         date: new Date().toISOString(),
       };
 
+      callApi('finish_trip', {});
+
       setStore((s) => ({
         ...s,
         trips: [newTrip, ...(s.trips ?? [])],
@@ -505,7 +539,7 @@ export function useShoppingStore() {
         ),
       }));
     },
-    [],
+    [callApi],
   );
 
   /** Elimina un viaje del historial */
@@ -518,16 +552,18 @@ export function useShoppingStore() {
 
   /** Pone TODO el catálogo en la lista (útil para revisar todo antes de comprar). */
   const selectAll = useCallback(() => {
+    callApi('select_all', {});
     setStore((s) => ({ ...s, items: s.items.map((it) => ({ ...it, inList: true })) }));
-  }, []);
+  }, [callApi]);
 
   /** Vacía la lista de la compra (mantiene el catálogo). */
   const clearList = useCallback(() => {
+    callApi('clear_list', {});
     setStore((s) => ({
       ...s,
       items: s.items.map((it) => ({ ...it, inList: false, bought: false })),
     }));
-  }, []);
+  }, [callApi]);
 
   /** Replace the entire store (used for restoring backups). */
   const restoreStore = useCallback((newStore: Store) => {
@@ -552,8 +588,8 @@ export function useShoppingStore() {
     setIsSyncing(true);
     setSyncError(null);
     try {
-      // Auto-migrate old get_prices.php to new get_state.php
-      const stateUrlStr = store.syncUrl.replace('get_prices.php', 'get_state.php');
+      // Auto-migrate old get_prices.php or get_state.php to new api.php
+      const stateUrlStr = store.syncUrl.replace('get_prices.php', 'api.php').replace('get_state.php', 'api.php') + '?action=get_all';
       let fetchUrl = stateUrlStr;
       const headers: Record<string, string> = {};
       
