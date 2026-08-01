@@ -75,7 +75,7 @@ function seedStore(): Store {
     storeIcons: {},
     deletedCategories: [],
     deletedStores: [],
-    syncUrl: "http://plantr753:zGTk9J8N@www.listacompra.es.mialias.net/get_prices.php",
+    syncUrl: "http://plantr753:zGTk9J8N@www.listacompra.es.mialias.net/backend/api.php",
   };
 }
 

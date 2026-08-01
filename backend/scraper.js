@@ -1,6 +1,6 @@
 import * as cheerio from 'cheerio';
 
-const SERVER_UPDATE_URL = "http://plantr753:zGTk9J8N@www.listacompra.es.mialias.net/update_prices.php";
+const SERVER_UPDATE_URL = "http://plantr753:zGTk9J8N@www.listacompra.es.mialias.net/backend/update_prices.php";
 const SECRET_KEY = "Ganbaru@6699";
 
 // Diccionario de mapeo: Añade aquí los IDs de los productos para cada tienda

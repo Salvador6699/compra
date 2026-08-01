@@ -1390,7 +1390,7 @@ function Index() {
                 <div className="flex gap-2">
                   <Input 
                     type="url" 
-                    placeholder="https://tuhosting.com/get_prices.php" 
+                    placeholder="https://tuhosting.com/backend/api.php" 
                     value={store.syncUrl || ""} 
                     onChange={(e) => setSyncUrl(e.target.value)}
                     className="flex-1 rounded-xl text-xs bg-muted/30"
