@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { SEED_ITEMS, type Category, type StoreName } from "./shopping-data";
 
+let lastActionTime = 0;
+
 const STORAGE_KEY = "shopping-app:v4";
 
 
@@ -110,14 +112,21 @@ export function useShoppingStore() {
 
   // Auto-pull from server when hydrated
   useEffect(() => {
-    if (hydrated && store.syncUrl) {
-      // Small timeout to let syncCatalogPrices function be ready
-      setTimeout(() => {
-        syncCatalogPrices();
-      }, 100);
-    }
+    if (!hydrated || !store.syncUrl) return;
+
+    // Initial sync
+    setTimeout(() => {
+      syncCatalogPrices(true);
+    }, 100);
+
+    // Poll every 5 seconds for real-time collaboration
+    const interval = setInterval(() => {
+      syncCatalogPrices(true);
+    }, 5000);
+
+    return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated]);
+  }, [hydrated, store.syncUrl]);
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -126,6 +135,7 @@ export function useShoppingStore() {
 
   const callApi = useCallback(async (action: string, payload: any) => {
     if (!store.syncUrl) return;
+    lastActionTime = Date.now();
     const apiUrlStr = store.syncUrl.replace('get_prices.php', 'api.php').replace('get_state.php', 'api.php');
     try {
       const urlObj = new URL(apiUrlStr);
@@ -473,8 +483,10 @@ export function useShoppingStore() {
       setStore((s) => {
         const item = s.items.find(it => it.id === id);
         if (item) {
+          const nextName = patch.name !== undefined ? capitalize(patch.name) : undefined;
           callApi('update_product', { 
-            name: item.name, 
+            name: item.name,
+            newName: (nextName && nextName !== item.name) ? nextName : undefined,
             category: patch.category, 
             preferredStore: patch.preferredStore === null ? undefined : patch.preferredStore 
           });
@@ -529,6 +541,7 @@ export function useShoppingStore() {
         date: new Date().toISOString(),
       };
 
+      callApi('save_trip', newTrip);
       callApi('finish_trip', {});
 
       setStore((s) => ({
@@ -544,11 +557,12 @@ export function useShoppingStore() {
 
   /** Elimina un viaje del historial */
   const deleteTrip = useCallback((tripId: string) => {
+    callApi('delete_trip', { id: tripId });
     setStore((s) => ({
       ...s,
       trips: (s.trips ?? []).filter((t) => t.id !== tripId),
     }));
-  }, []);
+  }, [callApi]);
 
   /** Pone TODO el catálogo en la lista (útil para revisar todo antes de comprar). */
   const selectAll = useCallback(() => {
@@ -580,13 +594,21 @@ export function useShoppingStore() {
     setStore((s) => ({ ...s, syncUrl: url }));
   }, []);
 
-  const syncCatalogPrices = useCallback(async () => {
+  const syncCatalogPrices = useCallback(async (silent: boolean = false) => {
     if (!store.syncUrl) {
-      setSyncError("No hay URL configurada.");
+      if (!silent) setSyncError("No hay URL configurada.");
       return;
     }
-    setIsSyncing(true);
-    setSyncError(null);
+
+    if (silent && Date.now() - lastActionTime < 3000) {
+      // Skip silent background sync if user just interacted, to avoid race conditions and UI lag
+      return;
+    }
+
+    if (!silent) {
+      setIsSyncing(true);
+      setSyncError(null);
+    }
     try {
       // Auto-migrate old get_prices.php or get_state.php to new api.php
       const stateUrlStr = store.syncUrl.replace('get_prices.php', 'api.php').replace('get_state.php', 'api.php') + '?action=get_all';
@@ -620,7 +642,7 @@ export function useShoppingStore() {
         // Adopt the full remote state directly since localStorage is disabled
         const mergedItems = data.items || [];
         
-        return {
+        const nextState = {
           ...s,
           items: mergedItems,
           trips: data.trips || [],
@@ -632,12 +654,24 @@ export function useShoppingStore() {
           deletedStores: data.deletedStores || [],
           lastSyncDate: new Date().toISOString()
         };
+
+        // Prevent unnecessary re-renders if data is identical
+        if (JSON.stringify(s.items) === JSON.stringify(nextState.items) && 
+            JSON.stringify(s.trips) === JSON.stringify(nextState.trips)) {
+          return s;
+        }
+
+        return nextState;
       });
     } catch (e: any) {
-      console.error("Sync error:", e);
-      setSyncError(e.message || "Error desconocido al sincronizar.");
+      if (!silent) {
+        console.error("Sync error:", e);
+        setSyncError(e.message || "Error desconocido al sincronizar.");
+      }
     } finally {
-      setIsSyncing(false);
+      if (!silent) {
+        setIsSyncing(false);
+      }
     }
   }, [store.syncUrl]);
 

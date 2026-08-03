@@ -72,8 +72,24 @@ if ($action === 'get_all') {
         $items[] = $item;
     }
 
+    // 5. Get Trips
+    $trips = [];
+    $res = $conn->query("SELECT id, trip_date, total_cost, items_json, receipt_image FROM trips ORDER BY trip_date DESC");
+    if ($res) {
+        while($row = $res->fetch_assoc()) {
+            $trips[] = [
+                "id" => (string)$row['id'],
+                "date" => $row['trip_date'],
+                "totalCost" => (float)$row['total_cost'],
+                "items" => json_decode($row['items_json'], true) ?: [],
+                "receiptImage" => $row['receipt_image']
+            ];
+        }
+    }
+
     echo json_encode([
         "items" => $items,
+        "trips" => $trips,
         "customCategories" => $categories,
         "customStores" => $stores,
         "categoryIcons" => (object)$categoryIcons,
@@ -203,16 +219,17 @@ if ($action === 'delete_product') {
 
 if ($action === 'update_product') {
     $name = $input['name'] ?? '';
+    $newName = $input['newName'] ?? null;
     $inList = isset($input['inList']) ? (int)$input['inList'] : null;
     $bought = isset($input['bought']) ? (int)$input['bought'] : null;
     $category = $input['category'] ?? null;
     $preferredStore = $input['preferredStore'] ?? null;
-    // Manual price overrides are not fully handled in relational yet, but we will ignore them for now since scraper handles prices.
     
     $query = "UPDATE products SET ";
     $params = [];
     $types = "";
     
+    if ($newName !== null) { $query .= "name=?,"; $params[] = $newName; $types .= "s"; }
     if ($inList !== null) { $query .= "in_list=?,"; $params[] = $inList; $types .= "i"; }
     if ($bought !== null) { $query .= "bought=?,"; $params[] = $bought; $types .= "i"; }
     if ($category !== null) { $query .= "category_name=?,"; $params[] = $category; $types .= "s"; }
@@ -223,7 +240,7 @@ if ($action === 'update_product') {
     $params[] = $name;
     $types .= "s";
     
-    if (count($params) > 1) { // Only execute if there's something to update
+    if (count($params) > 1) {
         $stmt = $conn->prepare($query);
         $stmt->bind_param($types, ...$params);
         $stmt->execute();
@@ -255,6 +272,31 @@ if ($action === 'clear_list') {
 
 if ($action === 'finish_trip') {
     $conn->query("UPDATE products SET in_list=0, bought=0 WHERE bought=1");
+    echo json_encode(["success" => true]);
+    exit;
+}
+
+if ($action === 'save_trip') {
+    $date = $input['date'] ?? date('c');
+    $totalCost = isset($input['totalCost']) ? (float)$input['totalCost'] : 0.00;
+    $itemsJson = isset($input['items']) ? json_encode($input['items']) : '[]';
+    $receiptImage = $input['receiptImage'] ?? null;
+    
+    $stmt = $conn->prepare("INSERT INTO trips (trip_date, total_cost, items_json, receipt_image) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("sdss", $date, $totalCost, $itemsJson, $receiptImage);
+    $stmt->execute();
+    
+    echo json_encode(["success" => true]);
+    exit;
+}
+
+if ($action === 'delete_trip') {
+    $id = $input['id'] ?? '';
+    if ($id) {
+        $stmt = $conn->prepare("DELETE FROM trips WHERE id = ?");
+        $stmt->bind_param("s", $id);
+        $stmt->execute();
+    }
     echo json_encode(["success" => true]);
     exit;
 }

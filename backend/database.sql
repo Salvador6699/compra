@@ -34,6 +34,15 @@ CREATE TABLE IF NOT EXISTS `products` (
   FOREIGN KEY (`preferred_store`) REFERENCES `stores`(`name`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `trips` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `trip_date` datetime NOT NULL,
+  `total_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `items_json` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `receipt_image` longtext DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT IGNORE INTO stores (name) VALUES ('Mercadona');
 INSERT IGNORE INTO stores (name) VALUES ('Consum');
 INSERT IGNORE INTO stores (name) VALUES ('Eroski');
@@ -54,6 +63,7 @@ INSERT IGNORE INTO categories (name) VALUES ('Mascotas');
 INSERT IGNORE INTO categories (name) VALUES ('Herramientas');
 INSERT IGNORE INTO categories (name) VALUES ('Hogar y limpieza');
 INSERT IGNORE INTO categories (name) VALUES ('Cuidado personal');
+INSERT IGNORE INTO categories (name) VALUES ('Otros');
 INSERT IGNORE INTO products (name, category_name, preferred_store) VALUES ('Azúcar', 'Despensa', 'Family Cash');
 INSERT IGNORE INTO products (name, category_name, preferred_store) VALUES ('Cacao instantáneo', 'Despensa', 'Mercadona');
 INSERT IGNORE INTO products (name, category_name, preferred_store) VALUES ('Infusión', 'Despensa', 'Family Cash');
