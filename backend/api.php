@@ -15,6 +15,10 @@ if ($conn->connect_error) {
 }
 $conn->set_charset("utf8mb4");
 
+// Auto-migrate schema for longer icon URLs (Google Favicons)
+$conn->query("ALTER TABLE categories MODIFY COLUMN icon VARCHAR(1000) DEFAULT NULL");
+$conn->query("ALTER TABLE stores MODIFY COLUMN icon VARCHAR(1000) DEFAULT NULL");
+
 $action = $_GET['action'] ?? '';
 
 // GET ALL (Replaces get_state.php)
