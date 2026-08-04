@@ -7,6 +7,8 @@ import {
   CheckCheck,
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ClipboardList,
   Coins,
   Download,
@@ -938,25 +940,54 @@ function Index() {
               </div>
             ) : (
               <div className="space-y-3 pb-8 animate-in slide-in-from-right-8 fade-in duration-300">
-                <Button
-                  variant="ghost"
-                  onClick={() => setSelectedCategoryForGrid(null)}
-                  className="rounded-full pl-2 pr-4 h-9 font-bold hover:bg-muted mb-2 text-muted-foreground hover:text-foreground -ml-2 transition-transform active:scale-95"
-                >
-                  <ChevronDown className="h-5 w-5 mr-1 rotate-90" />
-                  Volver a Categorías
-                </Button>
+                <div className="flex items-center mb-2">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setSelectedCategoryForGrid(null)}
+                    className="rounded-full pl-2 pr-4 h-9 font-bold hover:bg-muted text-muted-foreground hover:text-foreground -ml-2 transition-transform active:scale-95"
+                  >
+                    <ChevronLeft className="h-5 w-5 mr-1" />
+                    Volver a Categorías
+                  </Button>
+                </div>
                 
-                {groupedCatalog.filter(g => g.category === selectedCategoryForGrid).map(({ category, items }) => (
-                  <div key={category} className="space-y-2">
-                    <div className="flex items-center gap-3 mb-4 px-2">
-                      <DynamicIcon
-                        icon={getCategoryIcon(category)}
-                        fallback="📦"
-                        className="h-8 w-8 object-cover rounded-xl shadow-sm"
-                      />
-                      <h2 className="text-xl font-extrabold text-foreground">{category}</h2>
-                    </div>
+                {groupedCatalog.filter(g => g.category === selectedCategoryForGrid).map(({ category, items }) => {
+                  const currentIndex = groupedCatalog.findIndex(g => g.category === category);
+                  const hasPrev = currentIndex > 0;
+                  const hasNext = currentIndex < groupedCatalog.length - 1;
+                  
+                  return (
+                    <div key={category} className="space-y-2">
+                      <div className="flex items-center justify-between mb-4 gap-2">
+                        <Button
+                          variant="default"
+                          size="icon"
+                          disabled={!hasPrev}
+                          onClick={() => hasPrev && setSelectedCategoryForGrid(groupedCatalog[currentIndex - 1].category)}
+                          className="rounded-full h-10 w-10 shrink-0 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground shadow-md shadow-primary/20 transition-transform active:scale-95 disabled:opacity-0 disabled:pointer-events-none"
+                        >
+                          <ChevronLeft className="h-5 w-5" />
+                        </Button>
+                        
+                        <div className="flex items-center justify-center gap-3 flex-1">
+                          <DynamicIcon
+                            icon={getCategoryIcon(category)}
+                            fallback="📦"
+                            className="h-8 w-8 object-cover rounded-xl shadow-sm"
+                          />
+                          <h2 className="text-xl font-extrabold text-foreground text-center line-clamp-1">{category}</h2>
+                        </div>
+                        
+                        <Button
+                          variant="default"
+                          size="icon"
+                          disabled={!hasNext}
+                          onClick={() => hasNext && setSelectedCategoryForGrid(groupedCatalog[currentIndex + 1].category)}
+                          className="rounded-full h-10 w-10 shrink-0 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground shadow-md shadow-primary/20 transition-transform active:scale-95 disabled:opacity-0 disabled:pointer-events-none"
+                        >
+                          <ChevronRight className="h-5 w-5" />
+                        </Button>
+                      </div>
                     <ul className="space-y-2">
                       {items.map((it) => (
                           <li
@@ -1039,7 +1070,7 @@ function Index() {
                         ))}
                     </ul>
                   </div>
-                ))}
+                )})}
               </div>
             )}
           </TabsContent>
