@@ -117,12 +117,12 @@ export function BasketCalculator({ items, allStores, getStoreIcon }: BasketCalcu
   const winner = storeStats[0];
 
   return (
-    <Card className="overflow-hidden border-2 border-emerald-500/20 bg-gradient-to-br from-emerald-50/40 via-background to-blue-50/30 dark:from-emerald-950/20 dark:via-background dark:to-blue-950/20 shadow-md">
-      <CardHeader className="pb-3 pt-4 px-4 sm:px-6">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-sm">
-              <TrendingDown className="h-5 w-5" />
+    <Card className="overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-accent/5 shadow-lg backdrop-blur-md">
+      <CardHeader className="pb-3 pt-5 px-5 sm:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary to-accent text-primary-foreground shadow-sm">
+              <TrendingDown className="h-6 w-6" />
             </div>
             <div>
               <CardTitle className="text-base sm:text-lg font-bold flex items-center gap-1.5">
@@ -134,55 +134,55 @@ export function BasketCalculator({ items, allStores, getStoreIcon }: BasketCalcu
             </div>
           </div>
 
-          <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2.5 py-1 flex items-center gap-1">
-            <Sparkles className="h-3 w-3" />
+          <Badge className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm">
+            <Sparkles className="h-3.5 w-3.5" />
             Mejor opción: {winner.storeName}
           </Badge>
         </div>
       </CardHeader>
 
-      <CardContent className="px-4 pb-4 sm:px-6 space-y-4">
+      <CardContent className="px-5 pb-5 sm:px-6 space-y-4">
         {/* Quick Highlights Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Winner Single Store */}
-          <div className="rounded-xl border bg-card p-3.5 shadow-sm space-y-1.5">
-            <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
-              <span>Supermercado más barato (1 sola tienda)</span>
+          <div className="rounded-2xl border border-border/50 bg-card/80 backdrop-blur-sm p-4 shadow-sm space-y-2">
+            <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold">
+              <span>Tienda más barata</span>
               <DynamicIcon icon={getStoreIcon(winner.storeName)} fallback="🏪" className="h-5 w-5" />
             </div>
             <div className="flex items-baseline justify-between">
               <span className="text-lg font-bold text-foreground">{winner.storeName}</span>
-              <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
+              <span className="text-2xl font-extrabold text-primary">
                 {winner.total.toFixed(2)}€
               </span>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Suma de {winner.itemsWithPriceCount} productos con precio guardado
+              {winner.itemsWithPriceCount} productos con precio
             </p>
           </div>
 
           {/* Mixed Store Optimization */}
           {mixedOptimization && (
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3.5 shadow-sm space-y-1.5 relative overflow-hidden">
-              <div className="flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-300 font-semibold">
-                <span className="flex items-center gap-1">
-                  <Sparkles className="h-3.5 w-3.5" /> Ahorro Máximo (Cesta Mixta)
+            <div className="rounded-2xl border border-primary/30 bg-primary/10 p-4 shadow-sm space-y-2 relative overflow-hidden">
+              <div className="flex items-center justify-between text-xs text-primary font-bold">
+                <span className="flex items-center gap-1.5">
+                  <Sparkles className="h-4 w-4" /> Ahorro Máximo
                 </span>
-                <span>💡 Multi-tienda</span>
+                <span className="bg-primary/20 px-2 py-0.5 rounded-md">Multi-tienda</span>
               </div>
               <div className="flex items-baseline justify-between">
-                <span className="text-lg font-bold">Varias tiendas</span>
-                <span className="text-xl font-extrabold text-emerald-700 dark:text-emerald-300">
+                <span className="text-lg font-bold text-foreground">Varias tiendas</span>
+                <span className="text-2xl font-extrabold text-primary">
                   {mixedOptimization.mixedTotal.toFixed(2)}€
                 </span>
               </div>
               {mixedOptimization.savingsVsCheapest > 0 ? (
-                <p className="text-[11px] font-medium text-emerald-800 dark:text-emerald-200">
-                  ¡Ahorras <span className="underline font-bold">{mixedOptimization.savingsVsCheapest.toFixed(2)}€</span> comprando cada producto en su mejor tienda!
+                <p className="text-[11px] font-medium text-foreground">
+                  Ahorras <span className="underline font-bold text-primary">{mixedOptimization.savingsVsCheapest.toFixed(2)}€</span>
                 </p>
               ) : (
                 <p className="text-[11px] text-muted-foreground">
-                  {winner.storeName} ya ofrece el mejor precio para todos tus productos.
+                  {winner.storeName} es la mejor.
                 </p>
               )}
             </div>

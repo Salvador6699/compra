@@ -25,6 +25,8 @@ import {
   ShoppingCart,
   Sparkles,
   Store as StoreIcon,
+  Sun,
+  Moon,
   Tag,
   Trash2,
   Upload,
@@ -333,8 +335,24 @@ function Index() {
   const [finishTripModalOpen, setFinishTripModalOpen] = useState(false);
   const [viewingReceiptImage, setViewingReceiptImage] = useState<string | null>(null);
 
-  // Single expanded category (Accordion mode)
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  // Theme toggle
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("ui_theme") as any) || 
+        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    }
+    return "light";
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove("light", "dark");
+    root.classList.add(theme);
+    localStorage.setItem("ui_theme", theme);
+  }, [theme]);
+
+  // Single expanded category (Grid vs List mode)
+  const [selectedCategoryForGrid, setSelectedCategoryForGrid] = useState<string | null>(null);
 
   // Backup dialog
   const [backupOpen, setBackupOpen] = useState(false);
@@ -488,14 +506,16 @@ function Index() {
   useEffect(() => {
     const q = search.trim();
     if (q && groupedCatalog.length > 0) {
-      setExpandedCategory(groupedCatalog[0].category);
+      setSelectedCategoryForGrid(groupedCatalog[0].category);
+    } else if (!q) {
+      setSelectedCategoryForGrid(null);
     }
   }, [search]);
 
 
   // Accordion toggle handler: only 1 category open at a time
   function toggleCategory(category: string) {
-    setExpandedCategory((prev) => (prev === category ? null : category));
+    setSelectedCategoryForGrid((prev) => (prev === category ? null : category));
   }
 
   function handleOpenAddModal() {
@@ -559,21 +579,31 @@ function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground pb-24 font-sans antialiased transition-colors duration-300">
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border/60 shadow-xs">
-        <div className="mx-auto max-w-2xl px-4 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-2xl bg-gradient-to-tr from-primary to-emerald-400 grid place-items-center text-primary-foreground shadow-sm">
+      <header className="sticky top-0 z-30 bg-background/70 backdrop-blur-xl border-b border-border/40 shadow-sm pt-safe">
+        <div className="mx-auto max-w-2xl px-4 py-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-primary to-accent grid place-items-center text-primary-foreground shadow-md shadow-primary/30">
               <ShoppingBasket className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-base font-extrabold tracking-tight">Mi Lista de la Compra</h1>
-              <p className="text-[11px] text-muted-foreground font-medium">
-                {listItems.length} en la compra · {store.items.length} en catálogo
+              <h1 className="text-lg font-extrabold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">Mi Lista de la Compra</h1>
+              <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">
+                {listItems.length} en compra · {store.items.length} catálogo
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="rounded-xl h-9 w-9 bg-card/80 text-muted-foreground hover:text-foreground border border-border/50 shadow-xs backdrop-blur-md transition-transform active:scale-95"
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-slate-700" />}
+            </Button>
+
             {/* Filter by Stores button */}
             <Button
               variant="outline"
@@ -873,55 +903,69 @@ function Index() {
               </div>
             </div>
 
-            {/* Collapsible categories accordion (single expanded category) */}
-            <div className="space-y-2">
-              {groupedCatalog.map(({ category, items }) => {
-                const inListCount = items.filter((i) => i.inList).length;
-                const isExpanded = expandedCategory === category;
-
-                return (
-                  <Collapsible
-                    key={category}
-                    open={isExpanded}
-                    onOpenChange={() => toggleCategory(category)}
-                  >
-                    <CollapsibleTrigger className="w-full group">
-                      <div className="flex items-center gap-2.5 rounded-xl bg-card border border-border/60 px-3.5 py-2.5 shadow-sm hover:shadow-md hover:border-primary/25 transition-all duration-200 cursor-pointer">
+            {/* Catalog Grid vs List View */}
+            {!selectedCategoryForGrid ? (
+              <div className="grid grid-cols-2 gap-3 pb-8 animate-in fade-in zoom-in-95 duration-300">
+                {groupedCatalog.map(({ category, items }) => {
+                  const inListCount = items.filter((i) => i.inList).length;
+                  return (
+                    <div
+                      key={category}
+                      onClick={() => setSelectedCategoryForGrid(category)}
+                      className="group flex flex-col items-center justify-center gap-2 rounded-3xl bg-card border border-border/40 p-4 shadow-sm hover:shadow-lg hover:border-primary/50 transition-all duration-300 cursor-pointer active:scale-95"
+                    >
+                      <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-1 group-hover:bg-primary/20 transition-colors">
                         <DynamicIcon
                           icon={getCategoryIcon(category)}
                           fallback="📦"
-                          className="h-5 w-5 object-cover rounded-md"
-                        />
-                        <span className="flex-1 text-left text-sm font-semibold text-foreground">
-                          {category}
-                        </span>
-
-                        {inListCount > 0 && (
-                          <Badge className="text-[10px] px-1.5 py-0 h-5 bg-primary/15 text-primary border-0 font-semibold">
-                            {inListCount} en lista
-                          </Badge>
-                        )}
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 font-medium">
-                          {items.length}
-                        </Badge>
-                        <ChevronDown
-                          className={cn(
-                            "h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0",
-                            isExpanded && "rotate-180 text-primary",
-                          )}
+                          className="h-8 w-8 object-cover rounded-xl"
                         />
                       </div>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="collapsible-content">
-                      <ul className="space-y-1.5 pt-1.5 pl-1 pr-1">
-                        {items.map((it) => (
+                      <span className="text-sm font-bold text-foreground text-center line-clamp-1">{category}</span>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <Badge variant="secondary" className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-secondary/60 border-0">
+                          {items.length} prod
+                        </Badge>
+                        {inListCount > 0 && (
+                          <Badge className="text-[10px] px-2 py-0.5 rounded-full bg-primary text-primary-foreground font-bold shadow-sm border-0">
+                            {inListCount} lista
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="space-y-3 pb-8 animate-in slide-in-from-right-8 fade-in duration-300">
+                <Button
+                  variant="ghost"
+                  onClick={() => setSelectedCategoryForGrid(null)}
+                  className="rounded-full pl-2 pr-4 h-9 font-bold hover:bg-muted mb-2 text-muted-foreground hover:text-foreground -ml-2 transition-transform active:scale-95"
+                >
+                  <ChevronDown className="h-5 w-5 mr-1 rotate-90" />
+                  Volver a Categorías
+                </Button>
+                
+                {groupedCatalog.filter(g => g.category === selectedCategoryForGrid).map(({ category, items }) => (
+                  <div key={category} className="space-y-2">
+                    <div className="flex items-center gap-3 mb-4 px-2">
+                      <DynamicIcon
+                        icon={getCategoryIcon(category)}
+                        fallback="📦"
+                        className="h-8 w-8 object-cover rounded-xl shadow-sm"
+                      />
+                      <h2 className="text-xl font-extrabold text-foreground">{category}</h2>
+                    </div>
+                    <ul className="space-y-2">
+                      {items.map((it) => (
                           <li
                             key={it.id}
                             className={cn(
-                              "flex items-center gap-3 rounded-xl border bg-card px-3 py-2.5 transition-all duration-200 hover:-translate-y-[1px]",
+                              "flex items-center gap-3 rounded-2xl border bg-card/60 backdrop-blur-sm px-4 py-3.5 transition-all duration-300 hover:scale-[1.01]",
                               it.inList
-                                ? "border-primary/30 bg-primary/5 shadow-sm hover:shadow-md"
-                                : "border-border/50 hover:border-border hover:shadow-sm",
+                                ? "border-primary/40 bg-primary/10 shadow-sm"
+                                : "border-border/50 hover:border-primary/30 hover:shadow-sm",
                             )}
                           >
                             <button
@@ -929,34 +973,33 @@ function Index() {
                               onClick={() => toggleInList(it.id)}
                               aria-pressed={it.inList}
                               className={cn(
-                                "h-5.5 w-5.5 rounded-md border-2 grid place-items-center shrink-0 transition-all duration-200",
+                                "h-6 w-6 rounded-full border-2 grid place-items-center shrink-0 transition-all duration-300",
                                 it.inList
                                   ? "bg-gradient-to-br from-primary to-primary/80 border-primary text-primary-foreground shadow-sm"
-                                  : "border-muted-foreground/30 hover:border-primary/50",
+                                  : "border-muted-foreground/40 hover:border-primary/60 hover:bg-primary/5",
                               )}
                             >
-                              {it.inList && <Check className="h-3.5 w-3.5" />}
+                              {it.inList && <Check className="h-4 w-4" />}
                             </button>
 
                             {it.image && (
                               <img
                                 src={it.image}
                                 alt={it.name}
-                                className="h-9 w-9 rounded-lg object-cover border border-border/60 shrink-0 shadow-xs"
+                                className="h-10 w-10 rounded-xl object-cover border border-border/60 shrink-0 shadow-sm"
                               />
                             )}
 
                             <div className="flex-1 min-w-0">
-
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-sm font-medium text-foreground">{it.name}</span>
+                                <span className="text-sm font-semibold text-foreground">{it.name}</span>
                                 {it.preferredStore && (() => {
                                   const sb = STORE_BADGE_STYLE[it.preferredStore] || { bg: "bg-muted", text: "text-muted-foreground" };
                                   return (
                                     <Badge
                                       variant="outline"
                                       className={cn(
-                                        "text-[10px] px-1.5 py-0 h-4 border font-medium flex items-center gap-0.5",
+                                        "text-[10px] px-1.5 py-0 h-4 border font-semibold flex items-center gap-1 shadow-xs",
                                         sb.bg,
                                         sb.text,
                                       )}
@@ -968,7 +1011,7 @@ function Index() {
                                 })()}
                               </div>
                               {it.note && (
-                                <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                                <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-0.5">
                                   🏷️ {it.note}
                                 </p>
                               )}
@@ -979,27 +1022,26 @@ function Index() {
                                 type="button"
                                 onClick={() => handleOpenEditModal(it)}
                                 aria-label={`Editar ${it.name}`}
-                                className="text-muted-foreground/50 hover:text-foreground p-1.5 rounded-lg hover:bg-secondary transition-all"
+                                className="text-muted-foreground/50 hover:text-foreground p-2 rounded-xl hover:bg-secondary transition-all"
                               >
-                                <Pencil className="h-3.5 w-3.5" />
+                                <Pencil className="h-4 w-4" />
                               </button>
                               <button
                                 type="button"
                                 onClick={() => removeItem(it.id)}
                                 aria-label={`Eliminar ${it.name}`}
-                                className="text-muted-foreground/40 hover:text-destructive p-1.5 rounded-lg hover:bg-destructive/10 transition-all"
+                                className="text-muted-foreground/40 hover:text-destructive p-2 rounded-xl hover:bg-destructive/10 transition-all"
                               >
-                                <Trash2 className="h-3.5 w-3.5" />
+                                <Trash2 className="h-4 w-4" />
                               </button>
                             </div>
                           </li>
                         ))}
-                      </ul>
-                    </CollapsibleContent>
-                  </Collapsible>
-                );
-              })}
-            </div>
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* ── HISTORIAL DE COMPRAS ── */}
@@ -1534,49 +1576,58 @@ function Index() {
         </Tabs>
       </main>
 
-      {/* ── FIXED BOTTOM NAVIGATION BAR ── */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-xl border-t border-border/60 shadow-xl">
-        <div className="mx-auto max-w-2xl px-4 py-1.5 flex items-center justify-around">
+      {/* ── FIXED BOTTOM NAVIGATION BAR (FLOATING DOCK) ── */}
+      <nav className="fixed bottom-4 left-4 right-4 z-40 mx-auto max-w-md rounded-3xl bg-background/70 backdrop-blur-2xl border border-border/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
+        <div className="px-2 py-2 flex items-center justify-around gap-1">
           {/* Compra hoy */}
           <button
             type="button"
             onClick={() => setTab("compra")}
             className={cn(
-              "flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl transition-all duration-200 relative",
+              "flex-1 flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-2xl transition-all duration-300 relative",
               tab === "compra"
-                ? "text-primary font-bold bg-primary/10"
-                : "text-muted-foreground hover:text-foreground font-medium",
+                ? "bg-primary text-primary-foreground shadow-md scale-105"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
             )}
           >
             <div className="relative">
               <ShoppingCart className="h-5 w-5" />
               {pending.length > 0 && (
-                <span className="absolute -top-1.5 -right-2.5 h-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center min-w-4 shadow-sm">
+                <span className={cn(
+                  "absolute -top-1.5 -right-2.5 h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center min-w-[16px] shadow-sm border",
+                  tab === "compra" ? "bg-background text-primary border-primary/20" : "bg-primary text-primary-foreground border-border/50"
+                )}>
                   {pending.length}
                 </span>
               )}
             </div>
-            <span className="text-[11px]">Compra hoy</span>
+            <span className="text-[10px] font-bold">Compra</span>
           </button>
 
           {/* Catálogo */}
           <button
             type="button"
-            onClick={() => setTab("catalogo")}
+            onClick={() => {
+              setTab("catalogo");
+              setSelectedCategoryForGrid(null); // Reset to grid view when tapping tab
+            }}
             className={cn(
-              "flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl transition-all duration-200 relative",
+              "flex-1 flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-2xl transition-all duration-300 relative",
               tab === "catalogo"
-                ? "text-primary font-bold bg-primary/10"
-                : "text-muted-foreground hover:text-foreground font-medium",
+                ? "bg-primary text-primary-foreground shadow-md scale-105"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
             )}
           >
             <div className="relative">
               <ClipboardList className="h-5 w-5" />
-              <span className="absolute -top-1.5 -right-2.5 h-4 px-1 rounded-full bg-muted text-muted-foreground text-[10px] font-bold flex items-center justify-center border border-border/50 min-w-4">
+              <span className={cn(
+                "absolute -top-1.5 -right-2.5 h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center min-w-[16px] border",
+                tab === "catalogo" ? "bg-background text-primary border-primary/20" : "bg-muted text-muted-foreground border-border/50"
+              )}>
                 {store.items.length}
               </span>
             </div>
-            <span className="text-[11px]">Catálogo</span>
+            <span className="text-[10px] font-bold">Catálogo</span>
           </button>
 
           {/* Historial */}
@@ -1584,21 +1635,24 @@ function Index() {
             type="button"
             onClick={() => setTab("historial")}
             className={cn(
-              "flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl transition-all duration-200 relative",
+              "flex-1 flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-2xl transition-all duration-300 relative",
               tab === "historial"
-                ? "text-primary font-bold bg-primary/10"
-                : "text-muted-foreground hover:text-foreground font-medium",
+                ? "bg-primary text-primary-foreground shadow-md scale-105"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
             )}
           >
             <div className="relative">
               <Receipt className="h-5 w-5" />
               {(store.trips ?? []).length > 0 && (
-                <span className="absolute -top-1.5 -right-2.5 h-4 px-1 rounded-full bg-emerald-600 text-white text-[10px] font-bold flex items-center justify-center min-w-4 shadow-sm">
+                <span className={cn(
+                  "absolute -top-1.5 -right-2.5 h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center min-w-[16px] shadow-sm border",
+                  tab === "historial" ? "bg-background text-primary border-primary/20" : "bg-primary text-primary-foreground border-border/50"
+                )}>
                   {(store.trips ?? []).length}
                 </span>
               )}
             </div>
-            <span className="text-[11px]">Historial</span>
+            <span className="text-[10px] font-bold">Historial</span>
           </button>
 
           {/* Ajustes */}
@@ -1606,14 +1660,14 @@ function Index() {
             type="button"
             onClick={() => setTab("ajustes")}
             className={cn(
-              "flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl transition-all duration-200 relative",
+              "flex-1 flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-2xl transition-all duration-300 relative",
               tab === "ajustes"
-                ? "text-primary font-bold bg-primary/10"
-                : "text-muted-foreground hover:text-foreground font-medium",
+                ? "bg-primary text-primary-foreground shadow-md scale-105"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
             )}
           >
             <Settings className="h-5 w-5" />
-            <span className="text-[11px]">Ajustes</span>
+            <span className="text-[10px] font-bold">Ajustes</span>
           </button>
         </div>
       </nav>
@@ -2227,7 +2281,7 @@ function ItemRow({
   }, [pricesList]);
 
   return (
-    <li className="group w-full flex items-center justify-between gap-3 rounded-xl border border-border/70 bg-card px-3.5 py-3 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-200">
+    <li className="group w-full flex items-center justify-between gap-3 rounded-2xl border border-border/40 bg-card/60 backdrop-blur-sm p-4 shadow-sm hover:shadow-lg hover:border-primary/40 hover:bg-card transition-all duration-300 active:scale-[0.98]">
       <div
         role="button"
         tabIndex={0}
@@ -2235,16 +2289,16 @@ function ItemRow({
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") onToggleBought();
         }}
-        className="flex-1 flex items-center gap-3 cursor-pointer min-w-0"
+        className="flex-1 flex items-center gap-3.5 cursor-pointer min-w-0"
       >
         {item.image ? (
           <img
             src={item.image}
             alt={item.name}
-            className="h-10 w-10 rounded-xl object-cover border border-border/60 shrink-0 shadow-xs"
+            className="h-11 w-11 rounded-xl object-cover border-2 border-border/60 shrink-0 shadow-sm"
           />
         ) : (
-          <span className="h-6 w-6 rounded-full border-2 border-muted-foreground/30 group-hover:border-primary/60 transition-colors shrink-0" />
+          <span className="h-6 w-6 rounded-full border-2 border-muted-foreground/40 bg-background/50 group-hover:border-primary/80 group-hover:bg-primary/10 transition-all duration-300 shadow-inner shrink-0" />
         )}
         <div className="min-w-0">
 
@@ -2332,20 +2386,20 @@ function EmptyState({
   onAction?: () => void;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border/80 bg-card/50 p-8 text-center my-6 space-y-3 animate-in fade-in-0 duration-300">
-      <div className="mx-auto h-12 w-12 rounded-2xl bg-muted grid place-items-center text-muted-foreground">
-        <ShoppingBasket className="h-6 w-6" />
+    <div className="rounded-3xl border-2 border-dashed border-border/60 bg-card/30 backdrop-blur-sm p-10 text-center my-6 space-y-4 animate-in fade-in zoom-in-95 duration-500 shadow-sm">
+      <div className="mx-auto h-16 w-16 rounded-3xl bg-muted/50 grid place-items-center text-primary/60 shadow-inner">
+        <ShoppingBasket className="h-8 w-8" />
       </div>
       <div>
-        <h3 className="text-sm font-semibold">{title}</h3>
-        <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">{description}</p>
+        <h3 className="text-base font-bold text-foreground">{title}</h3>
+        <p className="text-sm text-muted-foreground mt-1.5 max-w-xs mx-auto leading-relaxed">{description}</p>
       </div>
       {actionLabel && onAction && (
         <Button
           onClick={onAction}
           variant="outline"
-          size="sm"
-          className="rounded-xl text-xs font-medium border-primary/30 text-primary hover:bg-primary/5"
+          size="default"
+          className="rounded-2xl text-sm font-semibold border-primary/20 text-primary hover:bg-primary/10 shadow-sm mt-2"
         >
           {actionLabel}
         </Button>
