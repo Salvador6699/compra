@@ -32,11 +32,13 @@ import {
   Tag,
   Trash2,
   Upload,
+  Wand,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { DynamicIcon } from "@/components/dynamic-icon";
+import { IconPickerDialog } from "@/components/icon-picker-dialog";
 
 /** Helper to compress uploaded images to max 400px width WebP to conserve LocalStorage space */
 function compressImage(file: File, maxWidth = 400, quality = 0.8): Promise<string> {
@@ -143,6 +145,7 @@ function EditCategoryOrStoreDialog({
 }) {
   const [name, setName] = useState("");
   const [icon, setIcon] = useState("");
+  const [pickerOpen, setPickerOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -174,7 +177,9 @@ function EditCategoryOrStoreDialog({
   const titleText = type === "category" ? `Editar categoría "${currentName}"` : `Editar supermercado "${currentName}"`;
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open={open} onOpenChange={(o) => {
+      if (!o) onClose();
+    }}>
       <DialogContent className="rounded-2xl max-w-sm">
         <DialogHeader>
           <DialogTitle className="text-base font-bold flex items-center gap-2">
@@ -210,12 +215,28 @@ function EditCategoryOrStoreDialog({
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold">Icono (Emoji)</Label>
             <Input
-              value={icon.startsWith("data:") ? "" : icon}
+              value={icon.startsWith("data:") || icon.startsWith("http") || icon.startsWith("lucide:") ? "" : icon}
               onChange={(e) => setIcon(e.target.value)}
               placeholder="Ej: 🍦, 💊, 🏬..."
               className="rounded-xl text-xs text-center"
             />
           </div>
+
+          <div className="relative flex py-1 items-center">
+            <div className="flex-grow border-t border-border/50"></div>
+            <span className="flex-shrink mx-2 text-[10px] uppercase font-semibold text-muted-foreground">O Icono Predefinido</span>
+            <div className="flex-grow border-t border-border/50"></div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setPickerOpen(true)}
+            className="w-full rounded-xl text-xs font-semibold border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 gap-2 mb-2"
+          >
+            <Wand className="h-4 w-4" />
+            Elegir icono predefinido
+          </Button>
 
           <div className="relative flex py-1 items-center">
             <div className="flex-grow border-t border-border/50"></div>
@@ -252,6 +273,12 @@ function EditCategoryOrStoreDialog({
             Guardar Cambios
           </Button>
         </DialogFooter>
+
+        <IconPickerDialog
+          open={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+          onSelect={setIcon}
+        />
       </DialogContent>
     </Dialog>
   );
@@ -355,6 +382,15 @@ function Index() {
 
   // Single expanded category (Grid vs List mode)
   const [selectedCategoryForGrid, setSelectedCategoryForGrid] = useState<string | null>(null);
+
+  // Icon Picker Modal
+  const [iconPickerOpen, setIconPickerOpen] = useState(false);
+  const [iconPickerCallback, setIconPickerCallback] = useState<{ fn: (icon: string) => void } | null>(null);
+
+  function openIconPicker(callback: (icon: string) => void) {
+    setIconPickerCallback({ fn: callback });
+    setIconPickerOpen(true);
+  }
 
   // Backup dialog
   const [backupOpen, setBackupOpen] = useState(false);
@@ -1240,12 +1276,22 @@ function Index() {
                   </span>
                 </Label>
                 <div className="flex gap-2">
-                  <Input
-                    placeholder="Icono (ej: 🍦)"
-                    value={newCatIconInput}
-                    onChange={(e) => setNewCatIconInput(e.target.value)}
-                    className="w-24 rounded-xl text-xs text-center"
-                  />
+                  <div className="relative w-24 shrink-0 flex items-center">
+                    <Input
+                      placeholder="Icono (ej: 🍦)"
+                      value={newCatIconInput}
+                      onChange={(e) => setNewCatIconInput(e.target.value)}
+                      className="w-full rounded-xl text-xs text-center pr-8"
+                    />
+                    <button 
+                      type="button" 
+                      title="Elegir icono predefinido"
+                      onClick={() => openIconPicker(setNewCatIconInput)}
+                      className="absolute right-1 p-1.5 text-muted-foreground hover:text-primary rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <Wand className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                   <Input
                     placeholder="Ej: Congelados, Farmacia, Bebé..."
                     value={newCatInput}
@@ -1349,12 +1395,22 @@ function Index() {
                   </span>
                 </Label>
                 <div className="flex gap-2">
-                  <Input
-                    placeholder="Icono (ej: 🏪)"
-                    value={newStoreIconInput}
-                    onChange={(e) => setNewStoreIconInput(e.target.value)}
-                    className="w-24 rounded-xl text-xs text-center"
-                  />
+                  <div className="relative w-24 shrink-0 flex items-center">
+                    <Input
+                      placeholder="Icono (ej: 🏪)"
+                      value={newStoreIconInput}
+                      onChange={(e) => setNewStoreIconInput(e.target.value)}
+                      className="w-full rounded-xl text-xs text-center pr-8"
+                    />
+                    <button 
+                      type="button" 
+                      title="Elegir icono predefinido"
+                      onClick={() => openIconPicker(setNewStoreIconInput)}
+                      className="absolute right-1 p-1.5 text-muted-foreground hover:text-primary rounded-lg hover:bg-muted transition-colors"
+                    >
+                      <Wand className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                   <Input
                     placeholder="Ej: AhorraMas, Hipercor, Coviran..."
                     value={newStoreInput}
@@ -1777,7 +1833,15 @@ function Index() {
         }}
       />
 
-
+      <IconPickerDialog
+        open={iconPickerOpen}
+        onClose={() => setIconPickerOpen(false)}
+        onSelect={(icon) => {
+          if (iconPickerCallback) {
+            iconPickerCallback.fn(icon);
+          }
+        }}
+      />
     </div>
   );
 }

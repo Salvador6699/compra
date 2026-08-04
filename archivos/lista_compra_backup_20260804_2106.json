@@ -1,0 +1,1245 @@
+{
+  "_app": "lista-compra",
+  "_version": 1,
+  "_date": "2026-08-04T19:18:25.373Z",
+  "store": {
+    "items": [
+      {
+        "id": "1",
+        "name": "Azúcar",
+        "category": "Despensa",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "2",
+        "name": "Cacao instantáneo",
+        "category": "Despensa",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "3",
+        "name": "Infusión",
+        "category": "Despensa",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "4",
+        "name": "Macarrones",
+        "category": "Despensa",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "5",
+        "name": "Espirales vegetales",
+        "category": "Despensa",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "6",
+        "name": "Fideuá",
+        "category": "Despensa",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "7",
+        "name": "Sal",
+        "category": "Despensa",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "8",
+        "name": "Tomate frito",
+        "category": "Despensa",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "9",
+        "name": "Tomate triturado",
+        "category": "Despensa",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "10",
+        "name": "Arroz redondo",
+        "category": "Despensa",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "11",
+        "name": "Arroz basmati",
+        "category": "Despensa",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "12",
+        "name": "Base de pizza",
+        "category": "Despensa",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "13",
+        "name": "Café molido mezcla",
+        "category": "Despensa",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "14",
+        "name": "Café cappuccino",
+        "category": "Despensa",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "15",
+        "name": "Ñoquis",
+        "category": "Despensa",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "16",
+        "name": "Noodles",
+        "category": "Despensa",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "18",
+        "name": "Guisantes",
+        "category": "Despensa",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "19",
+        "name": "Miel",
+        "category": "Despensa",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "20",
+        "name": "Garbanzos cocidos",
+        "category": "Despensa",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "21",
+        "name": "Macarrones integral",
+        "category": "Despensa",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "22",
+        "name": "Mayonesa",
+        "category": "Despensa",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "23",
+        "name": "Salsa de quesos",
+        "category": "Despensa",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "24",
+        "name": "Salsa de trufa",
+        "category": "Despensa",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "25",
+        "name": "Aceitunas rellenas",
+        "category": "Despensa",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "26",
+        "name": "Pan de aceite",
+        "category": "Panadería",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "27",
+        "name": "Pan cristal",
+        "category": "Panadería",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "28",
+        "name": "Pan integral",
+        "category": "Panadería",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "29",
+        "name": "Bacon",
+        "category": "Carne y embutidos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "30",
+        "name": "Hamburguesa",
+        "category": "Carne y embutidos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "31",
+        "name": "Carrillada de vacuno",
+        "category": "Carne y embutidos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "32",
+        "name": "Costilla de cerdo",
+        "category": "Carne y embutidos",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "33",
+        "name": "Carne picada de cerdo",
+        "category": "Carne y embutidos",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "34",
+        "name": "Carne picada de vacuno",
+        "category": "Carne y embutidos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "35",
+        "name": "Panceta",
+        "category": "Carne y embutidos",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "36",
+        "name": "Fuet Espetec",
+        "category": "Carne y embutidos",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "37",
+        "name": "Mortadela con aceitunas",
+        "category": "Carne y embutidos",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "38",
+        "name": "Chistorra",
+        "category": "Carne y embutidos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "39",
+        "name": "Chorizo",
+        "category": "Carne y embutidos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "40",
+        "name": "Chorizo picante",
+        "category": "Carne y embutidos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "41",
+        "name": "Espinazo de cerdo",
+        "category": "Carne y embutidos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "42",
+        "name": "Guanciale",
+        "category": "Carne y embutidos",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "43",
+        "name": "Hueso de vacuno",
+        "category": "Carne y embutidos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "44",
+        "name": "Jamón cocido",
+        "category": "Carne y embutidos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "45",
+        "name": "Pechuga de pollo",
+        "category": "Carne y embutidos",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "46",
+        "name": "Jamoncitos de pollo",
+        "category": "Carne y embutidos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "47",
+        "name": "Pechuga de pavo",
+        "category": "Carne y embutidos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "48",
+        "name": "Osobuco",
+        "category": "Carne y embutidos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "49",
+        "name": "Atún en lata",
+        "category": "Despensa",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "50",
+        "name": "Melva",
+        "category": "Despensa",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "51",
+        "name": "Salmón",
+        "category": "Pescado",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "52",
+        "name": "Calamar troceado",
+        "category": "Pescado",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "53",
+        "name": "Bebida de almendras",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "54",
+        "name": "Batido de vainilla",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "55",
+        "name": "Huevos",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Eroski",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "56",
+        "name": "Queso brie",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "57",
+        "name": "Queso en dados",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "58",
+        "name": "Queso rallado",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "59",
+        "name": "Queso semicurado",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "60",
+        "name": "Queso para untar finas hierbas",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "61",
+        "name": "Queso Grana Padano",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "62",
+        "name": "Queso bola",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "63",
+        "name": "Leche entera",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "64",
+        "name": "Leche desnatada",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "66",
+        "name": "Nata para cocinar",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "67",
+        "name": "Yogur natural azúcar de caña",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "68",
+        "name": "Kéfir",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "69",
+        "name": "Queso fresco batido",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "70",
+        "name": "Plátano",
+        "category": "Frutas y verduras",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "71",
+        "name": "Champiñones",
+        "category": "Frutas y verduras",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "72",
+        "name": "Espinacas",
+        "category": "Frutas y verduras",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "73",
+        "name": "Patatas",
+        "category": "Frutas y verduras",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "74",
+        "name": "Pera",
+        "category": "Frutas y verduras",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "75",
+        "name": "Calabaza",
+        "category": "Frutas y verduras",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "76",
+        "name": "Zanahoria",
+        "category": "Frutas y verduras",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "77",
+        "name": "Ensalada",
+        "category": "Frutas y verduras",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "78",
+        "name": "Melón Sapo",
+        "category": "Frutas y verduras",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "79",
+        "name": "Espagueti carbonara",
+        "category": "Platos preparados",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "80",
+        "name": "Pizza atún bacon",
+        "category": "Platos preparados",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "81",
+        "name": "Pizza frankfurt",
+        "category": "Platos preparados",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "82",
+        "name": "Pizza jamón serrano",
+        "category": "Platos preparados",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "83",
+        "name": "Pizza pepperoni",
+        "category": "Platos preparados",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "84",
+        "name": "Cocido",
+        "category": "Platos preparados",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "85",
+        "name": "Pelota de cocido",
+        "category": "Carne y embutidos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "86",
+        "name": "Lasaña de pavo",
+        "category": "Platos preparados",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "87",
+        "name": "Crema de verduras",
+        "category": "Despensa",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "88",
+        "name": "Ensaladilla rusa",
+        "category": "Platos preparados",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "89",
+        "name": "Empanadillas",
+        "category": "Platos preparados",
+        "preferredStore": "Consum",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "90",
+        "name": "Pasta pollo pesto",
+        "category": "Platos preparados",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "91",
+        "name": "Caldo casero",
+        "category": "Despensa",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "92",
+        "name": "Zumo con leche",
+        "category": "Bebidas",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "93",
+        "name": "Agua",
+        "category": "Bebidas",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "94",
+        "name": "Nestea maracuya",
+        "category": "Bebidas",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "95",
+        "name": "Refresco de piña",
+        "category": "Bebidas",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "96",
+        "name": "Bebida isotónica",
+        "category": "Bebidas",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "97",
+        "name": "Monster",
+        "category": "Bebidas",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "98",
+        "name": "Bombón almendrado",
+        "category": "Helados y Postres",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "99",
+        "name": "Tarrina de leche merengada",
+        "category": "Helados y Postres",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "100",
+        "name": "SuperSándwich nata",
+        "category": "Helados y Postres",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "101",
+        "name": "Dochi tarta de la abuela",
+        "category": "Helados y Postres",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "102",
+        "name": "Palomitas",
+        "category": "Snacks y dulces",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "103",
+        "name": "Patatas fritas",
+        "category": "Snacks y dulces",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "104",
+        "name": "Snacks",
+        "category": "Snacks y dulces",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "105",
+        "name": "Pipas",
+        "category": "Snacks y dulces",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "106",
+        "name": "Galletas",
+        "category": "Snacks y dulces",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "107",
+        "name": "Mousse de chocolate",
+        "category": "Helados y Postres",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "108",
+        "name": "Natillas con galleta",
+        "category": "Helados y Postres",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "109",
+        "name": "Arena para gatos",
+        "category": "Mascotas",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "110",
+        "name": "Sopa gatos Felix",
+        "category": "Mascotas",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "111",
+        "name": "Húmedo gatos Felix",
+        "category": "Mascotas",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "112",
+        "name": "Pienso gatos Catisfacti",
+        "category": "Mascotas",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "113",
+        "name": "Guantes",
+        "category": "Herramientas",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "114",
+        "name": "Detergente lavadora",
+        "category": "Hogar y limpieza",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "115",
+        "name": "Papel de cocina",
+        "category": "Hogar y limpieza",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "116",
+        "name": "Papel higiénico",
+        "category": "Hogar y limpieza",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "117",
+        "name": "Bolsas de congelación zip",
+        "category": "Hogar y limpieza",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "118",
+        "name": "Suavizante ropa",
+        "category": "Hogar y limpieza",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "119",
+        "name": "Lavavajillas",
+        "category": "Hogar y limpieza",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "120",
+        "name": "Limpiacristales",
+        "category": "Hogar y limpieza",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "121",
+        "name": "Fregona microfibra",
+        "category": "Hogar y limpieza",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "122",
+        "name": "Fregasuelos",
+        "category": "Hogar y limpieza",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "123",
+        "name": "Limpiador WC",
+        "category": "Hogar y limpieza",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "124",
+        "name": "Torcamans",
+        "category": "Hogar y limpieza",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "125",
+        "name": "Jabón de manos",
+        "category": "Cuidado personal",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "127",
+        "name": "Vela vaso aromática",
+        "category": "Hogar y limpieza",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "128",
+        "name": "Mascarilla capilar",
+        "category": "Cuidado personal",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "129",
+        "name": "Desodorante roll-on",
+        "category": "Cuidado personal",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "130",
+        "name": "Pimiento congelado variado",
+        "category": "Congelados",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "131",
+        "name": "Mini empanadillas de queso",
+        "category": "Sin Categoria",
+        "preferredStore": "Consum",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "132",
+        "name": "Jamón serrano",
+        "category": "Carne y embutidos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "133",
+        "name": "Toallitas de baño",
+        "category": "Cuidado personal",
+        "preferredStore": "Family Cash",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "134",
+        "name": "Queso en lonchas",
+        "category": "Lácteos y huevos",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "271",
+        "name": "Fanta Naranja",
+        "category": "Bebidas",
+        "preferredStore": null,
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      },
+      {
+        "id": "272",
+        "name": "Arroz curry",
+        "category": "Platos preparados",
+        "preferredStore": "Mercadona",
+        "inList": false,
+        "bought": false,
+        "prices": {}
+      }
+    ],
+    "trips": [],
+    "customCategories": [
+      "Bebidas",
+      "Carne y embutidos",
+      "Congelados",
+      "Cuidado personal",
+      "Despensa",
+      "Frutas y verduras",
+      "Helados y Postres",
+      "Herramientas",
+      "Hogar y limpieza",
+      "Lácteos y huevos",
+      "Mascotas",
+      "Otros",
+      "Panadería",
+      "Pescado",
+      "Platos preparados",
+      "Sin Categoria",
+      "Snacks y dulces"
+    ],
+    "customStores": [
+      "Alcampo",
+      "Carrefour",
+      "Consum",
+      "Dia",
+      "Eroski",
+      "Family Cash",
+      "Mercadona"
+    ],
+    "categoryIcons": {
+      "Congelados": "🥶",
+      "Helados y Postres": "🍨",
+      "Sin Categoria": "🤔"
+    },
+    "storeIcons": {},
+    "deletedCategories": [],
+    "deletedStores": [],
+    "syncUrl": "http://plantr753:zGTk9J8N@www.listacompra.es.mialias.net/backend/api.php",
+    "lastSyncDate": "2026-08-04T19:18:21.711Z"
+  }
+}
