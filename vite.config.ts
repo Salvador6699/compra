@@ -3,12 +3,38 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import path from "path";
+import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
   plugins: [
     TanStackRouterVite({ target: "react", autoCodeSplitting: true }),
     react(),
     tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      manifest: {
+        name: 'Lista de la Compra',
+        short_name: 'ListaCompra',
+        theme_color: '#ffffff',
+        icons: [
+          {
+            src: '/favicon.ico',
+            sizes: '64x64 32x32 24x24 16x16',
+            type: 'image/x-icon'
+          },
+          {
+            src: '/logo192.png',
+            type: 'image/png',
+            sizes: '192x192'
+          },
+          {
+            src: '/logo512.png',
+            type: 'image/png',
+            sizes: '512x512'
+          }
+        ]
+      }
+    })
   ],
   resolve: {
     alias: {
