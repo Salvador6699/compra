@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Html5Qrcode } from "html5-qrcode";
 import { Camera, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -15,37 +15,64 @@ export function BarcodeScanner({
   const [productData, setProductData] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
     if (open && !scannedCode) {
       // Necesita un pequeño delay para que el Dialog renderice el div #reader
       const timer = setTimeout(() => {
         if (!scannerRef.current) {
-          const scanner = new Html5QrcodeScanner(
-            "reader",
-            { fps: 10, qrbox: { width: 250, height: 150 } },
-            false
-          );
+          const scanner = new Html5Qrcode("reader");
           scannerRef.current = scanner;
 
-          scanner.render(
-            (decodedText) => {
-              // Éxito al leer código
-              scanner.clear();
-              setScannedCode(decodedText);
-              fetchProductData(decodedText);
-            },
-            (error) => {
-              // Silenciar errores continuos de lectura fallida (normales al enfocar)
-            }
-          );
+          const startCamera = (cameraIdOrConfig: any) => {
+            scanner.start(
+              cameraIdOrConfig,
+              { fps: 10, qrbox: { width: 250, height: 150 } },
+              (decodedText) => {
+                // Éxito al leer código
+                if (scanner.isScanning) {
+                  scanner.stop().then(() => {
+                    scanner.clear();
+                    setScannedCode(decodedText);
+                    fetchProductData(decodedText);
+                  }).catch(console.error);
+                }
+              },
+              (err) => {
+                // Silenciar errores continuos de lectura fallida (normales al enfocar)
+              }
+            ).catch((err) => {
+              console.error("Camera start error:", err);
+              // Si falla "environment", intentamos pedir la lista de cámaras y usar la última (suele ser la trasera)
+              if (cameraIdOrConfig.facingMode) {
+                Html5Qrcode.getCameras().then(devices => {
+                  if (devices && devices.length > 0) {
+                    startCamera(devices[devices.length - 1].id);
+                  } else {
+                    setError("No se han encontrado cámaras en el dispositivo.");
+                  }
+                }).catch(e => setError("Error al acceder a las cámaras."));
+              } else {
+                setError("Error al iniciar la cámara. Revisa los permisos.");
+              }
+            });
+          };
+
+          // Intentamos arrancar la cámara trasera por defecto
+          startCamera({ facingMode: "environment" });
         }
       }, 100);
       return () => clearTimeout(timer);
     } else {
       if (scannerRef.current) {
-        scannerRef.current.clear().catch(console.error);
+        if (scannerRef.current.isScanning) {
+          scannerRef.current.stop().then(() => {
+            scannerRef.current?.clear();
+          }).catch(console.error);
+        } else {
+          scannerRef.current.clear();
+        }
         scannerRef.current = null;
       }
     }
@@ -95,7 +122,13 @@ export function BarcodeScanner({
 
         {!scannedCode && (
           <div className="relative overflow-hidden rounded-xl bg-black min-h-[300px]">
-            <div id="reader" className="w-full border-none"></div>
+            {error ? (
+              <div className="absolute inset-0 flex items-center justify-center p-4 text-center text-sm text-destructive font-medium bg-destructive/10">
+                {error}
+              </div>
+            ) : (
+              <div id="reader" className="w-full border-none h-full"></div>
+            )}
           </div>
         )}
 
