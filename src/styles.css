@@ -196,4 +196,48 @@
       transform: translateY(-4px);
     }
   }
+
+  /* Glassmorphism Utilities */
+  .glass {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .dark .glass {
+    background: rgba(25, 25, 25, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  /* Floating island tab bar */
+  .floating-nav {
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 3rem);
+    max-width: 400px;
+    border-radius: 9999px;
+  }
+
+  /* Animated smooth background */
+  .animated-bg {
+    background: linear-gradient(-45deg, var(--color-background), var(--color-muted), var(--color-background), var(--color-muted));
+    background-size: 400% 400%;
+    animation: gradient-bg 15s ease infinite;
+  }
+  
+  @keyframes gradient-bg {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
 }
