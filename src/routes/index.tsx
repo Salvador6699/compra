@@ -1709,6 +1709,11 @@ function Index() {
         }}
       />
 
+      <BarcodeScanner 
+        open={scannerOpen} 
+        onOpenChange={setScannerOpen} 
+      />
+
       <IconPickerDialog
         open={iconPickerOpen}
         onClose={() => setIconPickerOpen(false)}
