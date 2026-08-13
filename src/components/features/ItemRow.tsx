@@ -176,7 +176,7 @@ export function ItemRow({
                     sb.text,
                   )}
                 >
-                  <DynamicIcon icon={sb.icon ?? "🏪"} fallback="🏪" className="h-3 w-3 object-cover rounded-sm" />
+                  <DynamicIcon icon={(sb as any).icon ?? "🏪"} fallback="🏪" className="h-3 w-3 object-cover rounded-sm" />
                   <span>{item.preferredStore}</span>
                 </Badge>
               );

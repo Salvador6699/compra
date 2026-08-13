@@ -113,6 +113,7 @@ import { EmptyState } from "@/components/features/EmptyState";
 import { BackupDialog } from "@/components/features/BackupDialog";
 import { FinishTripDialog } from "@/components/features/FinishTripDialog";
 import { ReceiptViewerDialog } from "@/components/features/ReceiptViewerDialog";
+import { BarcodeScanner } from "@/components/features/BarcodeScanner";
 
 
 export const Route = createFileRoute("/")({
@@ -215,6 +216,9 @@ function Index() {
   // Finish trip & receipt view modals
   const [finishTripModalOpen, setFinishTripModalOpen] = useState(false);
   const [viewingReceiptImage, setViewingReceiptImage] = useState<string | null>(null);
+
+  // Barcode Scanner Modal
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   // Theme toggle
   const [theme, setTheme] = useState<"light" | "dark">(() => {
@@ -775,14 +779,24 @@ function Index() {
             {/* Search & Add New Product Card */}
             <div className="rounded-2xl border border-border/70 bg-card p-3.5 space-y-3 shadow-sm">
               <div className="flex flex-col sm:flex-row items-center gap-2">
-                <div className="relative flex-1 w-full">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
-                  <Input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Buscar producto por nombre..."
-                    className="pl-9 rounded-xl border-border/60 bg-background/60 focus-visible:ring-primary/30"
-                  />
+                <div className="relative flex-1 w-full flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+                    <Input
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Buscar producto por nombre..."
+                      className="pl-9 rounded-xl border-border/60 bg-background/60 focus-visible:ring-primary/30"
+                    />
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setScannerOpen(true)}
+                    className="shrink-0 rounded-xl px-3 border-border/60 text-primary hover:text-primary/80 transition-colors shadow-xs"
+                    title="Escanear Código de Barras"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
                 </div>
                 <Button
                   onClick={handleOpenAddModal}
