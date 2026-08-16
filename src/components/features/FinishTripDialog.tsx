@@ -133,23 +133,27 @@ export function FinishTripDialog({
 
     for (const it of boughtItems) {
       const store = it.preferredStore ?? "Otro";
-      const pricesList = it.prices ? Object.entries(it.prices).filter(([, p]) => p && p > 0) : [];
+      const activeFormat = it.formats.find(f => f.id === it.selectedFormatId) || it.formats[0];
+      const pricesList = activeFormat && activeFormat.prices ? Object.entries(activeFormat.prices).filter(([, p]) => p && p > 0) : [];
       let itemPrice = 0;
 
-      if (it.preferredStore && it.prices?.[it.preferredStore]) {
-        itemPrice = it.prices[it.preferredStore]!;
+      if (it.preferredStore && activeFormat?.prices?.[it.preferredStore]) {
+        itemPrice = activeFormat.prices[it.preferredStore]!;
       } else if (pricesList.length > 0) {
         itemPrice = pricesList.reduce((min, cur) => (cur[1]! < min[1]! ? cur : min))[1]!;
       }
 
-      totals[store] = (totals[store] ?? 0) + itemPrice;
-      grand += itemPrice;
+      const qty = it.quantity || 1;
+      totals[store] = (totals[store] ?? 0) + (itemPrice * qty);
+      grand += (itemPrice * qty);
 
       items.push({
         name: it.name,
         category: it.category,
         preferredStore: it.preferredStore,
         price: itemPrice > 0 ? itemPrice : undefined,
+        quantity: qty,
+        formatId: activeFormat?.id,
       });
     }
 

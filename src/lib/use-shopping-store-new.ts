@@ -52,7 +52,6 @@ export type Store = {
   currentLocation: "Casa" | string;
   items: Item[];
   trips?: CompletedTrip[];
-  lastUsedCategory?: string;
   customCategories?: string[];
   customStores?: string[];
   categoryIcons?: Record<string, string>;
@@ -64,7 +63,7 @@ export type Store = {
 };
 
 function makeId() {
-  return crypto.randomUUID();
+  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 }
 
 function seedStore(): Store {
@@ -104,7 +103,7 @@ export function capitalize(str: string): string {
   return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
 }
 
-export const useShoppingStoreBase = create<{
+const useShoppingStoreBase = create<{
   store: Store;
   setStore: (updater: (s: Store) => Store) => void;
 }>()(
@@ -162,10 +161,6 @@ export function useShoppingStore() {
 
   const setCurrentLocation = useCallback((loc: string) => {
     setStore((s) => ({ ...s, currentLocation: loc }));
-  }, []);
-
-  const setLastUsedCategory = useCallback((cat: string) => {
-    setStore((s) => ({ ...s, lastUsedCategory: cat }));
   }, []);
 
   const addCustomCategory = useCallback((catName: string, icon?: string) => {
@@ -406,9 +401,8 @@ export function useShoppingStore() {
       preferredStore?: StoreName,
       formats?: ProductFormat[],
       note?: string,
-      id?: string,
     ) => {
-      const trimmed = name.trim();
+      const trimmed = capitalize(name);
       if (!trimmed) return;
       
       setStore((s) => {
@@ -423,7 +417,7 @@ export function useShoppingStore() {
                     inList: true,
                     preferredStore: preferredStore ?? it.preferredStore,
                     note: note !== undefined ? note : it.note,
-                    formats: formats ? formats : it.formats,
+                    formats: formats ? formats : it.formats, // In future we merge formats
                   }
                 : it,
             ),
@@ -434,8 +428,8 @@ export function useShoppingStore() {
           items: [
             ...s.items,
             {
-              id: id || crypto.randomUUID(),
-              name: capitalize(trimmed),
+              id: makeId(),
+              name: trimmed,
               category,
               inList: true,
               bought: false,
@@ -579,7 +573,6 @@ export function useShoppingStore() {
     store,
     hydrated,
     setCurrentLocation,
-    setLastUsedCategory,
     toggleInList,
     toggleBought,
     addItem,

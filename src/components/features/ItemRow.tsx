@@ -111,12 +111,18 @@ export function ItemRow({
   onToggleBought,
   onToggleInList,
   onEdit,
+  onUpdateQuantity,
+  onViewDetails,
+  mode = "compra",
 }: {
   item: Item;
   getStoreIcon?: (st: string) => string;
   onToggleBought: () => void;
   onToggleInList: () => void;
   onEdit: () => void;
+  onUpdateQuantity?: (delta: number) => void;
+  onViewDetails?: () => void;
+  mode?: "compra" | "catalogo";
 }) {
   const storeBadge = item.preferredStore
     ? (STORE_BADGE_STYLE[item.preferredStore] || { bg: "bg-muted", text: "text-muted-foreground" })
@@ -126,33 +132,75 @@ export function ItemRow({
     : null;
 
   // Best price calculation
-  const pricesList = item.prices ? Object.entries(item.prices).filter(([, p]) => p && p > 0) : [];
+  const activeFormat = item.formats.find(f => f.id === item.selectedFormatId) || item.formats[0];
+  const pricesList = activeFormat && activeFormat.prices ? Object.entries(activeFormat.prices).filter(([, p]) => p && p > 0) : [];
   const bestPrice = useMemo(() => {
     if (pricesList.length === 0) return null;
     return pricesList.reduce((min, cur) => (cur[1]! < min[1]! ? cur : min));
   }, [pricesList]);
 
+  const isActive = mode === "catalogo" ? item.inList : item.bought;
+  const handleToggle = mode === "catalogo" ? onToggleInList : onToggleBought;
+
   return (
-    <li className="group w-full flex items-center justify-between gap-3 rounded-2xl border border-border/40 bg-card/60 backdrop-blur-sm p-4 shadow-sm hover:shadow-lg hover:border-primary/40 hover:bg-card transition-all duration-300 active:scale-[0.98]">
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={onToggleBought}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") onToggleBought();
-        }}
-        className="flex-1 flex items-center gap-3.5 cursor-pointer min-w-0"
-      >
-        {item.image ? (
-          <img
-            src={item.image}
-            alt={item.name}
-            className="h-11 w-11 rounded-xl object-cover border-2 border-border/60 shrink-0 shadow-sm"
-          />
-        ) : (
-          <span className="h-6 w-6 rounded-full border-2 border-muted-foreground/40 bg-background/50 group-hover:border-primary/80 group-hover:bg-primary/10 transition-all duration-300 shadow-inner shrink-0" />
-        )}
-        <div className="min-w-0">
+    <li className="group w-full flex items-center justify-between gap-3 rounded-2xl border border-border/40 bg-card/60 backdrop-blur-sm p-3 shadow-sm hover:shadow-lg hover:border-primary/40 hover:bg-card transition-all duration-300 active:scale-[0.98]">
+      <div className="flex-1 flex items-center gap-3.5 min-w-0">
+        
+        {/* BIG CHECKBOX BUTTON */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleToggle();
+          }}
+          className={cn(
+            "shrink-0 p-1 flex items-center justify-center transition-transform active:scale-90",
+            isActive && "opacity-80"
+          )}
+        >
+          {activeFormat?.image ? (
+            <div className="relative">
+              <img
+                src={activeFormat.image}
+                alt={item.name}
+                className={cn(
+                  "h-14 w-14 rounded-xl object-cover border-2 shadow-sm transition-all",
+                  isActive ? (mode === "catalogo" ? "border-primary scale-95" : "border-emerald-500 scale-95") : "border-border/60"
+                )}
+              />
+              {isActive && (
+                <div className={cn(
+                  "absolute inset-0 backdrop-blur-[1px] rounded-xl flex items-center justify-center",
+                  mode === "catalogo" ? "bg-primary/20" : "bg-emerald-500/20"
+                )}>
+                  <div className={cn(
+                    "text-white rounded-full p-0.5 shadow-sm",
+                    mode === "catalogo" ? "bg-primary" : "bg-emerald-500"
+                  )}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <span className={cn(
+              "h-8 w-8 rounded-full border-2 transition-all duration-300 shadow-inner flex items-center justify-center",
+              isActive 
+                ? (mode === "catalogo" ? "bg-primary border-primary text-primary-foreground" : "bg-emerald-500 border-emerald-500 text-white") 
+                : "border-muted-foreground/40 bg-background/50 group-hover:border-primary/80 group-hover:bg-primary/10"
+            )}>
+              {isActive && (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              )}
+            </span>
+          )}
+        </button>
+
+        {/* ROW CONTENT (CLICK TO VIEW DETAILS) */}
+        <div 
+          className="min-w-0 flex-1 cursor-pointer py-2"
+          onClick={() => onViewDetails && onViewDetails()}
+        >
 
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-semibold text-foreground">{item.name}</span>
@@ -196,6 +244,27 @@ export function ItemRow({
       </div>
 
       <div className="flex items-center gap-1 shrink-0">
+        {item.inList && onUpdateQuantity && (
+          <div className="flex items-center bg-secondary/50 rounded-lg p-0.5 mr-1 border border-border/50">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onUpdateQuantity(-1); }}
+              className="text-muted-foreground hover:text-foreground p-1 hover:bg-background rounded-md transition-all h-7 w-7 flex items-center justify-center font-bold"
+            >
+              -
+            </button>
+            <span className="text-xs font-bold text-foreground w-4 text-center select-none">
+              {item.quantity || 1}
+            </span>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onUpdateQuantity(1); }}
+              className="text-muted-foreground hover:text-foreground p-1 hover:bg-background rounded-md transition-all h-7 w-7 flex items-center justify-center font-bold"
+            >
+              +
+            </button>
+          </div>
+        )}
         <button
           type="button"
           onClick={onEdit}

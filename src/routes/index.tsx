@@ -23,17 +23,20 @@ import {
   RotateCcw,
   Search,
   Settings,
+  LogOut,
   ShoppingBasket,
   ShoppingCart,
   Sparkles,
   Store as StoreIcon,
   Sun,
   Moon,
+  MapPin,
   Tag,
   Trash2,
   Upload,
   Wand,
   X,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -104,16 +107,19 @@ import {
 } from "@/lib/shopping-data";
 import { cn } from "@/lib/utils";
 import { BasketCalculator } from "@/components/basket-calculator";
+import { ItemRow } from "@/components/features/ItemRow";
 import { EditCategoryOrStoreDialog } from "@/components/features/EditCategoryOrStoreDialog";
 import { StoreFilterDialog } from "@/components/features/StoreFilterDialog";
 import { ItemFormDialog } from "@/components/features/ItemFormDialog";
-import { ItemRow } from "@/components/features/ItemRow";
+import { ItemDetailsDialog } from "@/components/features/ItemDetailsDialog";
 import { CategoryTitle } from "@/components/features/CategoryTitle";
 import { EmptyState } from "@/components/features/EmptyState";
 import { BackupDialog } from "@/components/features/BackupDialog";
 import { FinishTripDialog } from "@/components/features/FinishTripDialog";
 import { ReceiptViewerDialog } from "@/components/features/ReceiptViewerDialog";
-import { BarcodeScanner } from "@/components/features/BarcodeScanner";
+import { toast, Toaster } from "sonner";
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "@tanstack/react-router";
 
 
 export const Route = createFileRoute("/")({
@@ -157,6 +163,7 @@ const CATEGORY_EMOJI: Record<string, string> = {
 
 
 function Index() {
+  const router = useRouter();
   const {
     store,
     hydrated,
@@ -184,6 +191,7 @@ function Index() {
     syncCatalogPrices,
     isSyncing,
     syncError,
+    setCurrentLocation,
   } = useShoppingStore();
 
 
@@ -216,9 +224,6 @@ function Index() {
   // Finish trip & receipt view modals
   const [finishTripModalOpen, setFinishTripModalOpen] = useState(false);
   const [viewingReceiptImage, setViewingReceiptImage] = useState<string | null>(null);
-
-  // Barcode Scanner Modal
-  const [scannerOpen, setScannerOpen] = useState(false);
 
   // Theme toggle
   const [theme, setTheme] = useState<"light" | "dark">(() => {
@@ -257,6 +262,8 @@ function Index() {
     name: string;
     icon: string;
   } | null>(null);
+  
+  const [viewingItemDetails, setViewingItemDetails] = useState<Item | null>(null);
 
   // Inputs for adding custom categories and stores in Ajustes
   const [newCatInput, setNewCatInput] = useState("");
@@ -282,12 +289,11 @@ function Index() {
     },
     [store.storeIcons],
   );
-
   const allCategories = useMemo(() => {
     const deleted = new Set(store.deletedCategories ?? []);
     const set = new Set([...CATEGORIES, ...(store.customCategories ?? [])]);
     return Array.from(set)
-      .filter((c) => !deleted.has(c))
+      .filter((c) => typeof c === "string" && !deleted.has(c))
       .sort((a, b) => a.localeCompare(b, "es"));
   }, [store.customCategories, store.deletedCategories]);
 
@@ -295,7 +301,7 @@ function Index() {
     const deleted = new Set(store.deletedStores ?? []);
     const set = new Set([...STORES, ...(store.customStores ?? [])]);
     return Array.from(set)
-      .filter((s) => !deleted.has(s))
+      .filter((s) => typeof s === "string" && !deleted.has(s))
       .sort((a, b) => a.localeCompare(b, "es"));
   }, [store.customStores, store.deletedStores]);
 
@@ -425,29 +431,53 @@ function Index() {
   function handleSaveItem(
     name: string,
     category: Category,
-    preferredStore: StoreName | null,
-    prices: Partial<Record<StoreName, number>>,
+    preferredStore: StoreName | undefined,
+    formats: any[],
     note: string,
-    image?: string | null,
+    existingItemId?: string
   ) {
     if (editingItem) {
       updateItem(editingItem.id, {
         name,
         category,
-        preferredStore,
-        prices,
+        preferredStore: preferredStore ?? undefined,
         note,
-        image,
+        formats,
       });
     } else {
       addItem(
         name,
         category,
         preferredStore ?? undefined,
-        prices,
+        formats,
         note,
-        image ?? undefined,
+        existingItemId
       );
+    }
+
+    // Business Logic: Smart Price Comparison
+    if (formats && store.currentLocation) {
+      for (const format of formats) {
+        if (format.prices && format.prices[store.currentLocation] !== undefined) {
+          const currentPrice = format.prices[store.currentLocation];
+          let cheaperStore = null;
+          let cheaperPrice = currentPrice;
+          
+          for (const [st, p] of Object.entries(format.prices)) {
+             if (st !== store.currentLocation && p !== undefined && typeof p === "number" && p < cheaperPrice) {
+                 cheaperPrice = p;
+                 cheaperStore = st;
+             }
+          }
+          
+          if (cheaperStore) {
+             toast(`💡 Recuerda: Este formato está más barato en ${cheaperStore} (${cheaperPrice.toFixed(2)}€) que en ${store.currentLocation} (${currentPrice.toFixed(2)}€)`, {
+               duration: 6000,
+               style: { background: '#fef3c7', color: '#92400e', border: '1px solid #fbbf24' },
+             });
+          }
+        }
+      }
     }
 
     setItemDialogOpen(false);
@@ -474,6 +504,37 @@ function Index() {
     <div className="min-h-screen animated-bg text-foreground pb-24 font-sans antialiased transition-colors duration-300">
       {/* Header */}
       <header className="sticky top-0 z-30 glass border-b border-border/40 shadow-sm pt-safe">
+        {/* Global Location Bar */}
+        <div className="bg-primary/5 border-b border-border/30 px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-[11px] font-semibold text-primary/80">
+            <MapPin className="h-3 w-3" />
+            <span>UBICACIÓN ACTUAL</span>
+          </div>
+          <Select
+            value={store.currentLocation || "Casa"}
+            onValueChange={setCurrentLocation}
+          >
+            <SelectTrigger className="w-auto h-8 text-xs font-bold bg-background border-border/60 shadow-sm gap-2 border-0">
+              <SelectValue placeholder="Selecciona ubicación" />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="Casa">
+                <div className="flex items-center gap-2">
+                  <span>🏠</span>
+                  <span>Casa</span>
+                </div>
+              </SelectItem>
+              {allStores.map(st => (
+                <SelectItem key={st} value={st}>
+                  <div className="flex items-center gap-2">
+                    <DynamicIcon icon={getStoreIcon(st)} fallback="🏪" className="h-4 w-4 object-contain rounded-sm" />
+                    <span>{st}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <div className="mx-auto max-w-2xl px-4 py-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-primary to-accent grid place-items-center text-primary-foreground shadow-md shadow-primary/30">
@@ -658,6 +719,7 @@ function Index() {
                             onToggleBought={() => toggleBought(it.id)}
                             onToggleInList={() => toggleInList(it.id)}
                             onEdit={() => handleOpenEditModal(it)}
+                            onViewDetails={() => setViewingItemDetails(it)}
                           />
                         ))}
                       </ul>
@@ -700,6 +762,7 @@ function Index() {
                               onToggleBought={() => toggleBought(it.id)}
                               onToggleInList={() => toggleInList(it.id)}
                               onEdit={() => handleOpenEditModal(it)}
+                              onViewDetails={() => setViewingItemDetails(it)}
                             />
                           ))}
                         </ul>
@@ -789,14 +852,6 @@ function Index() {
                       className="pl-9 rounded-xl border-border/60 bg-background/60 focus-visible:ring-primary/30"
                     />
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => setScannerOpen(true)}
-                    className="shrink-0 rounded-xl px-3 border-border/60 text-primary hover:text-primary/80 transition-colors shadow-xs"
-                    title="Escanear Código de Barras"
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
                 </div>
                 <Button
                   onClick={handleOpenAddModal}
@@ -892,94 +947,17 @@ function Index() {
                       </div>
                     <ul className="space-y-2">
                       {items.map((it) => (
-                          <li
-                            key={it.id}
-                            className={cn(
-                              "flex items-center gap-3 rounded-2xl border bg-card/60 backdrop-blur-sm px-4 py-3.5 transition-all duration-300 hover:scale-[1.01]",
-                              it.inList
-                                ? "border-primary/40 bg-primary/10 shadow-sm"
-                                : "border-border/50 hover:border-primary/30 hover:shadow-sm",
-                            )}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => toggleInList(it.id)}
-                              aria-pressed={it.inList}
-                              className={cn(
-                                "h-6 w-6 rounded-full border-2 grid place-items-center shrink-0 transition-all duration-300",
-                                it.inList
-                                  ? "bg-gradient-to-br from-primary to-primary/80 border-primary text-primary-foreground shadow-sm"
-                                  : "border-muted-foreground/40 hover:border-primary/60 hover:bg-primary/5",
-                              )}
-                            >
-                              {it.inList && <Check className="h-4 w-4" />}
-                            </button>
-
-                            {it.image && (
-                              <img
-                                src={it.image}
-                                alt={it.name}
-                                className="h-10 w-10 rounded-xl object-cover border border-border/60 shrink-0 shadow-sm"
-                              />
-                            )}
-
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-sm font-semibold text-foreground">{it.name}</span>
-                                {it.preferredStore && (() => {
-                                  const cIcon = getStoreIcon(it.preferredStore);
-                                  const hasCustomIcon = !!cIcon;
-                                  if (hasCustomIcon) {
-                                    return (
-                                      <div title={it.preferredStore} className="shrink-0 flex items-center justify-center bg-white shadow-sm rounded-lg overflow-hidden h-8 w-8 border border-border/50">
-                                        <DynamicIcon icon={cIcon} fallback="🏪" className="h-full w-full object-cover p-0.5" />
-                                      </div>
-                                    );
-                                  }
-
-                                  const sb = STORE_BADGE_STYLE[it.preferredStore] || { bg: "bg-muted", text: "text-muted-foreground" };
-                                  return (
-                                    <Badge
-                                      variant="outline"
-                                      className={cn(
-                                        "text-[10px] px-1.5 py-0 h-4 border font-semibold flex items-center gap-1 shadow-xs",
-                                        sb.bg,
-                                        sb.text,
-                                      )}
-                                    >
-                                      <DynamicIcon icon={sb.icon ?? "🏪"} fallback="🏪" className="h-3 w-3 object-cover rounded-sm" />
-                                      <span>{it.preferredStore}</span>
-                                    </Badge>
-                                  );
-                                })()}
-                              </div>
-                              {it.note && (
-                                <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-0.5">
-                                  🏷️ {it.note}
-                                </p>
-                              )}
-                            </div>
-
-                            <div className="flex items-center gap-1 shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => handleOpenEditModal(it)}
-                                aria-label={`Editar ${it.name}`}
-                                className="text-muted-foreground/50 hover:text-foreground p-2 rounded-xl hover:bg-secondary transition-all"
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => removeItem(it.id)}
-                                aria-label={`Eliminar ${it.name}`}
-                                className="text-muted-foreground/40 hover:text-destructive p-2 rounded-xl hover:bg-destructive/10 transition-all"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </li>
-                        ))}
+                        <ItemRow
+                          key={it.id}
+                          item={it}
+                          mode="catalogo"
+                          getStoreIcon={getStoreIcon}
+                          onToggleInList={() => toggleInList(it.id)}
+                          onToggleBought={() => toggleBought(it.id)}
+                          onEdit={() => handleOpenEditModal(it)}
+                          onViewDetails={() => setViewingItemDetails(it)}
+                        />
+                      ))}
                     </ul>
                   </div>
                 )})}
@@ -1323,9 +1301,9 @@ function Index() {
                     const count = store.items.filter(
                       (i) =>
                         i.preferredStore === st ||
-                        (i.prices &&
-                          i.prices[st as StoreName] !== undefined &&
-                          i.prices[st as StoreName]! > 0),
+                        (i.formats?.[0]?.prices &&
+                          i.formats?.[0]?.prices[st as StoreName] !== undefined &&
+                          i.formats?.[0]?.prices[st as StoreName]! > 0),
                     ).length;
                     const icon = getStoreIcon(st);
 
@@ -1529,8 +1507,8 @@ function Index() {
             </div>
 
             {/* Info App */}
-            <div className="rounded-2xl border border-border/50 bg-muted/30 p-4 text-center space-y-1">
-              <p className="text-xs font-semibold text-foreground">Mi Lista de la Compra v2.0</p>
+            <div className="rounded-2xl border border-border/50 bg-muted/30 p-4 text-center space-y-1 mt-6">
+              <p className="text-xs font-semibold text-foreground">Mi Lista de la Compra Compartida v3.0</p>
               <p className="text-[11px] text-muted-foreground">
                 {store.items.length} productos en catálogo · {listItems.length} en la compra
               </p>
@@ -1708,12 +1686,17 @@ function Index() {
           }
         }}
       />
-
-      <BarcodeScanner 
-        open={scannerOpen} 
-        onOpenChange={setScannerOpen} 
+      
+      {/* Item Details Dialog */}
+      <ItemDetailsDialog
+        item={viewingItemDetails}
+        open={!!viewingItemDetails}
+        onClose={() => setViewingItemDetails(null)}
+        getStoreIcon={getStoreIcon}
+        getCategoryIcon={getCategoryIcon}
       />
 
+      <Toaster position="top-center" />
       <IconPickerDialog
         open={iconPickerOpen}
         onClose={() => setIconPickerOpen(false)}

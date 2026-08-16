@@ -29,11 +29,13 @@ export function BasketCalculator({ items, allStores, getStoreIcon }: BasketCalcu
       const itemDetails: { name: string; price: number }[] = [];
 
       for (const item of pendingItems) {
-        const price = item.prices?.[storeName as StoreName];
+        const activeFormat = item.formats.find(f => f.id === item.selectedFormatId) || item.formats[0];
+        const price = activeFormat?.prices?.[storeName as StoreName];
         if (price !== undefined && price > 0) {
-          total += price;
+          const qty = item.quantity || 1;
+          total += price * qty;
           itemsWithPriceCount++;
-          itemDetails.push({ name: item.name, price });
+          itemDetails.push({ name: item.name, price: price * qty });
         }
       }
 
@@ -59,13 +61,14 @@ export function BasketCalculator({ items, allStores, getStoreIcon }: BasketCalcu
     const breakdown: { itemName: string; bestStore: StoreName; bestPrice: number }[] = [];
 
     for (const item of pendingItems) {
-      if (!item.prices) continue;
+      const activeFormat = item.formats.find(f => f.id === item.selectedFormatId) || item.formats[0];
+      if (!activeFormat || !activeFormat.prices) continue;
 
       let minPrice: number | null = null;
       let bestStore: StoreName | null = null;
 
       for (const storeName of allStores) {
-        const p = item.prices[storeName as StoreName];
+        const p = activeFormat.prices[storeName as StoreName];
         if (p !== undefined && p > 0) {
           if (minPrice === null || p < minPrice) {
             minPrice = p;
@@ -75,9 +78,10 @@ export function BasketCalculator({ items, allStores, getStoreIcon }: BasketCalcu
       }
 
       if (minPrice !== null && bestStore !== null) {
-        mixedTotal += minPrice;
+        const qty = item.quantity || 1;
+        mixedTotal += minPrice * qty;
         itemsCovered++;
-        breakdown.push({ itemName: item.name, bestStore, bestPrice: minPrice });
+        breakdown.push({ itemName: item.name, bestStore, bestPrice: minPrice * qty });
       }
     }
 
@@ -100,7 +104,10 @@ export function BasketCalculator({ items, allStores, getStoreIcon }: BasketCalcu
   if (pendingItems.length === 0) return null;
 
   const totalPricedItems = pendingItems.filter(
-    (i) => i.prices && Object.values(i.prices).some((p) => p && p > 0),
+    (i) => {
+      const activeFormat = i.formats.find(f => f.id === i.selectedFormatId) || i.formats[0];
+      return activeFormat && Object.values(activeFormat.prices).some((p) => p !== undefined && p > 0);
+    }
   ).length;
 
   if (storeStats.length === 0) {

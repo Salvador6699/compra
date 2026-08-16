@@ -6,10 +6,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 
 export function BarcodeScanner({ 
   open, 
-  onOpenChange 
+  onOpenChange,
+  onProductFound,
 }: { 
   open: boolean; 
   onOpenChange: (open: boolean) => void;
+  onProductFound?: (product: any, barcode: string) => void;
 }) {
   const [scannedCode, setScannedCode] = useState<string | null>(null);
   const [productData, setProductData] = useState<any | null>(null);
@@ -174,18 +176,35 @@ export function BarcodeScanner({
                   <p><strong>Nutri-Score:</strong> {productData.nutriscore_grade ? productData.nutriscore_grade.toUpperCase() : "Desconocido"}</p>
                   <p><strong>Ingredientes:</strong> {productData.ingredients_text_es || productData.ingredients_text || "No declarados"}</p>
                 </div>
+                
+                {onProductFound && (
+                  <Button 
+                    className="w-full rounded-xl h-12 font-bold text-base shadow-md bg-primary hover:bg-primary/90"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      onProductFound(productData, scannedCode!);
+                      onOpenChange(false);
+                    }}
+                  >
+                    Usar este producto
+                  </Button>
+                )}
               </div>
             ) : null}
 
             <Button 
+              variant={onProductFound && productData ? "outline" : "default"}
               className="w-full rounded-xl h-11 font-semibold"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
                 setScannedCode(null);
                 setProductData(null);
                 setError(null);
               }}
             >
-              Escanear otro producto
+              {onProductFound && productData ? "Escanear otro distinto" : "Escanear otro producto"}
             </Button>
           </div>
         )}

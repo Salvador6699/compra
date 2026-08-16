@@ -39,6 +39,7 @@ import { Button } from "@/components/ui/button";
 
 import { DynamicIcon } from "@/components/dynamic-icon";
 import { IconPickerDialog } from "@/components/icon-picker-dialog";
+import { useScrollOnFocus } from "@/hooks/useScrollOnFocus";
 
 /** Helper to compress uploaded images to max 400px width WebP to conserve LocalStorage space */
 function compressImage(file: File, maxWidth = 400, quality = 0.8): Promise<string> {
@@ -124,6 +125,7 @@ export function EditCategoryOrStoreDialog({
   const [icon, setIcon] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const scrollOnFocus = useScrollOnFocus();
 
   useEffect(() => {
     if (open) {
@@ -157,7 +159,11 @@ export function EditCategoryOrStoreDialog({
     <Dialog open={open} onOpenChange={(o) => {
       if (!o) onClose();
     }}>
-      <DialogContent className="rounded-2xl max-w-sm">
+      <DialogContent 
+        hideCloseButton
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="rounded-2xl max-w-sm overflow-y-auto max-h-[100dvh] sm:max-h-[90vh]"
+      >
         <DialogHeader>
           <DialogTitle className="text-base font-bold flex items-center gap-2">
             <Pencil className="h-4 w-4 text-primary" />
@@ -184,6 +190,7 @@ export function EditCategoryOrStoreDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Escribe el nombre..."
+              onFocus={scrollOnFocus}
               className="rounded-xl text-xs"
             />
           </div>
@@ -195,7 +202,8 @@ export function EditCategoryOrStoreDialog({
               value={icon.startsWith("data:") || icon.startsWith("http") || icon.startsWith("lucide:") ? "" : icon}
               onChange={(e) => setIcon(e.target.value)}
               placeholder="Ej: 🍦, 💊, 🏬..."
-              className="rounded-xl text-xs text-center"
+              onFocus={scrollOnFocus}
+              className="rounded-xl text-xs pr-24"
             />
           </div>
 
@@ -242,14 +250,14 @@ export function EditCategoryOrStoreDialog({
           </div>
         </div>
 
-        <DialogFooter className="gap-2 sm:justify-between pt-1">
-          <Button type="button" variant="outline" onClick={onClose} className="rounded-xl text-xs flex-1">
+        <div className="sticky bottom-0 z-20 -mx-4 sm:-mx-6 -mb-4 sm:-mb-6 px-4 sm:px-6 pb-4 sm:pb-6 pt-4 bg-background border-t border-border/30 flex gap-3 mt-4">
+          <Button type="button" variant="outline" onClick={onClose} className="flex-1 h-14 text-base font-bold rounded-2xl">
             Cancelar
           </Button>
-          <Button type="button" onClick={handleSave} disabled={!name.trim()} className="rounded-xl text-xs px-4 flex-1 bg-primary font-semibold">
-            Guardar Cambios
+          <Button type="button" onClick={handleSave} disabled={!name.trim()} className="flex-1 h-14 text-base font-bold text-white shadow-lg bg-gradient-to-r from-primary to-primary/90 rounded-2xl">
+            Guardar
           </Button>
-        </DialogFooter>
+        </div>
 
         <IconPickerDialog
           open={pickerOpen}

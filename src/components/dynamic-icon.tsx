@@ -23,6 +23,7 @@ export function DynamicIcon({
   }
 
   const isImg =
+    icon.startsWith("/") ||
     icon.startsWith("data:image/") ||
     icon.startsWith("http://") ||
     icon.startsWith("https://") ||
