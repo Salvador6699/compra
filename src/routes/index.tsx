@@ -956,6 +956,7 @@ function Index() {
                           onToggleBought={() => toggleBought(it.id)}
                           onEdit={() => handleOpenEditModal(it)}
                           onViewDetails={() => setViewingItemDetails(it)}
+                          onDelete={() => removeItem(it.id)}
                         />
                       ))}
                     </ul>

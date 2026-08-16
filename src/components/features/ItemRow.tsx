@@ -113,6 +113,7 @@ export function ItemRow({
   onEdit,
   onUpdateQuantity,
   onViewDetails,
+  onDelete,
   mode = "compra",
 }: {
   item: Item;
@@ -122,6 +123,7 @@ export function ItemRow({
   onEdit: () => void;
   onUpdateQuantity?: (delta: number) => void;
   onViewDetails?: () => void;
+  onDelete?: () => void;
   mode?: "compra" | "catalogo";
 }) {
   const storeBadge = item.preferredStore
@@ -275,11 +277,15 @@ export function ItemRow({
         </button>
         <button
           type="button"
-          onClick={onToggleInList}
-          aria-label={`Quitar ${item.name} de la lista`}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (mode === "catalogo" && onDelete) onDelete();
+            else onToggleInList();
+          }}
+          aria-label={mode === "catalogo" ? `Eliminar ${item.name}` : `Quitar ${item.name} de la lista`}
           className="text-muted-foreground/50 hover:text-destructive p-1.5 rounded-lg hover:bg-destructive/10 transition-all duration-150"
         >
-          <X className="h-4 w-4" />
+          {mode === "catalogo" ? <Trash2 className="h-4 w-4" /> : <X className="h-4 w-4" />}
         </button>
       </div>
     </li>
