@@ -165,7 +165,7 @@ export function BarcodeScanner({
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-lg leading-tight truncate">{productData.product_name_es || productData.product_name || "Nombre desconocido"}</h3>
+                    <h3 className="font-bold text-lg leading-tight truncate">{productData.product_name_es || productData.product_name || productData.generic_name_es || productData.generic_name || productData.brands || "Nombre desconocido"}</h3>
                     <p className="text-sm text-muted-foreground truncate">{productData.brands || "Marca desconocida"}</p>
                     <p className="text-xs mt-1 text-muted-foreground truncate">{productData.quantity || ""}</p>
                   </div>

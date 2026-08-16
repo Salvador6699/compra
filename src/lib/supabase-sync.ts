@@ -169,7 +169,29 @@ export async function hydrateFromSupabase(): Promise<void> {
   isPulling = true;
   const remoteStore = await pullStore();
   if (remoteStore) {
-    useShoppingStoreBase.getState().setStore((s) => ({ ...s, ...remoteStore }));
+    const localStore = useShoppingStoreBase.getState().store;
+    
+    // Protección contra borrado accidental:
+    // Si Supabase está completamente vacío pero local tiene datos, 
+    // asumimos que Supabase es nuevo/falló y subimos los datos locales.
+    if (
+      remoteStore.items?.length === 0 && 
+      remoteStore.trips?.length === 0 && 
+      (localStore.items.length > 0 || (localStore.trips && localStore.trips.length > 0))
+    ) {
+      console.warn("Supabase está vacío pero hay datos locales. Protegiendo y subiendo datos locales a la nube...");
+      for (const item of localStore.items) {
+        await pushItem(item);
+      }
+      if (localStore.trips) {
+        for (const trip of localStore.trips) {
+          await pushTrip(trip);
+        }
+      }
+      await pushSettings(localStore);
+    } else {
+      useShoppingStoreBase.getState().setStore((s) => ({ ...s, ...remoteStore }));
+    }
   }
   isPulling = false;
 }

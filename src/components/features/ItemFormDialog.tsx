@@ -725,7 +725,8 @@ export function ItemFormDialog({
             }
           }
 
-          setName(product.product_name_es || product.product_name || "");
+          const bestName = product.product_name_es || product.product_name || product.generic_name_es || product.generic_name || product.brands || "";
+          setName(bestName);
           setImage(product.image_url || null);
           setFormatSize(parsedSize);
           setFormatUnit(parsedUnit as any);
