@@ -93,20 +93,34 @@ export function BarcodeScanner({
     setLoading(true);
     setError(null);
     try {
-      // Intentamos con Open Food Facts primero
-      let res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
-      let data = await res.json();
-      
-      // Si no lo encuentra, intentamos con Open Pet Food Facts
-      if (data.status !== 1 || !data.product) {
-        res = await fetch(`https://world.openpetfoodfacts.org/api/v2/product/${barcode}.json`);
-        data = await res.json();
+      const apis = [
+        "openfoodfacts",
+        "openbeautyfacts",
+        "openproductsfacts",
+        "openpetfoodfacts"
+      ];
+
+      let foundProduct = null;
+
+      for (const api of apis) {
+        try {
+          const res = await fetch(`https://world.${api}.org/api/v2/product/${barcode}.json`);
+          const data = await res.json();
+          
+          if (data.status === 1 && data.product) {
+            foundProduct = data.product;
+            break; // Salimos del bucle si encontramos el producto
+          }
+        } catch (e) {
+          console.warn(`Error buscando en ${api}:`, e);
+          // Continuamos con la siguiente API en caso de error
+        }
       }
       
-      if (data.status === 1 && data.product) {
-        setProductData(data.product);
+      if (foundProduct) {
+        setProductData(foundProduct);
       } else {
-        setError("Producto no encontrado en Open Food Facts ni Open Pet Food Facts.");
+        setError("Producto no encontrado en ninguna de las bases de datos libres.");
       }
     } catch (e) {
       setError("Error de conexión al consultar el producto.");

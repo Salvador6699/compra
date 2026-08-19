@@ -740,6 +740,8 @@ export function ItemFormDialog({
           else if (apiCats.includes("snack") || apiCats.includes("dulce")) setCategory("Snacks y dulces");
           else if (apiCats.includes("pan")) setCategory("Panadería");
           else if (apiCats.includes("pet") || apiCats.includes("perro") || apiCats.includes("gato") || apiCats.includes("dog") || apiCats.includes("cat")) setCategory("Mascotas");
+          else if (apiCats.includes("beauty") || apiCats.includes("cosmetic") || apiCats.includes("higiene") || apiCats.includes("cuidado") || apiCats.includes("piel") || apiCats.includes("cabello") || apiCats.includes("shampoo")) setCategory("Cuidado personal");
+          else if (apiCats.includes("limpieza") || apiCats.includes("hogar") || apiCats.includes("detergente") || apiCats.includes("clean")) setCategory("Hogar y limpieza");
         }}
       />
     </>
