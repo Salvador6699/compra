@@ -123,7 +123,14 @@ import { useRouter } from "@tanstack/react-router";
 import { useBackButton } from "@/hooks/use-back-button";
 
 
+type TabValue = "compra" | "catalogo" | "historial" | "ajustes";
+
 export const Route = createFileRoute("/")({
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      tab: (search.tab as TabValue) || "compra",
+    }
+  },
   head: () => ({
     meta: [
       { title: "Mi Lista de la Compra" },
@@ -197,21 +204,16 @@ function Index() {
 
 
 
-  const [tab, setTab] = useState<"compra" | "catalogo" | "historial" | "ajustes">(() => {
-    return (localStorage.getItem("ui_tab") as any) || "compra";
-  });
-
-  useBackButton(tab !== "compra", () => {
-    setTab("compra");
-  });
+  const { tab } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  
+  const setTab = (newTab: TabValue) => {
+    navigate({ search: { tab: newTab } });
+  };
 
   const [groupBy, setGroupBy] = useState<"category" | "store">(() => {
     return (localStorage.getItem("ui_groupBy") as any) || "category";
   });
-
-  useEffect(() => {
-    localStorage.setItem("ui_tab", tab);
-  }, [tab]);
 
   useEffect(() => {
     localStorage.setItem("ui_groupBy", groupBy);
