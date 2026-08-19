@@ -93,14 +93,20 @@ export function BarcodeScanner({
     setLoading(true);
     setError(null);
     try {
-      // Open Food Facts API (JSON)
-      const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
-      const data = await res.json();
+      // Intentamos con Open Food Facts primero
+      let res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
+      let data = await res.json();
+      
+      // Si no lo encuentra, intentamos con Open Pet Food Facts
+      if (data.status !== 1 || !data.product) {
+        res = await fetch(`https://world.openpetfoodfacts.org/api/v2/product/${barcode}.json`);
+        data = await res.json();
+      }
       
       if (data.status === 1 && data.product) {
         setProductData(data.product);
       } else {
-        setError("Producto no encontrado en la base de datos libre (Open Food Facts).");
+        setError("Producto no encontrado en Open Food Facts ni Open Pet Food Facts.");
       }
     } catch (e) {
       setError("Error de conexión al consultar el producto.");
@@ -144,7 +150,7 @@ export function BarcodeScanner({
             {loading ? (
               <div className="flex flex-col items-center justify-center p-6 gap-3 text-muted-foreground">
                 <RefreshCw className="w-6 h-6 animate-spin text-primary" />
-                <p className="text-sm font-medium">Buscando en Open Food Facts...</p>
+                <p className="text-sm font-medium">Buscando en bases de datos...</p>
               </div>
             ) : error ? (
               <div className="bg-destructive/10 text-destructive p-4 rounded-xl border border-destructive/20 text-sm font-medium">
