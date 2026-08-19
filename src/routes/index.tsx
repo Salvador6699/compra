@@ -241,6 +241,8 @@ function Index() {
     return "light";
   });
 
+  // (anyModalOpen movido debajo)
+
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
@@ -271,6 +273,27 @@ function Index() {
   } | null>(null);
   
   const [viewingItemDetails, setViewingItemDetails] = useState<Item | null>(null);
+
+  const anyModalOpen = 
+    iconPickerOpen || 
+    itemDialogOpen || 
+    finishTripModalOpen || 
+    storeFilterOpen || 
+    viewingReceiptImage !== null ||
+    backupOpen ||
+    editingIconTarget !== null ||
+    viewingItemDetails !== null;
+
+  useBackButton(anyModalOpen, () => {
+    if (iconPickerOpen) setIconPickerOpen(false);
+    else if (editingIconTarget) setEditingIconTarget(null);
+    else if (viewingItemDetails) setViewingItemDetails(null);
+    else if (itemDialogOpen) setItemDialogOpen(false);
+    else if (storeFilterOpen) setStoreFilterOpen(false);
+    else if (finishTripModalOpen) setFinishTripModalOpen(false);
+    else if (viewingReceiptImage !== null) setViewingReceiptImage(null);
+    else if (backupOpen) setBackupOpen(false);
+  });
 
   // Inputs for adding custom categories and stores in Ajustes
   const [newCatInput, setNewCatInput] = useState("");
