@@ -5,6 +5,7 @@ import { DynamicIcon } from "@/components/dynamic-icon";
 import { CATEGORIES, STORE_BADGE_STYLE, STORES, type StoreName } from "@/lib/shopping-data";
 import { Store as StoreIcon, Tag, Coins, Image as ImageIcon, Info, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useBackButton } from "@/hooks/use-back-button";
 
 export function ItemDetailsDialog({
   item,
@@ -24,6 +25,8 @@ export function ItemDetailsDialog({
   useEffect(() => {
     if (!open) setViewingImage(null);
   }, [open]);
+
+  useBackButton(viewingImage !== null, () => setViewingImage(null));
 
   if (!item) return null;
 
@@ -168,19 +171,19 @@ export function ItemDetailsDialog({
     {/* Visor de imagen a pantalla completa totalmente independiente del Dialog de Radix para evitar bugs */}
     {viewingImage && (
       <div 
-        className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center backdrop-blur-sm animate-in fade-in-0 p-4 sm:p-8"
-        onClick={() => setViewingImage(null)}
+        className="fixed inset-0 z-[100] bg-background flex items-center justify-center animate-in fade-in-0 p-4 sm:p-8"
+        onClick={() => window.history.back()}
       >
         <img 
           src={viewingImage} 
           alt="Ampliación" 
-          className="max-w-full max-h-[90dvh] object-contain rounded-md"
+          className="w-full h-full object-contain rounded-md"
           onClick={(e) => e.stopPropagation()} 
         />
         <button 
           type="button"
-          onClick={() => setViewingImage(null)}
-          className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 backdrop-blur-md transition-colors"
+          onClick={(e) => { e.stopPropagation(); window.history.back(); }}
+          className="absolute top-4 right-4 bg-muted/50 hover:bg-muted text-foreground rounded-full p-2 backdrop-blur-md transition-colors"
         >
           <X className="h-6 w-6" />
         </button>

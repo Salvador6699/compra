@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useScrollOnFocus } from "@/hooks/useScrollOnFocus";
+import { useBackButton } from "@/hooks/use-back-button";
 
 import { DynamicIcon } from "@/components/dynamic-icon";
 import { supabase } from "@/lib/supabase";
@@ -167,6 +168,12 @@ export function ItemFormDialog({
   const [existingItemId, setExistingItemId] = useState<string | undefined>(undefined);
   const [existingFormatId, setExistingFormatId] = useState<string | undefined>(undefined);
 
+  const [viewingImage, setViewingImage] = useState<string | null>(null);
+  useEffect(() => {
+    if (!open) setViewingImage(null);
+  }, [open]);
+  useBackButton(viewingImage !== null, () => setViewingImage(null));
+
   useEffect(() => {
     if (open) {
       setShowAddCategoryInput(false);
@@ -209,7 +216,8 @@ export function ItemFormDialog({
         setFormatUnit("u");
       }
     }
-  }, [item, open, allCategories, currentLocation]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item, open]);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -470,16 +478,24 @@ export function ItemFormDialog({
               className="hidden"
             />
             {image ? (
-              <div className="relative w-full h-36 rounded-xl overflow-hidden border border-border/60 bg-muted/30 group shadow-sm">
-                <img src={image} alt="Vista previa del producto" className="w-full h-full object-cover" />
-                <button
+              <div className="space-y-2">
+                <div className="relative w-full h-36 rounded-xl overflow-hidden border border-border/60 bg-muted/30 shadow-sm">
+                  <img 
+                    src={image} 
+                    alt="Vista previa del producto" 
+                    className="w-full h-full object-contain bg-background cursor-pointer" 
+                    onClick={() => setViewingImage(image)}
+                  />
+                </div>
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => setImage(null)}
-                  className="absolute top-2 right-2 bg-destructive/90 text-destructive-foreground p-1.5 rounded-lg shadow hover:bg-destructive transition-all"
-                  aria-label="Quitar foto"
+                  className="w-full rounded-xl text-xs font-semibold hover:bg-accent border-border/60"
                 >
-                  <X className="h-4 w-4" />
-                </button>
+                  <Trash2 className="h-4 w-4 mr-2 text-destructive" />
+                  Eliminar / Cambiar imagen
+                </Button>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2">
@@ -744,6 +760,27 @@ export function ItemFormDialog({
           else if (apiCats.includes("limpieza") || apiCats.includes("hogar") || apiCats.includes("detergente") || apiCats.includes("clean")) setCategory("Hogar y limpieza");
         }}
       />
+
+      {viewingImage && (
+        <div 
+          className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => window.history.back()}
+        >
+          <img 
+            src={viewingImage} 
+            alt="Preview" 
+            className="w-full h-full object-contain"
+            onClick={(e) => e.stopPropagation()} 
+          />
+          <button 
+            type="button"
+            onClick={(e) => { e.stopPropagation(); window.history.back(); }}
+            className="absolute top-4 right-4 bg-muted/50 hover:bg-muted text-foreground rounded-full p-2 backdrop-blur-md transition-colors"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+      )}
     </>
   );
 }
