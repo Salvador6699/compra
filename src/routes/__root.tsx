@@ -84,6 +84,21 @@ function RootComponent() {
     };
 
     initApp();
+
+    const handleFocus = () => {
+      if (document.visibilityState === "visible") {
+        hydrateFromSupabase();
+        startRealtimeSync();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleFocus);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleFocus);
+      window.removeEventListener("focus", handleFocus);
+    };
   }, []);
 
   if (!initialized) return null; // Avoid flicker
