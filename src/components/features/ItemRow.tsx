@@ -166,7 +166,7 @@ export function ItemRow({
                 src={activeFormat.image}
                 alt={item.name}
                 className={cn(
-                  "h-14 w-14 rounded-xl object-contain bg-white border-2 shadow-sm transition-all",
+                  "h-14 w-14 rounded-xl object-contain bg-background border-2 shadow-sm transition-all",
                   isActive ? (mode === "catalogo" ? "border-primary scale-95" : "border-emerald-500 scale-95") : "border-border/60"
                 )}
               />
