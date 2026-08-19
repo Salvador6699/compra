@@ -120,6 +120,7 @@ import { ReceiptViewerDialog } from "@/components/features/ReceiptViewerDialog";
 import { toast, Toaster } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "@tanstack/react-router";
+import { useBackButton } from "@/hooks/use-back-button";
 
 
 export const Route = createFileRoute("/")({
@@ -198,6 +199,10 @@ function Index() {
 
   const [tab, setTab] = useState<"compra" | "catalogo" | "historial" | "ajustes">(() => {
     return (localStorage.getItem("ui_tab") as any) || "compra";
+  });
+
+  useBackButton(tab !== "compra", () => {
+    setTab("compra");
   });
 
   const [groupBy, setGroupBy] = useState<"category" | "store">(() => {
