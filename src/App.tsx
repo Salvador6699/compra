@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { useProducts } from "@/hooks/useProducts";
+import { useWakeLock } from "@/hooks/useWakeLock";
+import { isSoundEnabled, setSoundEnabled } from "@/lib/soundEffects";
 import { Header } from "@/components/Header";
 import { QuickAddInput } from "@/components/QuickAddInput";
 import { SmartSuggestions } from "@/components/SmartSuggestions";
@@ -27,6 +29,25 @@ export function App() {
     refresh,
   } = useProducts();
 
+  // Screen Wake Lock: keeps screen awake in the supermarket when items are pending
+  const {
+    isSupported: isWakeLockSupported,
+    isActive: isWakeLockActive,
+    isEnabled: isWakeLockEnabled,
+    toggleEnabled: toggleWakeLock,
+  } = useWakeLock(activeProducts.length > 0);
+
+  // Sound effects state
+  const [soundActive, setSoundActive] = useState(() => isSoundEnabled());
+
+  const handleToggleSound = () => {
+    setSoundActive((prev) => {
+      const next = !prev;
+      setSoundEnabled(next);
+      return next;
+    });
+  };
+
   return (
     <div className="min-h-screen notebook-bg flex flex-col items-center">
       {/* Container constrained to mobile phone width for optimal one-hand ergonomics */}
@@ -37,6 +58,12 @@ export function App() {
           cartCount={cartProducts.length}
           isRealtimeConnected={isRealtimeConnected}
           isOnline={isOnline}
+          isWakeLockActive={isWakeLockActive}
+          isWakeLockEnabled={isWakeLockEnabled}
+          isWakeLockSupported={isWakeLockSupported}
+          onToggleWakeLock={toggleWakeLock}
+          isSoundActive={soundActive}
+          onToggleSound={handleToggleSound}
         />
 
         {/* Error notification banner if Supabase fails */}

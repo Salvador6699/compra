@@ -1,11 +1,17 @@
 import React from "react";
-import { Wifi, WifiOff, Sparkles } from "lucide-react";
+import { Wifi, WifiOff, Sparkles, Sun, Volume2, VolumeX } from "lucide-react";
 
 interface HeaderProps {
   activeCount: number;
   cartCount: number;
   isRealtimeConnected: boolean;
   isOnline: boolean;
+  isWakeLockActive: boolean;
+  isWakeLockEnabled: boolean;
+  isWakeLockSupported: boolean;
+  onToggleWakeLock: () => void;
+  isSoundActive: boolean;
+  onToggleSound: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -13,6 +19,12 @@ export const Header: React.FC<HeaderProps> = ({
   cartCount,
   isRealtimeConnected,
   isOnline,
+  isWakeLockActive,
+  isWakeLockEnabled,
+  isWakeLockSupported,
+  onToggleWakeLock,
+  isSoundActive,
+  onToggleSound,
 }) => {
   const todayFormatted = new Intl.DateTimeFormat("es-ES", {
     weekday: "long",
@@ -24,21 +36,68 @@ export const Header: React.FC<HeaderProps> = ({
     todayFormatted.charAt(0).toUpperCase() + todayFormatted.slice(1);
 
   return (
-    <header className="pt-4 pb-3 px-4 select-none">
+    <header className="pt-4 pb-2 px-4 select-none">
       <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-[#22201d] font-heading flex items-center gap-2">
-              <span>Libreta de la Compra</span>
-            </h1>
-          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-[#22201d] font-heading">
+            Libreta de la Compra
+          </h1>
           <p className="text-xs font-medium text-[#746f66] mt-0.5 capitalize">
             {capitalizedDate}
           </p>
         </div>
 
-        {/* Status indicators */}
-        <div className="flex items-center gap-2">
+        {/* Controls and Status indicators */}
+        <div className="flex items-center gap-1.5">
+          {/* Sound toggle button */}
+          <button
+            type="button"
+            onClick={onToggleSound}
+            aria-label={isSoundActive ? "Silenciar sonidos" : "Activar sonido de lápiz"}
+            title={isSoundActive ? "Sonido de lápiz activado" : "Sonido silenciado"}
+            className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all active:scale-90 ${
+              isSoundActive
+                ? "bg-[#faf6ee] text-[#2d6a4f] border-[#ded7c8] hover:bg-[#f3ede0]"
+                : "bg-stone-100 text-stone-400 border-stone-200"
+            }`}
+          >
+            {isSoundActive ? (
+              <Volume2 className="w-4 h-4" />
+            ) : (
+              <VolumeX className="w-4 h-4" />
+            )}
+          </button>
+
+          {/* Screen Wake Lock toggle button (keep screen on) */}
+          {isWakeLockSupported && (
+            <button
+              type="button"
+              onClick={onToggleWakeLock}
+              aria-label={
+                isWakeLockEnabled
+                  ? "Pantalla siempre encendida activada"
+                  : "Activar pantalla siempre encendida"
+              }
+              title={
+                isWakeLockActive
+                  ? "Pantalla siempre encendida (modo supermercado activo)"
+                  : isWakeLockEnabled
+                  ? "Pantalla encendida habilitada"
+                  : "Pantalla siempre encendida desactivada"
+              }
+              className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all active:scale-90 ${
+                isWakeLockActive
+                  ? "bg-amber-50 text-amber-600 border-amber-300 shadow-xs ring-2 ring-amber-200/60"
+                  : isWakeLockEnabled
+                  ? "bg-[#faf6ee] text-amber-600/70 border-[#ded7c8]"
+                  : "bg-stone-100 text-stone-400 border-stone-200"
+              }`}
+            >
+              <Sun className={`w-4 h-4 ${isWakeLockActive ? "animate-spin-slow" : ""}`} />
+            </button>
+          )}
+
+          {/* Live sync badge */}
           <div
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border shadow-xs transition-colors ${
               !isOnline
@@ -51,7 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
             {!isOnline ? (
               <>
                 <WifiOff className="w-3 h-3 text-amber-600" />
-                <span className="hidden sm:inline">Sin conexión</span>
+                <span className="hidden sm:inline">Offline</span>
               </>
             ) : isRealtimeConnected ? (
               <>
@@ -69,12 +128,12 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Mini counter bar */}
-      <div className="mt-3 flex items-center justify-between text-xs text-[#746f66] border-b border-[#e2dcce]/70 pb-2">
-        <div className="flex items-center gap-3">
+      <div className="mt-2.5 flex items-center justify-between text-xs text-[#746f66] border-b border-[#e2dcce]/70 pb-2">
+        <div className="flex items-center gap-2.5">
           <span className="font-medium text-[#22201d]">
             {activeCount === 0
               ? "Todo listo"
-              : `${activeCount} ${activeCount === 1 ? "cosa pendiente" : "cosas pendientes"}`}
+              : `${activeCount} ${activeCount === 1 ? "pendiente" : "pendientes"}`}
           </span>
           {cartCount > 0 && (
             <>

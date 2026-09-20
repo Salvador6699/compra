@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { Product, SuggestionProduct } from "@/types/database";
 import { triggerHaptic } from "./useHaptic";
+import { playPencilStroke, playEraseSound, playFinishChime } from "@/lib/soundEffects";
 
 const SPANISH_NUMBER_WORDS: Record<string, number> = {
   un: 1,
@@ -388,6 +389,11 @@ export function useProducts() {
 
     const nextComprado = !prod.comprado;
     triggerHaptic(nextComprado ? [15, 20] : 15);
+    if (nextComprado) {
+      playPencilStroke();
+    } else {
+      playEraseSound();
+    }
 
     setProducts((prev) =>
       prev.map((p) => (p.id === productId ? { ...p, comprado: nextComprado } : p))
@@ -399,14 +405,14 @@ export function useProducts() {
       .eq("id", productId);
 
     if (updateErr) {
-      console.error("Error toggling comprado:", updateErr);
-      fetchProducts();
+      console.warn("Error toggling comprado (saved locally):", updateErr);
     }
   };
 
   // Remove from list
   const removeFromList = async (productId: string) => {
     triggerHaptic(10);
+    playEraseSound();
     setProducts((prev) =>
       prev.map((p) =>
         p.id === productId ? { ...p, en_lista: false, comprado: false } : p
@@ -419,14 +425,14 @@ export function useProducts() {
       .eq("id", productId);
 
     if (err) {
-      console.error("Error removing from list:", err);
-      fetchProducts();
+      console.warn("Error removing from list (saved locally):", err);
     }
   };
 
   // Add suggestion to list (strictly 1 unit)
   const addSuggestion = async (productId: string) => {
     triggerHaptic(20);
+    playPencilStroke();
 
     setProducts((prev) =>
       prev.map((p) =>
@@ -452,6 +458,7 @@ export function useProducts() {
     if (purchasedItems.length === 0) return { count: 0 };
 
     triggerHaptic([30, 50, 40]);
+    playFinishChime();
 
     // Try Supabase RPC first
     try {
