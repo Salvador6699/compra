@@ -10,8 +10,14 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
+      workbox: {
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest}"],
+      },
       manifest: {
-        name: "Lista de la Compra",
+        name: "Libreta de la Compra",
         short_name: "La Compra",
         description: "Lista de la compra familiar en tiempo real, rápida y estilo libreta de papel.",
         theme_color: "#faf8f5",
@@ -51,5 +57,6 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
+    cssMinify: "lightningcss",
   },
 });
