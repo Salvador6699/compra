@@ -3,7 +3,25 @@ import { supabase } from "@/lib/supabase";
 import { Product, SuggestionProduct } from "@/types/database";
 import { triggerHaptic } from "./useHaptic";
 
-// Helper to parse quantities from natural typing (e.g., "3 panes", "leche x2", "2 de aceite")
+const SPANISH_NUMBER_WORDS: Record<string, number> = {
+  un: 1,
+  una: 1,
+  uno: 1,
+  dos: 2,
+  tres: 3,
+  cuatro: 4,
+  cinco: 5,
+  seis: 6,
+  siete: 7,
+  ocho: 8,
+  nueve: 9,
+  diez: 10,
+  doce: 12,
+  medio: 1,
+  media: 1,
+};
+
+// Helper to parse quantities from natural typing or voice (e.g. "3 panes", "dos de leche", "leche x2")
 export function parseInputQuantity(rawText: string): { name: string; quantity: number } {
   let text = rawText.trim();
   let quantity = 1;
@@ -17,10 +35,16 @@ export function parseInputQuantity(rawText: string): { name: string; quantity: n
     }
   }
 
-  // Case 2: "3 panes", "3 de leche", "3x leche"
-  const prefixMatch = text.match(/^(\d+)\s*(?:[xX]|\s+de|\s+)?\s+(.+)$/);
+  // Case 2: Numbers as digits or Spanish words at the start
+  // e.g. "3 panes", "dos de leche", "cuatro bricks de leche", "seis huevos"
+  const prefixRegex = /^(\d+|un|una|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|doce|medio|media)\s*(?:[xX]|\s+de|\s+kilos?\s+de|\s+litros?\s+de|\s+paquetes?\s+de|\s+bricks?\s+de|\s+latas?\s+de|\s+botellas?\s+de|\s+docenas?\s+de)?\s+(.+)$/i;
+  const prefixMatch = text.match(prefixRegex);
+
   if (prefixMatch) {
-    const parsedQty = parseInt(prefixMatch[1], 10);
+    const rawQty = prefixMatch[1].toLowerCase();
+    const parsedNum = parseInt(rawQty, 10);
+    const parsedQty = !isNaN(parsedNum) ? parsedNum : SPANISH_NUMBER_WORDS[rawQty] || 1;
+
     if (parsedQty > 0 && parsedQty <= 99) {
       return { name: prefixMatch[2].trim(), quantity: parsedQty };
     }
@@ -29,23 +53,29 @@ export function parseInputQuantity(rawText: string): { name: string; quantity: n
   return { name: text, quantity };
 }
 
-// Helper to parse multiple products from commas, newlines, or conjunctions
+// Helper to parse multiple products from voice dictation, commas, newlines, or conjunctions
 export function parseBulkInput(raw: string): Array<{ name: string; quantity: number }> {
   if (!raw.trim()) return [];
 
-  const cleanRaw = raw.replace(/\r\n/g, "\n");
-  let segments: string[] = [];
+  // 1. Clean conversational leading verbs common in voice dictation ("apunta leche y pan", "comprar manzanas y peras")
+  let cleaned = raw.replace(/^(?:añade|añadir|apunta|apuntar|comprar|necesito|necesitamos|pon|poner|traer|hay que comprar)\s+/i, "");
 
-  if (cleanRaw.includes("\n")) {
-    segments = cleanRaw.split("\n");
-  } else if (cleanRaw.includes(",")) {
-    segments = cleanRaw.split(",");
-  } else if (/\s+(?:y|e)\s+/i.test(cleanRaw)) {
-    segments = cleanRaw.split(/\s+(?:y|e)\s+/i);
-  } else {
-    segments = [cleanRaw];
-  }
+  // 2. Normalize line breaks
+  cleaned = cleaned.replace(/\r\n/g, "\n");
 
+  // 3. Convert conjunctions " y " or " e " into commas to split items naturally
+  // e.g. "leche, pan y café" -> "leche, pan, café"
+  // "leche y pan" -> "leche, pan"
+  cleaned = cleaned.replace(/\s+(?:y|e)\s+/gi, ", ");
+
+  // 4. In spoken Spanish without commas, users often say: "dos leches tres panes seis huevos"
+  // Detect transitions where a number/word-number is preceded by text and separate with comma
+  const numTokens = "un|una|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|\\d+";
+  const numTransitionRegex = new RegExp(`([^,;\\n\\s]+)\\s+(?=(?:${numTokens})\\s+(?:de\\s+)?[a-záéíóúñ]+)`, "gi");
+  cleaned = cleaned.replace(numTransitionRegex, "$1, ");
+
+  // 5. Split by comma, semicolon or newline
+  const segments = cleaned.split(/[,;\n]+/);
   const results: Array<{ name: string; quantity: number }> = [];
 
   for (const seg of segments) {
@@ -54,7 +84,12 @@ export function parseBulkInput(raw: string): Array<{ name: string; quantity: num
 
     const { name, quantity } = parseInputQuantity(cleanedSeg);
     if (name) {
-      results.push({ name, quantity });
+      // Clean up punctuation and capitalize
+      const cleanName = name.replace(/[.,;]+$/, "").trim();
+      if (cleanName) {
+        const formatted = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+        results.push({ name: formatted, quantity });
+      }
     }
   }
 

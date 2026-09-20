@@ -195,13 +195,30 @@ export const QuickAddInput: React.FC<QuickAddInputProps> = ({
         </button>
       </form>
 
-      {/* Multiple items preview pill if commas or newlines detected */}
+      {/* Multiple items preview pill if multiple items detected */}
       {bulkItems.length > 1 && (
-        <div className="mt-1.5 px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-semibold flex items-center justify-between animate-in fade-in">
-          <span>Se añadirán {bulkItems.length} productos a la vez:</span>
-          <span className="text-[11px] text-emerald-700 font-normal">
-            pulsa Enter o [+]
-          </span>
+        <div className="mt-2 p-2.5 rounded-2xl bg-[#f4faec] border border-[#d4eac2] text-[#24543f] text-xs animate-in fade-in space-y-1.5 shadow-2xs">
+          <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#24543f]">
+            <span>Se detectaron {bulkItems.length} productos:</span>
+            <span className="text-[10px] font-medium text-[#3b6f59]">
+              pulsa [+] o Enter
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {bulkItems.map((b, idx) => (
+              <span
+                key={idx}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white border border-[#d4eac2] text-xs font-medium text-[#22201d] shadow-2xs"
+              >
+                <span>{b.name}</span>
+                {b.quantity > 1 && (
+                  <span className="text-[10px] font-bold text-[#2d6a4f] bg-emerald-50 px-1.5 py-0.2 rounded">
+                    x{b.quantity}
+                  </span>
+                )}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 
