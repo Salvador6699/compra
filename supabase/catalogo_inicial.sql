@@ -8,8 +8,15 @@
 -- https://supabase.com/dashboard/project/_/sql
 -- ==============================================================================
 
--- 1. Asegurar extensión UUID
+-- 1. Asegurar extensión UUID y columnas necesarias en products
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS cantidad INTEGER DEFAULT 1 NOT NULL;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS ultima_cantidad_comprada INTEGER DEFAULT 1 NOT NULL;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS dias_por_unidad NUMERIC DEFAULT 7.0 NOT NULL;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS total_unidades_compradas INTEGER DEFAULT 0 NOT NULL;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS orden_recorrido NUMERIC DEFAULT 100.0 NOT NULL;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS en_lista_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
 
 -- 2. Tabla temporal para inserción masiva limpia y segura
 CREATE TEMP TABLE temp_catalogo (
