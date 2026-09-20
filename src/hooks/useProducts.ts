@@ -98,17 +98,23 @@ export function parseBulkInput(raw: string): Array<{ name: string; quantity: num
 }
 
 export function useProducts() {
-  const [products, setProducts] = useState<Product[]>(() => {
-    try {
-      const cached = localStorage.getItem("libreta_products");
-      return cached ? JSON.parse(cached) : [];
-    } catch {
-      return [];
-    }
-  });
-  const [loading, setLoading] = useState(products.length === 0);
-  const [error, setError] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  // Si no hay conexión al entrar, cargar de local; si hay conexión, empezar limpio y cargar de Supabase
+  const [products, setProducts] = useState<Product[]>(() => {
+    if (!navigator.onLine) {
+      try {
+        const cached = localStorage.getItem("libreta_products");
+        return cached ? JSON.parse(cached) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
 
   // Sorting mode: 'route' (learned walking path in supermarket) or 'alpha' (A-Z)
@@ -134,27 +140,33 @@ export function useProducts() {
     });
   }, []);
 
-  // Sync to localStorage for offline and zero-drop resilience
+  // Sincronización condicional: si hay conexión, borrar local; si no hay conexión, persistir local
   useEffect(() => {
-    try {
-      localStorage.setItem("libreta_products", JSON.stringify(products));
-    } catch {}
-  }, [products]);
+    if (!isOnline) {
+      try {
+        localStorage.setItem("libreta_products", JSON.stringify(products));
+      } catch {}
+    } else {
+      try {
+        localStorage.removeItem("libreta_products");
+      } catch {}
+    }
+  }, [products, isOnline]);
 
-  // Monitor network status
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
-  }, []);
-
-  // Initial fetch
+  // Initial fetch / refresh
   const fetchProducts = useCallback(async () => {
+    if (!navigator.onLine) {
+      setIsOnline(false);
+      try {
+        const cached = localStorage.getItem("libreta_products");
+        if (cached) {
+          setProducts(JSON.parse(cached));
+        }
+      } catch {}
+      setLoading(false);
+      return;
+    }
+
     try {
       setError(null);
       const { data, error: fetchErr } = await supabase
@@ -164,29 +176,71 @@ export function useProducts() {
 
       if (fetchErr) {
         setError(fetchErr.message);
+        // Fallback a local solo si falla la consulta
+        try {
+          const cached = localStorage.getItem("libreta_products");
+          if (cached) {
+            setProducts(JSON.parse(cached));
+          }
+        } catch {}
         return;
       }
 
-      if (data && data.length > 0) {
-        const normalized = data.map((p) => ({
-          ...p,
-          cantidad: p.cantidad ?? 1,
-          ultima_cantidad_comprada: p.ultima_cantidad_comprada ?? 1,
-          dias_por_unidad: Number(p.dias_por_unidad ?? p.intervalo_dias_promedio ?? 7),
-          total_unidades_compradas: p.total_unidades_compradas ?? p.total_compras ?? 0,
-          orden_recorrido: Number(p.orden_recorrido ?? 100),
-        }));
+      // Conexión exitosa: normalizar (incluso si está vacía [])
+      const normalized = (data || []).map((p) => ({
+        ...p,
+        cantidad: p.cantidad ?? 1,
+        ultima_cantidad_comprada: p.ultima_cantidad_comprada ?? 1,
+        dias_por_unidad: Number(p.dias_por_unidad ?? p.intervalo_dias_promedio ?? 7),
+        total_unidades_compradas: p.total_unidades_compradas ?? p.total_compras ?? 0,
+        orden_recorrido: Number(p.orden_recorrido ?? 100),
+      }));
 
-        setProducts(normalized);
-      }
+      setProducts(normalized);
+      setIsOnline(true);
+
+      // Borrar explícitamente el almacenamiento local
+      try {
+        localStorage.removeItem("libreta_products");
+      } catch {}
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error al cargar productos";
       console.error("Error fetching products:", err);
       setError(msg);
+      try {
+        const cached = localStorage.getItem("libreta_products");
+        if (cached) {
+          setProducts(JSON.parse(cached));
+        }
+      } catch {}
     } finally {
       setLoading(false);
     }
   }, []);
+
+  // Monitor network status
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      fetchProducts();
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      setProducts((curr) => {
+        try {
+          localStorage.setItem("libreta_products", JSON.stringify(curr));
+        } catch {}
+        return curr;
+      });
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [fetchProducts]);
 
   // Supabase Realtime Subscription
   useEffect(() => {
