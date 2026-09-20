@@ -186,6 +186,10 @@ INSERT INTO temp_catalogo (name, intervalo, dias_unidad, dias_retraso) VALUES
 -- 3. INSERTAR EN LA TABLA PRODUCTS
 -- Si el producto ya existía por nombre, actualiza su configuración de frecuencia
 -- ==============================================================================
+-- Fecha de compra: ayer sábado (CURRENT_DATE - 1)
+-- - Semanales (7 días): se sugerirán el próximo sábado
+-- - Quincenales (14 días): se sugerirán el siguiente sábado (dentro de 2 semanas)
+-- - Hoy domingo: 0 sugerencias (lista y sugerencias limpias para empezar la semana)
 INSERT INTO public.products (
     name,
     cantidad,
@@ -206,7 +210,7 @@ SELECT
     1 AS cantidad,
     false AS en_lista,
     false AS comprado,
-    CURRENT_DATE - t.dias_retraso AS ultima_compra,
+    CURRENT_DATE - 1 AS ultima_compra,
     1 AS ultima_cantidad_comprada,
     t.dias_unidad AS dias_por_unidad,
     t.intervalo AS intervalo_dias_promedio,
