@@ -29,6 +29,38 @@ export function parseInputQuantity(rawText: string): { name: string; quantity: n
   return { name: text, quantity };
 }
 
+// Helper to parse multiple products from commas, newlines, or conjunctions
+export function parseBulkInput(raw: string): Array<{ name: string; quantity: number }> {
+  if (!raw.trim()) return [];
+
+  const cleanRaw = raw.replace(/\r\n/g, "\n");
+  let segments: string[] = [];
+
+  if (cleanRaw.includes("\n")) {
+    segments = cleanRaw.split("\n");
+  } else if (cleanRaw.includes(",")) {
+    segments = cleanRaw.split(",");
+  } else if (/\s+(?:y|e)\s+/i.test(cleanRaw)) {
+    segments = cleanRaw.split(/\s+(?:y|e)\s+/i);
+  } else {
+    segments = [cleanRaw];
+  }
+
+  const results: Array<{ name: string; quantity: number }> = [];
+
+  for (const seg of segments) {
+    const cleanedSeg = seg.replace(/^[\s\-*•\d.)]+/, "").trim();
+    if (!cleanedSeg) continue;
+
+    const { name, quantity } = parseInputQuantity(cleanedSeg);
+    if (name) {
+      results.push({ name, quantity });
+    }
+  }
+
+  return results;
+}
+
 export function useProducts() {
   const [products, setProducts] = useState<Product[]>(() => {
     try {
@@ -197,86 +229,92 @@ export function useProducts() {
     );
   }, [products]);
 
-  // Quick Add / Reactivate with Quantity
+  // Quick Add / Reactivate with Quantity (supports single or multi-item bulk entry)
   const addProduct = async (rawInput: string, explicitQty?: number) => {
-    const { name, quantity: parsedQty } = parseInputQuantity(rawInput);
-    if (!name) return;
+    const items = parseBulkInput(rawInput);
+    if (items.length === 0) return;
 
-    const finalQuantity = Math.max(1, explicitQty || parsedQty || 1);
-    triggerHaptic(20);
+    triggerHaptic(items.length > 1 ? [20, 30, 20] : 20);
 
-    // Check if product already exists (case-insensitive)
-    const existing = products.find(
-      (p) => p.name.trim().toLowerCase() === name.toLowerCase()
-    );
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      // For single item, explicitQty overrides if specified
+      const finalQuantity = Math.max(1, items.length === 1 && explicitQty ? explicitQty : item.quantity);
+      const name = item.name;
 
-    if (existing) {
-      // Optimistic update
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.id === existing.id
-            ? { ...p, en_lista: true, comprado: false, cantidad: finalQuantity }
-            : p
-        )
+      // Check if product already exists (case-insensitive)
+      const existing = products.find(
+        (p) => p.name.trim().toLowerCase() === name.toLowerCase()
       );
 
-      const { error: updateErr } = await supabase
-        .from("products")
-        .update({
-          en_lista: true,
-          comprado: false,
-          cantidad: finalQuantity,
-        })
-        .eq("id", existing.id);
+      if (existing) {
+        // Optimistic update
+        setProducts((prev) =>
+          prev.map((p) =>
+            p.id === existing.id
+              ? { ...p, en_lista: true, comprado: false, cantidad: finalQuantity }
+              : p
+          )
+        );
 
-      if (updateErr) {
-        console.warn("Supabase update error (persisting locally):", updateErr);
-      }
-    } else {
-      const tempId = crypto.randomUUID();
-      const newProd: Product = {
-        id: tempId,
-        name,
-        cantidad: finalQuantity,
-        en_lista: true,
-        comprado: false,
-        ultima_compra: null,
-        ultima_cantidad_comprada: finalQuantity,
-        dias_por_unidad: 7,
-        intervalo_dias_promedio: 7,
-        total_compras: 0,
-        total_unidades_compradas: 0,
-        created_at: new Date().toISOString(),
-      };
+        const { error: updateErr } = await supabase
+          .from("products")
+          .update({
+            en_lista: true,
+            comprado: false,
+            cantidad: finalQuantity,
+          })
+          .eq("id", existing.id);
 
-      setProducts((prev) =>
-        [...prev, newProd].sort((a, b) =>
-          a.name.localeCompare(b.name, "es", { sensitivity: "base" })
-        )
-      );
-
-      const { data, error: insertErr } = await supabase
-        .from("products")
-        .insert({
+        if (updateErr) {
+          console.warn("Supabase update error (persisting locally):", updateErr);
+        }
+      } else {
+        const tempId = crypto.randomUUID();
+        const newProd: Product = {
+          id: tempId,
           name,
           cantidad: finalQuantity,
           en_lista: true,
           comprado: false,
+          ultima_compra: null,
           ultima_cantidad_comprada: finalQuantity,
           dias_por_unidad: 7,
           intervalo_dias_promedio: 7,
           total_compras: 0,
           total_unidades_compradas: 0,
-        })
-        .select()
-        .single();
+          created_at: new Date().toISOString(),
+        };
 
-      if (insertErr) {
-        console.warn("Supabase insert error (persisting locally):", insertErr);
-      } else if (data) {
         setProducts((prev) =>
-          prev.map((p) => (p.id === tempId ? (data as Product) : p))
+          [...prev, newProd].sort((a, b) =>
+            a.name.localeCompare(b.name, "es", { sensitivity: "base" })
+          )
         );
+
+        const { data, error: insertErr } = await supabase
+          .from("products")
+          .insert({
+            name,
+            cantidad: finalQuantity,
+            en_lista: true,
+            comprado: false,
+            ultima_cantidad_comprada: finalQuantity,
+            dias_por_unidad: 7,
+            intervalo_dias_promedio: 7,
+            total_compras: 0,
+            total_unidades_compradas: 0,
+          })
+          .select()
+          .single();
+
+        if (insertErr) {
+          console.warn("Supabase insert error (persisting locally):", insertErr);
+        } else if (data) {
+          setProducts((prev) =>
+            prev.map((p) => (p.id === tempId ? (data as Product) : p))
+          );
+        }
       }
     }
   };
