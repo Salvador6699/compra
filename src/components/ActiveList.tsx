@@ -57,11 +57,11 @@ export const ActiveList: React.FC<ActiveListProps> = ({
 
                 {/* Product name & quantity badge */}
                 <div className="flex items-baseline gap-2 min-w-0">
-                  <span className="text-base font-medium text-[#22201d] pencil-strikethrough leading-tight truncate">
+                  <span className="text-base font-medium text-[#22201d] pencil-strikethrough leading-snug line-clamp-2">
                     {item.name}
                   </span>
                   {qty > 1 && (
-                    <span className="text-xs font-bold text-[#2d6a4f] bg-emerald-50 px-2 py-0.5 rounded-full flex-shrink-0">
+                    <span className="text-xs font-bold text-[#2d6a4f] bg-emerald-50 px-1.5 py-0.2 rounded-md flex-shrink-0">
                       x{qty}
                     </span>
                   )}
@@ -69,7 +69,7 @@ export const ActiveList: React.FC<ActiveListProps> = ({
               </button>
 
               {/* Quantity stepper for quick one-thumb adjustments */}
-              <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+              <div className="flex items-center gap-0.5 flex-shrink-0 ml-1.5">
                 <div className="flex items-center bg-[#f5f2eb] rounded-xl border border-[#ded8cb] p-0.5">
                   <button
                     type="button"
@@ -78,14 +78,14 @@ export const ActiveList: React.FC<ActiveListProps> = ({
                       e.stopPropagation();
                       onAdjustQuantity(item.id, -1);
                     }}
-                    className="w-7 h-8 flex items-center justify-center text-[#746f66] hover:text-[#22201d] disabled:opacity-25 active:scale-90 transition-transform"
+                    className="w-6 h-7 flex items-center justify-center text-[#746f66] hover:text-[#22201d] disabled:opacity-25 active:scale-90 transition-transform"
                     title="Restar cantidad"
                     aria-label={`Restar cantidad de ${item.name}`}
                   >
-                    <Minus className="w-3.5 h-3.5" />
+                    <Minus className="w-3 h-3" />
                   </button>
 
-                  <span className="w-6 text-center text-xs font-bold text-[#22201d]">
+                  <span className="w-5 text-center text-xs font-bold text-[#22201d]">
                     {qty}
                   </span>
 
@@ -95,11 +95,11 @@ export const ActiveList: React.FC<ActiveListProps> = ({
                       e.stopPropagation();
                       onAdjustQuantity(item.id, 1);
                     }}
-                    className="w-7 h-8 flex items-center justify-center text-[#746f66] hover:text-[#22201d] active:scale-90 transition-transform"
+                    className="w-6 h-7 flex items-center justify-center text-[#746f66] hover:text-[#22201d] active:scale-90 transition-transform"
                     title="Añadir cantidad"
                     aria-label={`Añadir más cantidad de ${item.name}`}
                   >
-                    <Plus className="w-3.5 h-3.5" />
+                    <Plus className="w-3 h-3" />
                   </button>
                 </div>
 
@@ -112,9 +112,9 @@ export const ActiveList: React.FC<ActiveListProps> = ({
                   }}
                   title="Quitar de la lista"
                   aria-label={`Quitar ${item.name} de la lista`}
-                  className="w-8 h-8 flex items-center justify-center rounded-xl text-[#a6a095] hover:text-[#d90429] hover:bg-red-50 active:scale-90 transition-all ml-1"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg text-[#a6a095] hover:text-[#d90429] hover:bg-red-50 active:scale-90 transition-all ml-0.5"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

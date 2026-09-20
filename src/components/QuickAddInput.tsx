@@ -93,7 +93,7 @@ export const QuickAddInput: React.FC<QuickAddInputProps> = ({
             onFocus={() => {
               if (value.trim()) setShowDropdown(true);
             }}
-            placeholder="¿Qué falta? (ej: 3 panes, leche x2)"
+            placeholder="¿Qué falta? (ej: 2 leche, pan)"
             className="w-full h-13 pl-4 pr-16 text-base rounded-2xl bg-white border border-[#ded8cb] text-[#22201d] placeholder:text-[#a6a095] focus:outline-none focus:ring-2 focus:ring-[#2d6a4f]/30 focus:border-[#2d6a4f] shadow-sm transition-all"
             autoComplete="off"
             autoCorrect="off"

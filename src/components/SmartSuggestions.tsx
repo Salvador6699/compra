@@ -1,5 +1,5 @@
-import React from "react";
-import { Plus, Sparkles } from "lucide-react";
+import React, { useState } from "react";
+import { Plus, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { SuggestionProduct } from "@/types/database";
 
 interface SmartSuggestionsProps {
@@ -11,24 +11,43 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({
   suggestions,
   onAddSuggestion,
 }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   if (suggestions.length === 0) {
     return null;
   }
 
+  // On mobile, show first 4 items or all if expanded
+  const visibleItems = isExpanded ? suggestions : suggestions.slice(0, 6);
+
   return (
-    <div className="px-4 py-2 select-none">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#746f66]">
-          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-          <span>Toca reponer (Sugerencias)</span>
+    <section className="px-4 py-1.5 select-none" aria-label="Sugerencias de reposición">
+      {/* Header bar */}
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#746f66]">
+          <Sparkles className="w-3.5 h-3.5 text-amber-600 fill-amber-500/20" />
+          <span>Toca reponer ({suggestions.length})</span>
         </div>
-        <span className="text-[11px] text-[#a6a095]">
-          {suggestions.length} {suggestions.length === 1 ? "producto" : "productos"}
-        </span>
+
+        {suggestions.length > 4 && (
+          <button
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-[11px] text-[#2d6a4f] font-semibold flex items-center gap-0.5 hover:underline"
+          >
+            <span>{isExpanded ? "Ver menos" : "Ver todos"}</span>
+            {isExpanded ? (
+              <ChevronUp className="w-3 h-3" />
+            ) : (
+              <ChevronDown className="w-3 h-3" />
+            )}
+          </button>
+        )}
       </div>
 
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 -mx-4 px-4 scroll-smooth">
-        {suggestions.map((item) => {
+      {/* Pill chips: compact, mobile-friendly wrapped or smooth scrolling tags */}
+      <div className="flex flex-wrap gap-1.5 py-0.5">
+        {visibleItems.map((item) => {
           const lastQty = item.ultima_cantidad_comprada || 1;
 
           return (
@@ -36,31 +55,29 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({
               key={item.id}
               type="button"
               onClick={() => onAddSuggestion(item.id)}
-              className="flex-shrink-0 flex items-center gap-2 pl-3 pr-2.5 py-2 rounded-xl bg-[#faf5ea] hover:bg-[#f3eedf] active:scale-95 border border-[#e8dfcb] text-[#22201d] transition-all shadow-2xs group"
+              className="inline-flex items-center gap-1.5 pl-2.5 pr-3 py-1.5 rounded-full bg-[#fbf7ee] hover:bg-[#f4edd9] active:scale-95 border border-[#e5dcce] text-[#22201d] text-xs font-medium shadow-2xs transition-all group max-w-full"
+              title={`Comprado hace ${item.dias_desde_compra} días`}
             >
-              <div className="flex flex-col text-left">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-semibold text-[#22201d] leading-snug">
-                    {item.name}
-                  </span>
-                  {lastQty > 1 && (
-                    <span className="text-[10px] font-bold text-[#2d6a4f] bg-white px-1.5 py-0.2 rounded-md border border-[#e8dfcb]">
-                      x{lastQty}
-                    </span>
-                  )}
-                </div>
-                <span className="text-[10px] text-[#8c8273]">
-                  hace {item.dias_desde_compra}d (estimado ~{item.duracion_esperada}d)
-                </span>
-              </div>
+              {/* Plus icon tag */}
+              <span className="w-4 h-4 rounded-full bg-emerald-700/10 group-hover:bg-[#2d6a4f] group-hover:text-white text-[#2d6a4f] flex items-center justify-center transition-colors flex-shrink-0">
+                <Plus className="w-2.5 h-2.5 stroke-[3]" />
+              </span>
 
-              <div className="w-6 h-6 rounded-lg bg-white/80 group-hover:bg-[#2d6a4f] group-hover:text-white border border-[#ded8cb] flex items-center justify-center text-[#2d6a4f] transition-colors ml-0.5">
-                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-              </div>
+              {/* Product name */}
+              <span className="truncate max-w-[170px] sm:max-w-[200px]">
+                {item.name}
+              </span>
+
+              {/* Quantity indicator if > 1 */}
+              {lastQty > 1 && (
+                <span className="text-[10px] font-bold text-[#2d6a4f] bg-white px-1.5 py-0.2 rounded-full border border-[#ded5c5] flex-shrink-0">
+                  x{lastQty}
+                </span>
+              )}
             </button>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 };
