@@ -17,39 +17,39 @@ TRUNCATE TABLE public.purchase_history, public.products CASCADE;
 INSERT INTO public.products (
     id, name, cantidad, en_lista, comprado, ultima_compra, 
     ultima_cantidad_comprada, dias_por_unidad, intervalo_dias_promedio, 
-    total_compras, total_unidades_compradas
+    total_compras, total_unidades_compradas, orden_recorrido
 ) VALUES
     -- A. PRODUCTOS PENDIENTES EN LA LISTA DE HOY
-    ('a0000001-0000-0000-0000-000000000001', 'Pan de barra', 2, true, false, CURRENT_DATE - 3, 2, 1.5, 3, 6, 12),
-    ('a0000001-0000-0000-0000-000000000002', 'Leche entera (brick)', 3, true, false, CURRENT_DATE - 6, 3, 2.0, 6, 4, 12),
-    ('a0000001-0000-0000-0000-000000000003', 'Manzanas Fuji', 1, true, false, CURRENT_DATE - 7, 1, 7.0, 7, 3, 3),
+    ('a0000001-0000-0000-0000-000000000001', 'Pan de barra', 2, true, false, CURRENT_DATE - 3, 2, 1.5, 3, 6, 12, 30.0),
+    ('a0000001-0000-0000-0000-000000000002', 'Leche entera (brick)', 3, true, false, CURRENT_DATE - 6, 3, 2.0, 6, 4, 12, 50.0),
+    ('a0000001-0000-0000-0000-000000000003', 'Manzanas Fuji', 1, true, false, CURRENT_DATE - 7, 1, 7.0, 7, 3, 3, 15.0),
 
     -- B. PRODUCTOS YA TACHADOS EN EL CARRITO (Para probar el tachado y "Finalizar compra")
-    ('a0000001-0000-0000-0000-000000000004', 'Yogures naturales (pack 8)', 1, true, true, CURRENT_DATE - 8, 1, 7.0, 7, 3, 3),
-    ('a0000001-0000-0000-0000-000000000005', 'Plátanos de Canarias', 2, true, true, CURRENT_DATE - 5, 2, 2.5, 5, 4, 8),
+    ('a0000001-0000-0000-0000-000000000004', 'Yogures naturales (pack 8)', 1, true, true, CURRENT_DATE - 8, 1, 7.0, 7, 3, 3, 55.0),
+    ('a0000001-0000-0000-0000-000000000005', 'Plátanos de Canarias', 2, true, true, CURRENT_DATE - 5, 2, 2.5, 5, 4, 8, 10.0),
 
     -- C. PRODUCTOS QUE TOCAN REPONER HOY (Aparecerán automáticamente en la fila "Toca reponer")
     -- Café: compraste 2 paquetes hace 14 días y cada paquete dura 7 días (2 x 7 = 14 días). ¡Toca hoy!
-    ('a0000001-0000-0000-0000-000000000006', 'Café molido natural', 1, false, false, CURRENT_DATE - 14, 2, 7.0, 14, 4, 8),
+    ('a0000001-0000-0000-0000-000000000006', 'Café molido natural', 1, false, false, CURRENT_DATE - 14, 2, 7.0, 14, 4, 8, 60.0),
 
     -- Huevos: compraste 1 docena hace 8 días y dura 7 días. ¡Lleva 1 día de retraso!
-    ('a0000001-0000-0000-0000-000000000007', 'Huevos camperos (docena)', 1, false, false, CURRENT_DATE - 8, 1, 7.0, 7, 5, 5),
+    ('a0000001-0000-0000-0000-000000000007', 'Huevos camperos (docena)', 1, false, false, CURRENT_DATE - 8, 1, 7.0, 7, 5, 5, 40.0),
 
     -- Aceite de oliva: compraste 2 botellas hace 30 días y duran 15 días cada una (30 días). ¡Toca hoy!
-    ('a0000001-0000-0000-0000-000000000008', 'Aceite de oliva virgen extra', 1, false, false, CURRENT_DATE - 30, 2, 15.0, 30, 2, 4),
+    ('a0000001-0000-0000-0000-000000000008', 'Aceite de oliva virgen extra', 1, false, false, CURRENT_DATE - 30, 2, 15.0, 30, 2, 4, 75.0),
 
     -- Detergente lavadora: compraste hace 21 días (su media son 20 días). ¡Toca hoy!
-    ('a0000001-0000-0000-0000-000000000009', 'Detergente líquido lavadora', 1, false, false, CURRENT_DATE - 21, 1, 20.0, 20, 3, 3),
+    ('a0000001-0000-0000-0000-000000000009', 'Detergente líquido lavadora', 1, false, false, CURRENT_DATE - 21, 1, 20.0, 20, 3, 3, 90.0),
 
     -- D. PRODUCTOS COMPRADOS HACE POCO (Para autocompletado en el buscador, pero NO sugeridos aún)
     -- Papel higiénico: comprado hace 3 días, dura 14 días. Faltan 11 días.
-    ('a0000001-0000-0000-0000-000000000010', 'Papel higiénico (pack 12)', 1, false, false, CURRENT_DATE - 3, 1, 14.0, 14, 4, 4),
+    ('a0000001-0000-0000-0000-000000000010', 'Papel higiénico (pack 12)', 1, false, false, CURRENT_DATE - 3, 1, 14.0, 14, 4, 4, 95.0),
 
     -- Arroz: comprado hace 5 días, dura 20 días. Faltan 15 días.
-    ('a0000001-0000-0000-0000-000000000011', 'Arroz redondo (1kg)', 1, false, false, CURRENT_DATE - 5, 1, 20.0, 20, 2, 2),
+    ('a0000001-0000-0000-0000-000000000011', 'Arroz redondo (1kg)', 1, false, false, CURRENT_DATE - 5, 1, 20.0, 20, 2, 2, 70.0),
 
     -- Galletas: compradas hace 2 días, duran 10 días. Faltan 8 días.
-    ('a0000001-0000-0000-0000-000000000012', 'Galletas de avena', 1, false, false, CURRENT_DATE - 2, 2, 5.0, 10, 3, 6);
+    ('a0000001-0000-0000-0000-000000000012', 'Galletas de avena', 1, false, false, CURRENT_DATE - 2, 2, 5.0, 10, 3, 6, 80.0);
 
 -- 3. Insertar historial de compras simuladas de las semanas previas
 INSERT INTO public.purchase_history (product_id, cantidad, purchased_at) VALUES

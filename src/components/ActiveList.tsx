@@ -1,9 +1,12 @@
 import React from "react";
 import { Product } from "@/types/database";
-import { X, Check, Plus, Minus } from "lucide-react";
+import { X, Check, Plus, Minus, Navigation, ArrowDownAZ } from "lucide-react";
+import { triggerHaptic } from "@/hooks/useHaptic";
 
 interface ActiveListProps {
   products: Product[];
+  sortMode?: "route" | "alpha";
+  onToggleSortMode?: () => void;
   onToggle: (productId: string) => void;
   onRemove: (productId: string) => void;
   onAdjustQuantity: (productId: string, delta: number) => void;
@@ -11,6 +14,8 @@ interface ActiveListProps {
 
 export const ActiveList: React.FC<ActiveListProps> = ({
   products,
+  sortMode = "route",
+  onToggleSortMode,
   onToggle,
   onRemove,
   onAdjustQuantity,
@@ -33,6 +38,40 @@ export const ActiveList: React.FC<ActiveListProps> = ({
 
   return (
     <div className="px-4 py-2 select-none">
+      {/* Optional toolbar when multiple items are pending */}
+      {products.length > 1 && onToggleSortMode && (
+        <div className="flex items-center justify-between pb-2 px-1 text-xs text-[#8c8273]">
+          <span className="font-semibold uppercase tracking-wider text-[11px]">
+            Pendientes ({products.length})
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              triggerHaptic(15);
+              onToggleSortMode();
+            }}
+            title={
+              sortMode === "route"
+                ? "Ordenado según tu recorrido habitual por el supermercado. Pulsa para ordenar A-Z."
+                : "Ordenado alfabéticamente. Pulsa para ordenar por recorrido del súper."
+            }
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#f0ece1] hover:bg-[#e7e2d5] text-[#555047] active:scale-95 transition-all cursor-pointer font-medium"
+          >
+            {sortMode === "route" ? (
+              <>
+                <Navigation className="w-3 h-3 text-[#2d6a4f] rotate-45" />
+                <span>Ruta del súper</span>
+              </>
+            ) : (
+              <>
+                <ArrowDownAZ className="w-3.5 h-3.5 text-[#2d6a4f]" />
+                <span>A - Z</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
       <div className="space-y-2">
         {products.map((item) => {
           const qty = item.cantidad || 1;

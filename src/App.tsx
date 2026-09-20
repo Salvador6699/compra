@@ -23,11 +23,14 @@ export function App() {
     error,
     isOnline,
     isRealtimeConnected,
+    sortMode,
+    toggleSortMode,
     addProduct,
     adjustQuantity,
     toggleComprado,
     removeFromList,
     addSuggestion,
+    addDirectToCart,
     finalizePurchase,
     refresh,
   } = useProducts();
@@ -132,6 +135,8 @@ export function App() {
             {/* Modo Supermercado: Lista de productos activos */}
             <ActiveList
               products={activeProducts}
+              sortMode={sortMode}
+              onToggleSortMode={toggleSortMode}
               onToggle={toggleComprado}
               onRemove={removeFromList}
               onAdjustQuantity={adjustQuantity}
@@ -145,7 +150,9 @@ export function App() {
         {/* Barra accesible de finalizar compra */}
         <FinishPurchaseBar
           cartCount={cartProducts.length}
+          suggestedProducts={suggestedProducts}
           onFinalize={finalizePurchase}
+          onAddDirectToCart={addDirectToCart}
         />
       </main>
     </div>

@@ -10,6 +10,7 @@ export interface Product {
   intervalo_dias_promedio: number;
   total_compras: number;
   total_unidades_compradas: number;
+  orden_recorrido?: number;
   created_at: string;
 }
 

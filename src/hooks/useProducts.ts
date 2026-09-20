@@ -111,6 +111,29 @@ export function useProducts() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
 
+  // Sorting mode: 'route' (learned walking path in supermarket) or 'alpha' (A-Z)
+  const [sortMode, setSortMode] = useState<"route" | "alpha">(() => {
+    try {
+      const cachedMode = localStorage.getItem("libreta_sort_mode");
+      return cachedMode === "alpha" ? "alpha" : "route";
+    } catch {
+      return "route";
+    }
+  });
+
+  // Track the order in which items are crossed off in this supermarket trip
+  const [sessionCheckOrder, setSessionCheckOrder] = useState<string[]>([]);
+
+  const toggleSortMode = useCallback(() => {
+    setSortMode((prev) => {
+      const next = prev === "route" ? "alpha" : "route";
+      try {
+        localStorage.setItem("libreta_sort_mode", next);
+      } catch {}
+      return next;
+    });
+  }, []);
+
   // Sync to localStorage for offline and zero-drop resilience
   useEffect(() => {
     try {
@@ -151,6 +174,7 @@ export function useProducts() {
           ultima_cantidad_comprada: p.ultima_cantidad_comprada ?? 1,
           dias_por_unidad: Number(p.dias_por_unidad ?? p.intervalo_dias_promedio ?? 7),
           total_unidades_compradas: p.total_unidades_compradas ?? p.total_compras ?? 0,
+          orden_recorrido: Number(p.orden_recorrido ?? 100),
         }));
 
         setProducts(normalized);
@@ -207,10 +231,23 @@ export function useProducts() {
   }, [fetchProducts]);
 
   // Derived lists
-  const activeProducts = useMemo(
-    () => products.filter((p) => p.en_lista && !p.comprado),
-    [products]
-  );
+  const activeProducts = useMemo(() => {
+    const list = products.filter((p) => p.en_lista && !p.comprado);
+    if (sortMode === "alpha") {
+      return [...list].sort((a, b) =>
+        a.name.localeCompare(b.name, "es", { sensitivity: "base" })
+      );
+    }
+    // Route mode: by orden_recorrido ASC, with alphabetical tiebreaker
+    return [...list].sort((a, b) => {
+      const orderA = a.orden_recorrido ?? 100;
+      const orderB = b.orden_recorrido ?? 100;
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+      return a.name.localeCompare(b.name, "es", { sensitivity: "base" });
+    });
+  }, [products, sortMode]);
 
   const cartProducts = useMemo(
     () => products.filter((p) => p.en_lista && p.comprado),
@@ -319,6 +356,7 @@ export function useProducts() {
           intervalo_dias_promedio: 7,
           total_compras: 0,
           total_unidades_compradas: 0,
+          orden_recorrido: 100,
           created_at: new Date().toISOString(),
         };
 
@@ -340,6 +378,7 @@ export function useProducts() {
             intervalo_dias_promedio: 7,
             total_compras: 0,
             total_unidades_compradas: 0,
+            orden_recorrido: 100,
           })
           .select()
           .single();
@@ -382,7 +421,7 @@ export function useProducts() {
     }
   };
 
-  // Toggle item between active and cart
+  // Toggle item between active and cart (tracking walking route order)
   const toggleComprado = async (productId: string) => {
     const prod = products.find((p) => p.id === productId);
     if (!prod) return;
@@ -391,8 +430,10 @@ export function useProducts() {
     triggerHaptic(nextComprado ? [15, 20] : 15);
     if (nextComprado) {
       playPencilStroke();
+      setSessionCheckOrder((prev) => (prev.includes(productId) ? prev : [...prev, productId]));
     } else {
       playEraseSound();
+      setSessionCheckOrder((prev) => prev.filter((id) => id !== productId));
     }
 
     setProducts((prev) =>
@@ -413,6 +454,7 @@ export function useProducts() {
   const removeFromList = async (productId: string) => {
     triggerHaptic(10);
     playEraseSound();
+    setSessionCheckOrder((prev) => prev.filter((id) => id !== productId));
     setProducts((prev) =>
       prev.map((p) =>
         p.id === productId ? { ...p, en_lista: false, comprado: false } : p
@@ -452,7 +494,32 @@ export function useProducts() {
     }
   };
 
-  // Finalize purchase with quantity tracking
+  // Add forgotten product directly to cart (e.g. from checkout prompt)
+  const addDirectToCart = async (productId: string) => {
+    triggerHaptic([20, 30]);
+    playPencilStroke();
+
+    setSessionCheckOrder((prev) => (prev.includes(productId) ? prev : [...prev, productId]));
+
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId
+          ? { ...p, en_lista: true, comprado: true, cantidad: 1 }
+          : p
+      )
+    );
+
+    const { error: err } = await supabase
+      .from("products")
+      .update({ en_lista: true, comprado: true, cantidad: 1 })
+      .eq("id", productId);
+
+    if (err) {
+      console.warn("Error adding direct to cart (saved locally):", err);
+    }
+  };
+
+  // Finalize purchase with quantity tracking and supermarket route learning
   const finalizePurchase = async (): Promise<{ count: number }> => {
     const purchasedItems = products.filter((p) => p.en_lista && p.comprado);
     if (purchasedItems.length === 0) return { count: 0 };
@@ -460,21 +527,18 @@ export function useProducts() {
     triggerHaptic([30, 50, 40]);
     playFinishChime();
 
-    // Try Supabase RPC first
-    try {
-      const { data, error: rpcErr } = await supabase.rpc("finalize_purchase");
-      if (!rpcErr && data) {
-        await fetchProducts();
-        return { count: purchasedItems.length };
+    // Map the relative order in this shopping trip based on session check sequence
+    const fullOrderList: string[] = [
+      ...sessionCheckOrder.filter((id) => purchasedItems.some((p) => p.id === id)),
+    ];
+    for (const item of purchasedItems) {
+      if (!fullOrderList.includes(item.id)) {
+        fullOrderList.push(item.id);
       }
-      if (rpcErr) {
-        console.warn("RPC finalize_purchase error, running fallback:", rpcErr);
-      }
-    } catch (e) {
-      console.warn("RPC caught exception:", e);
     }
+    const totalOrdered = Math.max(1, fullOrderList.length);
 
-    // Client-side fallback with Quantity-aware frequency calculation
+    // Client-side execution with Quantity-aware frequency calculation & Route score update
     const today = new Date();
     const todayStr = today.toISOString().split("T")[0];
 
@@ -506,7 +570,17 @@ export function useProducts() {
         );
       }
 
-      // 3. Update product
+      // 3. Compute learned supermarket route score (10 to 95)
+      const orderIndex = fullOrderList.indexOf(item.id);
+      const visitScore = Math.round(((orderIndex + 1) / totalOrdered) * 85 + 10);
+      const prevRouteScore = item.orden_recorrido ?? 100;
+
+      // Moving average for walking route: 40% historical + 60% recent trip
+      const newRouteScore = (item.total_compras || 0) >= 1
+        ? Math.round((prevRouteScore * 0.4) + (visitScore * 0.6))
+        : visitScore;
+
+      // 4. Update product in Supabase
       await supabase
         .from("products")
         .update({
@@ -516,6 +590,7 @@ export function useProducts() {
           total_unidades_compradas: totalUnits + boughtQty,
           dias_por_unidad: Math.max(0.5, newDaysPerUnit),
           intervalo_dias_promedio: Math.max(1, Math.round(newDaysPerUnit * boughtQty)),
+          orden_recorrido: newRouteScore,
           cantidad: 1, // reset quantity for next time
           en_lista: false,
           comprado: false,
@@ -523,6 +598,7 @@ export function useProducts() {
         .eq("id", item.id);
     }
 
+    setSessionCheckOrder([]);
     await fetchProducts();
     return { count: purchasedItems.length };
   };
@@ -536,11 +612,14 @@ export function useProducts() {
     error,
     isOnline,
     isRealtimeConnected,
+    sortMode,
+    toggleSortMode,
     addProduct,
     adjustQuantity,
     toggleComprado,
     removeFromList,
     addSuggestion,
+    addDirectToCart,
     finalizePurchase,
     refresh: fetchProducts,
   };

@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS public.products (
     intervalo_dias_promedio INTEGER DEFAULT 7 NOT NULL,
     total_compras INTEGER DEFAULT 0 NOT NULL,
     total_unidades_compradas INTEGER DEFAULT 0 NOT NULL,
+    orden_recorrido NUMERIC DEFAULT 100.0 NOT NULL,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -28,6 +29,7 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS cantidad INTEGER DEFAULT 1 
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS ultima_cantidad_comprada INTEGER DEFAULT 1 NOT NULL;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS dias_por_unidad NUMERIC DEFAULT 7.0 NOT NULL;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS total_unidades_compradas INTEGER DEFAULT 0 NOT NULL;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS orden_recorrido NUMERIC DEFAULT 100.0 NOT NULL;
 
 -- Evitar duplicados por nombre ignorando mayúsculas/minúsculas y espacios
 CREATE UNIQUE INDEX IF NOT EXISTS products_name_lower_idx ON public.products (LOWER(TRIM(name)));
