@@ -48,8 +48,6 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({
       {/* Pill chips: compact, mobile-friendly wrapped or smooth scrolling tags */}
       <div className="flex flex-wrap gap-1.5 py-0.5">
         {visibleItems.map((item) => {
-          const lastQty = item.ultima_cantidad_comprada || 1;
-
           return (
             <button
               key={item.id}
@@ -64,16 +62,9 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({
               </span>
 
               {/* Product name */}
-              <span className="truncate max-w-[170px] sm:max-w-[200px]">
+              <span className="truncate max-w-[190px] sm:max-w-[220px]">
                 {item.name}
               </span>
-
-              {/* Quantity indicator if > 1 */}
-              {lastQty > 1 && (
-                <span className="text-[10px] font-bold text-[#2d6a4f] bg-white px-1.5 py-0.2 rounded-full border border-[#ded5c5] flex-shrink-0">
-                  x{lastQty}
-                </span>
-              )}
             </button>
           );
         })}

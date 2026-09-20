@@ -351,29 +351,25 @@ export function useProducts() {
     }
   };
 
-  // Add suggestion to list
+  // Add suggestion to list (strictly 1 unit)
   const addSuggestion = async (productId: string) => {
     triggerHaptic(20);
-    const prod = products.find((p) => p.id === productId);
-    // Use last bought quantity as smart default for suggestion, or 1
-    const qtyToAdd = prod?.ultima_cantidad_comprada || 1;
 
     setProducts((prev) =>
       prev.map((p) =>
         p.id === productId
-          ? { ...p, en_lista: true, comprado: false, cantidad: qtyToAdd }
+          ? { ...p, en_lista: true, comprado: false, cantidad: 1 }
           : p
       )
     );
 
     const { error: err } = await supabase
       .from("products")
-      .update({ en_lista: true, comprado: false, cantidad: qtyToAdd })
+      .update({ en_lista: true, comprado: false, cantidad: 1 })
       .eq("id", productId);
 
     if (err) {
-      console.error("Error adding suggestion:", err);
-      fetchProducts();
+      console.warn("Error adding suggestion (saved locally):", err);
     }
   };
 
