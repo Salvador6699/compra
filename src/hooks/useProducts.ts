@@ -195,6 +195,7 @@ export function useProducts() {
         total_unidades_compradas: p.total_unidades_compradas ?? p.total_compras ?? 0,
         orden_recorrido: Number(p.orden_recorrido ?? 100),
         en_lista_at: p.en_lista_at ?? p.created_at ?? new Date().toISOString(),
+        comprado_at: p.comprado_at ?? null,
       }));
 
       setProducts(normalized);
@@ -390,7 +391,7 @@ export function useProducts() {
       if (existing) {
         // Optimistic update: reactivar y colocar al principio
         setProducts((prev) => [
-          { ...existing, en_lista: true, comprado: false, cantidad: finalQuantity, en_lista_at: now },
+          { ...existing, en_lista: true, comprado: false, comprado_at: null, cantidad: finalQuantity, en_lista_at: now },
           ...prev.filter((p) => p.id !== existing.id),
         ]);
 
@@ -399,6 +400,7 @@ export function useProducts() {
           .update({
             en_lista: true,
             comprado: false,
+            comprado_at: null,
             cantidad: finalQuantity,
             en_lista_at: now,
           })
@@ -485,12 +487,15 @@ export function useProducts() {
     }
   };
 
-  // Toggle item between active and cart (tracking walking route order)
+  // Toggle item between active and cart (tracking walking route order and exact check timestamp)
   const toggleComprado = async (productId: string) => {
     const prod = products.find((p) => p.id === productId);
     if (!prod) return;
 
     const nextComprado = !prod.comprado;
+    const nowIso = new Date().toISOString();
+    const nextCompradoAt = nextComprado ? nowIso : null;
+
     triggerHaptic(nextComprado ? [15, 20] : 15);
     if (nextComprado) {
       playPencilStroke();
@@ -501,12 +506,14 @@ export function useProducts() {
     }
 
     setProducts((prev) =>
-      prev.map((p) => (p.id === productId ? { ...p, comprado: nextComprado } : p))
+      prev.map((p) =>
+        p.id === productId ? { ...p, comprado: nextComprado, comprado_at: nextCompradoAt } : p
+      )
     );
 
     const { error: updateErr } = await supabase
       .from("products")
-      .update({ comprado: nextComprado })
+      .update({ comprado: nextComprado, comprado_at: nextCompradoAt })
       .eq("id", productId);
 
     if (updateErr) {
@@ -521,13 +528,13 @@ export function useProducts() {
     setSessionCheckOrder((prev) => prev.filter((id) => id !== productId));
     setProducts((prev) =>
       prev.map((p) =>
-        p.id === productId ? { ...p, en_lista: false, comprado: false } : p
+        p.id === productId ? { ...p, en_lista: false, comprado: false, comprado_at: null } : p
       )
     );
 
     const { error: err } = await supabase
       .from("products")
-      .update({ en_lista: false, comprado: false })
+      .update({ en_lista: false, comprado: false, comprado_at: null })
       .eq("id", productId);
 
     if (err) {
@@ -544,13 +551,13 @@ export function useProducts() {
     setProducts((prev) => {
       const prod = prev.find((p) => p.id === productId);
       if (!prod) return prev;
-      const updated = { ...prod, en_lista: true, comprado: false, cantidad: 1, en_lista_at: now };
+      const updated = { ...prod, en_lista: true, comprado: false, comprado_at: null, cantidad: 1, en_lista_at: now };
       return [updated, ...prev.filter((p) => p.id !== productId)];
     });
 
     const { error: err } = await supabase
       .from("products")
-      .update({ en_lista: true, comprado: false, cantidad: 1, en_lista_at: now })
+      .update({ en_lista: true, comprado: false, comprado_at: null, cantidad: 1, en_lista_at: now })
       .eq("id", productId);
 
     if (err) {
@@ -569,14 +576,14 @@ export function useProducts() {
     setProducts((prev) =>
       prev.map((p) =>
         p.id === productId
-          ? { ...p, en_lista: true, comprado: true, cantidad: 1, en_lista_at: now }
+          ? { ...p, en_lista: true, comprado: true, comprado_at: now, cantidad: 1, en_lista_at: now }
           : p
       )
     );
 
     const { error: err } = await supabase
       .from("products")
-      .update({ en_lista: true, comprado: true, cantidad: 1, en_lista_at: now })
+      .update({ en_lista: true, comprado: true, comprado_at: now, cantidad: 1, en_lista_at: now })
       .eq("id", productId);
 
     if (err) {
@@ -612,18 +619,22 @@ export function useProducts() {
       const prevQty = Math.max(1, item.ultima_cantidad_comprada || 1);
       const totalUnits = Math.max(0, item.total_unidades_compradas || 0);
 
-      // 1. Insert history with quantity
+      // Fecha real en la que el usuario tachó el producto (o hoy como fallback)
+      const purchaseDate = item.comprado_at ? new Date(item.comprado_at) : today;
+      const purchaseDateStr = purchaseDate.toISOString().split("T")[0];
+
+      // 1. Insert history with quantity and ACTUAL purchase date
       await supabase.from("purchase_history").insert({
         product_id: item.id,
         cantidad: boughtQty,
-        purchased_at: todayStr,
+        purchased_at: purchaseDateStr,
       });
 
-      // 2. Compute new days per unit
+      // 2. Compute new days per unit based on ACTUAL purchase date
       let newDaysPerUnit = Number(item.dias_por_unidad || item.intervalo_dias_promedio || 7);
       if (item.ultima_compra && item.total_compras >= 1) {
         const lastDate = new Date(item.ultima_compra);
-        const diffTime = today.getTime() - lastDate.getTime();
+        const diffTime = purchaseDate.getTime() - lastDate.getTime();
         const diffDays = Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
 
         // Moving average weighted by units consumed in that interval
@@ -649,7 +660,7 @@ export function useProducts() {
       await supabase
         .from("products")
         .update({
-          ultima_compra: todayStr,
+          ultima_compra: purchaseDateStr,
           ultima_cantidad_comprada: boughtQty,
           total_compras: (item.total_compras || 0) + 1,
           total_unidades_compradas: totalUnits + boughtQty,
@@ -659,6 +670,7 @@ export function useProducts() {
           cantidad: 1, // reset quantity for next time
           en_lista: false,
           comprado: false,
+          comprado_at: null,
         })
         .eq("id", item.id);
     }

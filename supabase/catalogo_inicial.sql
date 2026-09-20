@@ -17,6 +17,7 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS dias_por_unidad NUMERIC DEF
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS total_unidades_compradas INTEGER DEFAULT 0 NOT NULL;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS orden_recorrido NUMERIC DEFAULT 100.0 NOT NULL;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS en_lista_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS comprado_at TIMESTAMPTZ;
 
 -- 2. Tabla temporal para inserción masiva limpia y segura
 CREATE TEMP TABLE temp_catalogo (

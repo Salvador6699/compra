@@ -7,6 +7,24 @@ interface CartListProps {
   onToggle: (productId: string) => void;
 }
 
+function getCheckDateLabel(dateStr?: string | null): string | null {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) {
+    return null;
+  }
+
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) {
+    return "Ayer";
+  }
+
+  const weekday = d.toLocaleDateString("es-ES", { weekday: "short" });
+  return weekday.charAt(0).toUpperCase() + weekday.slice(1);
+}
+
 export const CartList: React.FC<CartListProps> = ({ products, onToggle }) => {
   const [expanded, setExpanded] = useState(true);
 
@@ -44,6 +62,7 @@ export const CartList: React.FC<CartListProps> = ({ products, onToggle }) => {
         <div className="space-y-2 mt-1">
           {products.map((item) => {
             const qty = item.cantidad || 1;
+            const dateLabel = getCheckDateLabel(item.comprado_at);
 
             return (
               <button
@@ -71,9 +90,16 @@ export const CartList: React.FC<CartListProps> = ({ products, onToggle }) => {
                   </div>
                 </div>
 
-                {/* Undo hint icon */}
-                <div className="text-xs text-[#a6a095] dark:text-[#6a645b] group-hover:text-[#746f66] dark:group-hover:text-[#b3aca0] flex items-center gap-1 flex-shrink-0 transition-colors">
-                  <RotateCcw className="w-3.5 h-3.5" />
+                {/* Day badge & Undo hint icon */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {dateLabel && (
+                    <span className="text-[10px] font-semibold text-[#8c8577] dark:text-[#9e988e] bg-stone-200/50 dark:bg-[#25221d] px-1.5 py-0.5 rounded-sm">
+                      {dateLabel}
+                    </span>
+                  )}
+                  <div className="text-xs text-[#a6a095] dark:text-[#6a645b] group-hover:text-[#746f66] dark:group-hover:text-[#b3aca0] flex items-center gap-1 transition-colors">
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </div>
                 </div>
               </button>
             );

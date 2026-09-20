@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS public.products (
     total_unidades_compradas INTEGER DEFAULT 0 NOT NULL,
     orden_recorrido NUMERIC DEFAULT 100.0 NOT NULL,
     en_lista_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    comprado_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -32,6 +33,7 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS dias_por_unidad NUMERIC DEF
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS total_unidades_compradas INTEGER DEFAULT 0 NOT NULL;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS orden_recorrido NUMERIC DEFAULT 100.0 NOT NULL;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS en_lista_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS comprado_at TIMESTAMPTZ;
 
 -- Evitar duplicados por nombre ignorando mayúsculas/minúsculas y espacios
 CREATE UNIQUE INDEX IF NOT EXISTS products_name_lower_idx ON public.products (LOWER(TRIM(name)));
@@ -90,6 +92,7 @@ SECURITY DEFINER
 AS $$
 DECLARE
     r RECORD;
+    v_purchase_date DATE;
     v_diff_days INTEGER;
     v_prev_qty INTEGER;
     v_new_dias_por_unidad NUMERIC;
@@ -97,19 +100,22 @@ DECLARE
 BEGIN
     FOR r IN 
         SELECT id, name, cantidad, ultima_compra, ultima_cantidad_comprada, 
-               dias_por_unidad, total_compras, total_unidades_compradas
+               dias_por_unidad, total_compras, total_unidades_compradas, comprado_at
         FROM public.products
         WHERE comprado = true
     LOOP
-        -- 1. Insertar registro histórico con la cantidad real comprada
-        INSERT INTO public.purchase_history (product_id, cantidad, purchased_at)
-        VALUES (r.id, GREATEST(1, COALESCE(r.cantidad, 1)), CURRENT_DATE);
+        -- Fecha real en que se tachó el producto (o CURRENT_DATE como fallback)
+        v_purchase_date := COALESCE(r.comprado_at::date, CURRENT_DATE);
 
-        -- 2. Calcular días por unidad según el intervalo transcurrido y la cantidad previa que se consumió
+        -- 1. Insertar registro histórico con la fecha real y cantidad real comprada
+        INSERT INTO public.purchase_history (product_id, cantidad, purchased_at)
+        VALUES (r.id, GREATEST(1, COALESCE(r.cantidad, 1)), v_purchase_date);
+
+        -- 2. Calcular días por unidad según el intervalo transcurrido hasta la fecha real de compra
         v_prev_qty := GREATEST(1, COALESCE(r.ultima_cantidad_comprada, 1));
 
         IF r.ultima_compra IS NOT NULL AND r.total_compras >= 1 THEN
-            v_diff_days := GREATEST(1, CURRENT_DATE - r.ultima_compra);
+            v_diff_days := GREATEST(1, v_purchase_date - r.ultima_compra);
             
             -- Media móvil ponderada por unidades previas consumidas
             v_new_dias_por_unidad := ROUND(
@@ -122,10 +128,10 @@ BEGIN
             v_new_dias_por_unidad := COALESCE(r.dias_por_unidad, 7.0);
         END IF;
 
-        -- 3. Actualizar producto guardando la última cantidad comprada para el cálculo futuro
+        -- 3. Actualizar producto guardando la fecha real y cantidad para el cálculo futuro
         UPDATE public.products
         SET 
-            ultima_compra = CURRENT_DATE,
+            ultima_compra = v_purchase_date,
             ultima_cantidad_comprada = GREATEST(1, COALESCE(r.cantidad, 1)),
             total_compras = r.total_compras + 1,
             total_unidades_compradas = r.total_unidades_compradas + GREATEST(1, COALESCE(r.cantidad, 1)),
@@ -133,7 +139,8 @@ BEGIN
             intervalo_dias_promedio = GREATEST(1, ROUND(v_new_dias_por_unidad * GREATEST(1, COALESCE(r.cantidad, 1)))),
             cantidad = 1, -- Reseteamos a 1 para la próxima vez que se añada
             en_lista = false,
-            comprado = false
+            comprado = false,
+            comprado_at = NULL
         WHERE id = r.id;
 
         v_count := v_count + 1;
