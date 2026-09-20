@@ -160,6 +160,10 @@ export function useProducts() {
     for (const product of products) {
       if (product.en_lista) continue;
 
+      // Solo sugerir si se ha comprado al menos 2 veces para confirmar un hábito periódico
+      // Las compras únicas o esporádicas se quedan en el catálogo para autocompletar, no en sugerencias
+      if ((product.total_compras || 0) < 2) continue;
+
       if (product.ultima_compra) {
         const lastPurchaseDate = new Date(product.ultima_compra);
         lastPurchaseDate.setHours(0, 0, 0, 0);
