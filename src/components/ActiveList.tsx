@@ -20,27 +20,11 @@ export const ActiveList: React.FC<ActiveListProps> = ({
   onRemove,
   onAdjustQuantity,
 }) => {
-  if (products.length === 0) {
-    return (
-      <div className="py-12 px-6 text-center select-none">
-        <div className="w-14 h-14 mx-auto rounded-full bg-[#f3eedf] border border-[#e0d8c7] flex items-center justify-center text-[#8c8273] mb-3">
-          <Check className="w-7 h-7 stroke-[2.5]" />
-        </div>
-        <h3 className="text-lg font-bold text-[#22201d] font-heading">
-          ¡Libreta al día!
-        </h3>
-        <p className="text-sm text-[#746f66] mt-1 max-w-xs mx-auto">
-          No tienes productos pendientes en la lista. Escribe arriba qué falta o revisa las sugerencias de reposición.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="px-4 py-2 select-none">
-      {/* Optional toolbar when multiple items are pending */}
-      {products.length > 1 && onToggleSortMode && (
-        <div className="flex items-center justify-between pb-2 px-1 text-xs text-[#8c8273]">
+      {/* Toolbar: siempre visible para ver el recuento y alternar el modo de ordenación */}
+      {onToggleSortMode && (
+        <div className="flex items-center justify-between pb-2 px-1 text-xs text-[#8c8273] dark:text-[#9e988e]">
           <span className="font-semibold uppercase tracking-wider text-[11px]">
             Pendientes ({products.length})
           </span>
@@ -55,16 +39,16 @@ export const ActiveList: React.FC<ActiveListProps> = ({
                 ? "Ordenado según tu recorrido habitual por el supermercado. Pulsa para ver por orden de adición."
                 : "Ordenado conforme se añadieron a la lista (recientes arriba). Pulsa para ordenar por recorrido del súper."
             }
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#f0ece1] hover:bg-[#e7e2d5] text-[#555047] active:scale-95 transition-all cursor-pointer font-medium"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#f0ece1] dark:bg-[#252320] hover:bg-[#e7e2d5] dark:hover:bg-[#2e2b27] text-[#555047] dark:text-[#d1ccc4] active:scale-95 transition-all cursor-pointer font-medium border border-[#ded8cb] dark:border-[#383531]"
           >
             {sortMode === "route" ? (
               <>
-                <Navigation className="w-3 h-3 text-[#2d6a4f] rotate-45" />
+                <Navigation className="w-3 h-3 text-[#2d6a4f] dark:text-emerald-400 rotate-45" />
                 <span>Ruta del súper</span>
               </>
             ) : (
               <>
-                <Clock className="w-3 h-3 text-[#2d6a4f]" />
+                <Clock className="w-3 h-3 text-[#2d6a4f] dark:text-emerald-400" />
                 <span>Como se añadió</span>
               </>
             )}
@@ -72,7 +56,20 @@ export const ActiveList: React.FC<ActiveListProps> = ({
         </div>
       )}
 
-      <div className="space-y-2">
+      {products.length === 0 ? (
+        <div className="py-12 px-6 text-center select-none">
+          <div className="w-14 h-14 mx-auto rounded-full bg-[#f3eedf] dark:bg-[#252320] border border-[#e0d8c7] dark:border-[#383531] flex items-center justify-center text-[#8c8273] dark:text-[#9e988e] mb-3">
+            <Check className="w-7 h-7 stroke-[2.5]" />
+          </div>
+          <h3 className="text-lg font-bold text-[#22201d] dark:text-[#f4f1ea] font-heading">
+            ¡Libreta al día!
+          </h3>
+          <p className="text-sm text-[#746f66] dark:text-[#9e988e] mt-1 max-w-xs mx-auto">
+            No tienes productos pendientes en la lista. Escribe arriba qué falta o revisa las sugerencias de reposición.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
         {products.map((item) => {
           const qty = item.cantidad || 1;
 
@@ -160,6 +157,7 @@ export const ActiveList: React.FC<ActiveListProps> = ({
           );
         })}
       </div>
+      )}
     </div>
   );
 };
