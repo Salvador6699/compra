@@ -5,31 +5,31 @@
 
 @layer base {
   :root {
-    --paper-bg: #faf8f5;
+    --paper-bg: #fdfbf7;
     --paper-card: #ffffff;
-    --paper-line: rgba(220, 214, 202, 0.45);
-    --paper-margin: rgba(240, 110, 110, 0.4);
-    --ink-primary: #22201d;
-    --ink-secondary: #746f66;
-    --ink-muted: #a6a095;
-    --pencil-strike: #9e978d;
-    --accent-stamp: #2d6a4f;
+    --paper-line: rgba(70, 105, 160, 0.28);
+    --paper-margin: rgba(239, 68, 68, 0.5);
+    --ink-primary: #181715;
+    --ink-secondary: #5e5950;
+    --ink-muted: #8c8577;
+    --pencil-strike: #756f64;
+    --accent-stamp: #245840;
   }
 
   .dark {
-    --paper-bg: #181716;
-    --paper-card: #22201e;
-    --paper-line: rgba(75, 71, 64, 0.35);
-    --paper-margin: rgba(230, 95, 95, 0.45);
-    --ink-primary: #f5f2eb;
-    --ink-secondary: #b3aca0;
-    --ink-muted: #807a70;
-    --pencil-strike: #8c8579;
-    --accent-stamp: #40916c;
+    --paper-bg: #181715;
+    --paper-card: #201e1b;
+    --paper-line: rgba(255, 255, 255, 0.18);
+    --paper-margin: rgba(239, 68, 68, 0.42);
+    --ink-primary: #f8f6f0;
+    --ink-secondary: #c2bbb0;
+    --ink-muted: #948e83;
+    --pencil-strike: #a8a296;
+    --accent-stamp: #388a65;
   }
 
   body {
-    background-color: var(--paper-bg);
+    background-color: #eae3d5;
     color: var(--ink-primary);
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -40,27 +40,84 @@
     transition: background-color 0.25s ease, color 0.25s ease;
   }
 
+  .dark body {
+    background-color: #0d0c0b;
+  }
+
   h1, h2, h3, .font-heading {
     font-family: "Outfit", sans-serif;
   }
 }
 
-/* Papel de libreta claro */
-.notebook-bg {
-  background-color: #faf8f5;
+/* Superficie de mesa / escritorio exterior (Modo Claro) */
+.desk-bg {
+  background-color: #eae3d5;
   background-image: 
-    radial-gradient(ellipse at top left, rgba(245, 238, 224, 0.6) 0%, transparent 60%),
-    linear-gradient(180deg, transparent 31px, rgba(224, 218, 206, 0.3) 32px);
-  background-size: 100% 100%, 100% 32px;
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.5) 0%, transparent 65%),
+    radial-gradient(circle at 100% 100%, rgba(0, 0, 0, 0.05) 0%, transparent 50%),
+    linear-gradient(180deg, #eee7dc 0%, #e0d7c5 100%);
 }
 
-/* Papel pizarra / grafito oscuro */
-.dark .notebook-bg {
-  background-color: #181716;
+/* Superficie de mesa / escritorio exterior (Modo Oscuro) */
+.dark .desk-bg {
+  background-color: #0d0c0b;
   background-image: 
-    radial-gradient(ellipse at top left, rgba(40, 38, 35, 0.8) 0%, transparent 60%),
-    linear-gradient(180deg, transparent 31px, rgba(60, 56, 50, 0.35) 32px);
-  background-size: 100% 100%, 100% 32px;
+    radial-gradient(ellipse at 50% 0%, rgba(45, 40, 35, 0.35) 0%, transparent 65%),
+    linear-gradient(180deg, #131210 0%, #080706 100%);
+}
+
+/* Zona de renglones / líneas de libreta exclusivamente para la lista de productos */
+.notebook-paper {
+  background-image: 
+    /* Margen rojo vertical fino y discreto a 20px */
+    linear-gradient(90deg, transparent 20px, rgba(239, 68, 68, 0.28) 20px, rgba(239, 68, 68, 0.28) 21px, transparent 21px),
+    /* Líneas horizontales de cuaderno azul/grafito */
+    linear-gradient(180deg, transparent 35px, rgba(65, 105, 160, 0.22) 35px, rgba(65, 105, 160, 0.22) 36px);
+  background-size: 100% 100%, 100% 36px;
+}
+
+/* Hoja de libreta pizarra oscura con margen fino y líneas de tiza (Modo Oscuro) */
+.dark .notebook-paper {
+  background-image: 
+    /* Margen rojo vertical fino a 20px */
+    linear-gradient(90deg, transparent 20px, rgba(239, 68, 68, 0.25) 20px, rgba(239, 68, 68, 0.25) 21px, transparent 21px),
+    /* Líneas horizontales de tiza */
+    linear-gradient(180deg, transparent 35px, rgba(255, 255, 255, 0.16) 35px, rgba(255, 255, 255, 0.16) 36px);
+  background-size: 100% 100%, 100% 36px;
+}
+
+/* Efecto de taco de hojas de libreta apiladas y sombra realista */
+.notebook-shell {
+  box-shadow:
+    0 22px 45px -10px rgba(0, 0, 0, 0.28),
+    3px 3px 0 #ede6d8,
+    6px 6px 0 #dfd6c3,
+    9px 9px 0 #cfc3ac,
+    0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.dark .notebook-shell {
+  box-shadow:
+    0 25px 55px -10px rgba(0, 0, 0, 0.8),
+    3px 3px 0 #24221f,
+    6px 6px 0 #1c1b18,
+    9px 9px 0 #141311,
+    0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+/* Estilos de perforaciones y alambre metálico del gusanillo */
+.spiral-hole-fill {
+  fill: url(#hole-depth-light);
+}
+.dark .spiral-hole-fill {
+  fill: url(#hole-depth-dark);
+}
+
+.spiral-wire-stroke {
+  stroke: url(#wire-light);
+}
+.dark .spiral-wire-stroke {
+  stroke: url(#wire-dark);
 }
 
 /* Adaptaciones de componentes en modo oscuro */

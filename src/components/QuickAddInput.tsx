@@ -110,7 +110,7 @@ export const QuickAddInput: React.FC<QuickAddInputProps> = ({
   };
 
   return (
-    <div className="relative px-4 py-2 z-20 select-none">
+    <div className="relative px-1 sm:px-2 py-2 z-20 select-none">
       <form onSubmit={handleSubmit} className="flex items-center gap-1.5">
         {/* Input box */}
         <div className="relative flex-1 flex items-center shadow-xs">
@@ -130,10 +130,10 @@ export const QuickAddInput: React.FC<QuickAddInputProps> = ({
                 ? "Escuchando... di qué falta"
                 : "¿Qué falta? (ej: 2 leche, pan)"
             }
-            className={`w-full h-13 pl-4 pr-18 text-base rounded-2xl bg-white dark:bg-[#1e1c1a] border text-[#22201d] dark:text-[#f4f1ea] placeholder:text-[#a6a095] dark:placeholder:text-[#787268] focus:outline-none focus:ring-2 shadow-sm transition-all ${
+            className={`w-full h-13 pl-4 pr-18 text-base rounded-2xl bg-white dark:bg-[#1f1d1a] border-2 text-[#181715] dark:text-[#f8f6f0] placeholder:text-[#8c8577] dark:placeholder:text-[#807a6f] focus:outline-none focus:ring-2 shadow-xs transition-all ${
               isListening
-                ? "border-red-400 focus:ring-red-200/50 bg-red-50/20 dark:bg-red-950/20"
-                : "border-[#ded8cb] dark:border-[#383531] focus:ring-[#2d6a4f]/30 focus:border-[#2d6a4f]"
+                ? "border-red-500 focus:ring-red-200/60 bg-red-50/30 dark:bg-red-950/30"
+                : "border-[#cfc7b6] dark:border-[#423d35] focus:ring-[#245840]/30 focus:border-[#245840] dark:focus:border-emerald-500"
             }`}
             autoComplete="off"
             autoCorrect="off"
@@ -141,23 +141,23 @@ export const QuickAddInput: React.FC<QuickAddInputProps> = ({
           />
 
           {/* Stepper inside input for fast single-tap quantity */}
-          <div className="absolute right-1.5 flex items-center bg-[#f5f2eb] dark:bg-[#252320] rounded-xl border border-[#ded8cb] dark:border-[#383531] px-0.5 py-0.5">
+          <div className="absolute right-1.5 flex items-center bg-[#f5efe3] dark:bg-[#2a2723] rounded-xl border border-[#cfc7b6] dark:border-[#423d35] px-0.5 py-0.5">
             <button
               type="button"
               disabled={effectiveQty <= 1}
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              className="w-5 h-7 flex items-center justify-center text-[#746f66] dark:text-[#9e988e] hover:text-[#22201d] dark:hover:text-[#f4f1ea] disabled:opacity-25 active:scale-95 cursor-pointer"
+              className="w-5 h-7 flex items-center justify-center text-[#5e5950] dark:text-[#b0a99c] hover:text-[#181715] dark:hover:text-white disabled:opacity-25 active:scale-95 cursor-pointer"
               title="Restar cantidad"
             >
               <Minus className="w-3 h-3" />
             </button>
-            <span className="w-4 text-center text-xs font-bold text-[#2d6a4f] dark:text-emerald-400">
+            <span className="w-4 text-center text-xs font-bold text-[#245840] dark:text-emerald-400">
               {effectiveQty}
             </span>
             <button
               type="button"
               onClick={() => setQuantity((q) => Math.min(99, q + 1))}
-              className="w-5 h-7 flex items-center justify-center text-[#746f66] dark:text-[#9e988e] hover:text-[#22201d] dark:hover:text-[#f4f1ea] active:scale-95 cursor-pointer"
+              className="w-5 h-7 flex items-center justify-center text-[#5e5950] dark:text-[#b0a99c] hover:text-[#181715] dark:hover:text-white active:scale-95 cursor-pointer"
               title="Sumar cantidad"
             >
               <Plus className="w-3 h-3" />
@@ -172,10 +172,10 @@ export const QuickAddInput: React.FC<QuickAddInputProps> = ({
             onClick={handleToggleVoice}
             aria-label={isListening ? "Detener dictado" : "Dictar por voz"}
             title={isListening ? "Detener dictado" : "Dictar productos por voz"}
-            className={`w-13 h-13 rounded-2xl flex items-center justify-center transition-all shadow-sm flex-shrink-0 cursor-pointer active:scale-95 ${
+            className={`w-13 h-13 rounded-2xl flex items-center justify-center transition-all shadow-xs flex-shrink-0 cursor-pointer active:scale-95 ${
               isListening
-                ? "bg-red-500 text-white animate-pulse ring-4 ring-red-200 shadow-md"
-                : "bg-[#f4efe4] dark:bg-[#252320] hover:bg-[#eae3d5] dark:hover:bg-[#2e2b27] text-[#746f66] dark:text-[#d1ccc4] hover:text-[#22201d] dark:hover:text-white border border-[#ded8cb] dark:border-[#383531]"
+                ? "bg-red-600 text-white animate-pulse ring-4 ring-red-200 shadow-md"
+                : "bg-[#f5efe3] dark:bg-[#252320] hover:bg-[#eae1d0] dark:hover:bg-[#2f2c27] text-[#5e5950] dark:text-[#d1ccc4] hover:text-[#181715] dark:hover:text-white border-2 border-[#cfc7b6] dark:border-[#423d35]"
             }`}
           >
             {isListening ? (
@@ -191,7 +191,7 @@ export const QuickAddInput: React.FC<QuickAddInputProps> = ({
           type="submit"
           disabled={!value.trim()}
           aria-label="Añadir a la lista"
-          className="w-13 h-13 rounded-2xl bg-[#2d6a4f] hover:bg-[#23533e] active:scale-95 disabled:opacity-40 disabled:pointer-events-none text-white flex items-center justify-center transition-all shadow-sm flex-shrink-0 cursor-pointer"
+          className="w-13 h-13 rounded-2xl bg-[#245840] hover:bg-[#1c4733] dark:bg-[#2d6f50] dark:hover:bg-[#245b41] active:scale-95 disabled:opacity-40 disabled:pointer-events-none text-white flex items-center justify-center transition-all shadow-md flex-shrink-0 cursor-pointer"
         >
           <Plus className="w-6 h-6 stroke-[2.5]" />
         </button>

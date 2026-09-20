@@ -35,25 +35,25 @@ export const CartList: React.FC<CartListProps> = ({ products, onToggle }) => {
   const totalUnits = products.reduce((acc, item) => acc + (item.cantidad || 1), 0);
 
   return (
-    <div className="px-4 py-4 select-none">
+    <div className="px-1 sm:px-2 py-3 select-none">
       {/* Header bar of cart section */}
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between py-2 text-xs font-semibold uppercase tracking-wider text-[#746f66] dark:text-[#9e988e] hover:text-[#22201d] dark:hover:text-[#f4f1ea] transition-colors cursor-pointer"
+        className="w-full flex items-center justify-between py-2 text-xs font-bold uppercase tracking-wider text-[#5e5950] dark:text-[#b0a99c] hover:text-[#181715] dark:hover:text-[#f8f6f0] transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-2">
-          <CheckCheck className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
+          <CheckCheck className="w-4 h-4 text-[#245840] dark:text-emerald-400 stroke-[2.5]" />
           <span>
             En el carrito ({products.length} {products.length === 1 ? "ítem" : "ítems"}
             {totalUnits > products.length && ` · ${totalUnits} uds`})
           </span>
         </div>
-        <div className="p-1 text-[#a6a095] dark:text-[#787268]">
+        <div className="p-1 text-[#8c8577] dark:text-[#807a6f]">
           {expanded ? (
-            <ChevronUp className="w-4 h-4" />
+            <ChevronUp className="w-4 h-4 stroke-[2.5]" />
           ) : (
-            <ChevronDown className="w-4 h-4" />
+            <ChevronDown className="w-4 h-4 stroke-[2.5]" />
           )}
         </div>
       </button>
@@ -69,21 +69,21 @@ export const CartList: React.FC<CartListProps> = ({ products, onToggle }) => {
                 key={item.id}
                 type="button"
                 onClick={() => onToggle(item.id)}
-                className="w-full flex items-center justify-between min-h-[48px] px-3.5 py-2.5 rounded-2xl bg-[#f4f1ea]/75 dark:bg-[#1c1b18]/80 border border-[#e5dfd2] dark:border-[#2e2a24] text-left transition-all active:scale-[0.99] group cursor-pointer shadow-2xs"
+                className="w-full flex items-center justify-between min-h-[48px] px-3.5 py-2.5 rounded-2xl bg-[#f5efe3]/80 dark:bg-[#1f1d1a]/90 border-2 border-[#cfc7b6] dark:border-[#38332a] text-left transition-all active:scale-[0.99] group cursor-pointer shadow-2xs"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   {/* Checked icon indicator */}
-                  <div className="w-5 h-5 rounded-lg bg-emerald-700 dark:bg-emerald-600 text-white flex items-center justify-center flex-shrink-0">
+                  <div className="w-5 h-5 rounded-lg bg-[#245840] dark:bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-2xs">
                     <CheckCheck className="w-3.5 h-3.5 stroke-[2.5]" />
                   </div>
 
                   {/* Strikethrough item name with quantity */}
                   <div className="flex items-baseline gap-2 truncate">
-                    <span className="text-base line-through text-[#8c8577] dark:text-[#7c766b] truncate">
+                    <span className="text-base line-through text-[#6e685c] dark:text-[#9e978b] font-medium truncate">
                       {item.name}
                     </span>
                     {qty > 1 && (
-                      <span className="text-xs font-bold text-[#8c8577] dark:text-[#9e988e] bg-stone-200/60 dark:bg-[#282622] px-1.5 py-0.2 rounded-sm flex-shrink-0">
+                      <span className="text-xs font-bold text-[#5e5950] dark:text-[#b0a99c] bg-[#e7dfcf] dark:bg-[#282622] px-1.5 py-0.2 rounded-sm flex-shrink-0">
                         x{qty}
                       </span>
                     )}
@@ -93,12 +93,12 @@ export const CartList: React.FC<CartListProps> = ({ products, onToggle }) => {
                 {/* Day badge & Undo hint icon */}
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {dateLabel && (
-                    <span className="text-[10px] font-semibold text-[#8c8577] dark:text-[#9e988e] bg-stone-200/50 dark:bg-[#25221d] px-1.5 py-0.5 rounded-sm">
+                    <span className="text-[10px] font-bold text-[#5e5950] dark:text-[#b0a99c] bg-[#e5ddd0] dark:bg-[#2a2723] px-1.5 py-0.5 rounded-sm border border-[#cfc7b6] dark:border-[#423d35]">
                       {dateLabel}
                     </span>
                   )}
-                  <div className="text-xs text-[#a6a095] dark:text-[#6a645b] group-hover:text-[#746f66] dark:group-hover:text-[#b3aca0] flex items-center gap-1 transition-colors">
-                    <RotateCcw className="w-3.5 h-3.5" />
+                  <div className="text-xs text-[#8c8577] dark:text-[#787268] group-hover:text-[#181715] dark:group-hover:text-white flex items-center gap-1 transition-colors">
+                    <RotateCcw className="w-3.5 h-3.5 stroke-[2]" />
                   </div>
                 </div>
               </button>

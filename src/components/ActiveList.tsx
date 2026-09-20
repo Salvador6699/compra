@@ -21,11 +21,11 @@ export const ActiveList: React.FC<ActiveListProps> = ({
   onAdjustQuantity,
 }) => {
   return (
-    <div className="px-4 py-2 select-none">
+    <div className="px-1 sm:px-2 py-2 select-none">
       {/* Toolbar: siempre visible para ver el recuento y alternar el modo de ordenación */}
       {onToggleSortMode && (
-        <div className="flex items-center justify-between pb-2 px-1 text-xs text-[#8c8273] dark:text-[#9e988e]">
-          <span className="font-semibold uppercase tracking-wider text-[11px]">
+        <div className="flex items-center justify-between pb-2 px-1 text-xs text-[#5e5950] dark:text-[#b0a99c]">
+          <span className="font-bold uppercase tracking-wider text-[11px] text-[#47433c] dark:text-[#c4bdb2]">
             Pendientes ({products.length})
           </span>
           <button
@@ -39,16 +39,16 @@ export const ActiveList: React.FC<ActiveListProps> = ({
                 ? "Ordenado según tu recorrido habitual por el supermercado. Pulsa para ver por orden de adición."
                 : "Ordenado conforme se añadieron a la lista (recientes arriba). Pulsa para ordenar por recorrido del súper."
             }
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#f0ece1] dark:bg-[#252320] hover:bg-[#e7e2d5] dark:hover:bg-[#2e2b27] text-[#555047] dark:text-[#d1ccc4] active:scale-95 transition-all cursor-pointer font-medium border border-[#ded8cb] dark:border-[#383531]"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#f5efe3] dark:bg-[#252320] hover:bg-[#eae1d0] dark:hover:bg-[#2e2b27] text-[#47433c] dark:text-[#d1ccc4] active:scale-95 transition-all cursor-pointer font-semibold border-2 border-[#cfc7b6] dark:border-[#423d35] shadow-2xs"
           >
             {sortMode === "route" ? (
               <>
-                <Navigation className="w-3 h-3 text-[#2d6a4f] dark:text-emerald-400 rotate-45" />
+                <Navigation className="w-3 h-3 text-[#245840] dark:text-emerald-400 rotate-45 stroke-[2.5]" />
                 <span>Ruta del súper</span>
               </>
             ) : (
               <>
-                <Clock className="w-3 h-3 text-[#2d6a4f] dark:text-emerald-400" />
+                <Clock className="w-3 h-3 text-[#245840] dark:text-emerald-400 stroke-[2.5]" />
                 <span>Como se añadió</span>
               </>
             )}
@@ -76,7 +76,7 @@ export const ActiveList: React.FC<ActiveListProps> = ({
           return (
             <div
               key={item.id}
-              className="group relative flex items-center justify-between min-h-[56px] px-3.5 py-2 rounded-2xl bg-white dark:bg-[#1e1c1a] border border-[#e2dcce] dark:border-[#383531] shadow-2xs hover:border-[#cfc7b6] dark:hover:border-[#4d4842] active:bg-[#fbf9f4] dark:active:bg-[#252320] transition-all animate-in slide-in-from-top-2 fade-in duration-150"
+              className="group relative flex items-center justify-between min-h-[56px] px-3.5 py-2 rounded-2xl bg-white dark:bg-[#1f1d1a] border-2 border-[#cfc7b6] dark:border-[#423d35] shadow-xs hover:border-[#b8af9c] dark:hover:border-[#595248] active:bg-[#fbf9f4] dark:active:bg-[#262420] transition-all animate-in slide-in-from-top-2 fade-in duration-150"
             >
               {/* Main tap area: whole row toggles item to cart */}
               <button
@@ -84,20 +84,20 @@ export const ActiveList: React.FC<ActiveListProps> = ({
                 onClick={() => onToggle(item.id)}
                 className="flex-1 flex items-center gap-3 text-left py-1 pr-2 cursor-pointer min-w-0"
               >
-                {/* Check circle */}
-                <div className="w-6 h-6 rounded-lg border-2 border-[#b8b0a2] dark:border-[#5a544c] group-hover:border-[#2d6a4f] dark:group-hover:border-emerald-500 flex items-center justify-center transition-colors flex-shrink-0">
+                {/* Check box with crisp hand-drawn feel */}
+                <div className="w-6 h-6 rounded-lg border-2 border-[#8c8577] dark:border-[#736c61] group-hover:border-[#245840] dark:group-hover:border-emerald-500 flex items-center justify-center transition-colors flex-shrink-0 bg-[#fbf9f4] dark:bg-[#181715]">
                   <span className="opacity-0 group-active:opacity-100 transition-opacity">
-                    <Check className="w-3.5 h-3.5 text-[#2d6a4f] dark:text-emerald-400 stroke-[3]" />
+                    <Check className="w-3.5 h-3.5 text-[#245840] dark:text-emerald-400 stroke-[3]" />
                   </span>
                 </div>
 
                 {/* Product name & quantity badge */}
                 <div className="flex items-baseline gap-2 min-w-0">
-                  <span className="text-base font-medium text-[#22201d] dark:text-[#f4f1ea] pencil-strikethrough leading-snug line-clamp-2">
+                  <span className="text-base font-semibold text-[#181715] dark:text-[#f8f6f0] pencil-strikethrough leading-snug line-clamp-2">
                     {item.name}
                   </span>
                   {qty > 1 && (
-                    <span className="text-xs font-bold text-[#2d6a4f] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded-md flex-shrink-0">
+                    <span className="text-xs font-bold text-[#245840] dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200/60 dark:border-emerald-800/40 px-1.5 py-0.2 rounded-md flex-shrink-0">
                       x{qty}
                     </span>
                   )}
@@ -106,7 +106,7 @@ export const ActiveList: React.FC<ActiveListProps> = ({
 
               {/* Quantity stepper for quick one-thumb adjustments */}
               <div className="flex items-center gap-0.5 flex-shrink-0 ml-1.5">
-                <div className="flex items-center bg-[#f5f2eb] dark:bg-[#252320] rounded-xl border border-[#ded8cb] dark:border-[#383531] p-0.5">
+                <div className="flex items-center bg-[#f5efe3] dark:bg-[#282622] rounded-xl border border-[#cfc7b6] dark:border-[#423d35] p-0.5">
                   <button
                     type="button"
                     disabled={qty <= 1}
@@ -114,43 +114,38 @@ export const ActiveList: React.FC<ActiveListProps> = ({
                       e.stopPropagation();
                       onAdjustQuantity(item.id, -1);
                     }}
-                    className="w-6 h-7 flex items-center justify-center text-[#746f66] dark:text-[#9e988e] hover:text-[#22201d] dark:hover:text-[#f4f1ea] disabled:opacity-25 active:scale-90 transition-transform cursor-pointer"
+                    className="w-5 h-7 flex items-center justify-center text-[#5e5950] dark:text-[#b0a99c] hover:text-[#181715] dark:hover:text-white disabled:opacity-20 active:scale-95 cursor-pointer"
                     title="Restar cantidad"
-                    aria-label={`Restar cantidad de ${item.name}`}
                   >
-                    <Minus className="w-3 h-3" />
+                    <Minus className="w-3 h-3 stroke-[2.5]" />
                   </button>
-
-                  <span className="w-5 text-center text-xs font-bold text-[#22201d] dark:text-[#f4f1ea]">
+                  <span className="w-5 text-center text-xs font-bold text-[#245840] dark:text-emerald-400">
                     {qty}
                   </span>
-
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       onAdjustQuantity(item.id, 1);
                     }}
-                    className="w-6 h-7 flex items-center justify-center text-[#746f66] dark:text-[#9e988e] hover:text-[#22201d] dark:hover:text-[#f4f1ea] active:scale-90 transition-transform cursor-pointer"
-                    title="Añadir cantidad"
-                    aria-label={`Añadir más cantidad de ${item.name}`}
+                    className="w-5 h-7 flex items-center justify-center text-[#5e5950] dark:text-[#b0a99c] hover:text-[#181715] dark:hover:text-white active:scale-95 cursor-pointer"
+                    title="Sumar cantidad"
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-3 h-3 stroke-[2.5]" />
                   </button>
                 </div>
 
-                {/* Remove button */}
+                {/* Delete button (cross) */}
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     onRemove(item.id);
                   }}
-                  title="Quitar de la lista"
-                  aria-label={`Quitar ${item.name} de la lista`}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg text-[#a6a095] dark:text-[#787268] hover:text-[#d90429] dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 active:scale-90 transition-all ml-0.5 cursor-pointer"
+                  className="w-8 h-8 flex items-center justify-center text-[#8c8577] dark:text-[#787268] hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl transition-colors active:scale-90 cursor-pointer ml-0.5"
+                  title="Eliminar de la lista"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-4 h-4 stroke-[2]" />
                 </button>
               </div>
             </div>

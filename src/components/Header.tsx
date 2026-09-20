@@ -55,13 +55,20 @@ export const Header: React.FC<HeaderProps> = ({
     todayFormatted.charAt(0).toUpperCase() + todayFormatted.slice(1);
 
   return (
-    <header className="pt-4 pb-2 px-4 select-none">
+    <header className="pt-0 pb-2 px-1 sm:px-2 select-none">
+      {/* Cinta superior de encuadernación / cabecera de libreta fina y elegante */}
+      <div className="-ml-6 sm:-ml-7 -mr-2.5 sm:-mr-4 mb-3 h-2.5 bg-gradient-to-r from-[#29241d] via-[#3d362a] to-[#29241d] dark:from-[#141311] dark:via-[#22201d] dark:to-[#141311] border-b border-[#5c5344]/50 dark:border-[#38332b]/50 shadow-2xs flex items-center justify-center">
+        <div className="w-14 h-0.5 border-t border-dashed border-[#857a68]/40" />
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#22201d] font-heading">
-            Libreta de la Compra
-          </h1>
-          <p className="text-xs font-medium text-[#746f66] mt-0.5 capitalize">
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-2xl font-extrabold tracking-tight text-[#181715] dark:text-[#f8f6f0] font-heading">
+              Libreta de la Compra
+            </h1>
+          </div>
+          <p className="text-xs font-semibold text-[#666055] dark:text-[#aba498] mt-0.5 capitalize">
             {capitalizedDate}
           </p>
         </div>
@@ -75,10 +82,10 @@ export const Header: React.FC<HeaderProps> = ({
             disabled={activeCount === 0}
             aria-label="Compartir lista por WhatsApp"
             title="Compartir o copiar lista para WhatsApp"
-            className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all active:scale-90 relative ${
+            className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all active:scale-90 relative ${
               shareCopied
                 ? "bg-emerald-600 text-white border-emerald-600"
-                : "bg-[#faf6ee] text-[#2d6a4f] border-[#ded7c8] hover:bg-[#f3ede0] disabled:opacity-30 disabled:pointer-events-none"
+                : "bg-[#f5efe3] dark:bg-[#252320] text-[#245840] dark:text-emerald-400 border-[#cfc6b6] dark:border-[#423d36] hover:bg-[#ebe2d2] disabled:opacity-30 disabled:pointer-events-none shadow-2xs"
             }`}
           >
             {shareCopied ? (
@@ -94,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onToggleDark}
             aria-label={isDark ? "Cambiar a modo papel claro" : "Cambiar a modo pizarra oscura"}
             title={isDark ? "Modo Pizarra Oscura activado" : "Modo Papel Claro"}
-            className="w-8 h-8 rounded-full flex items-center justify-center border border-[#ded7c8] bg-[#faf6ee] text-[#746f66] hover:text-[#22201d] transition-all active:scale-90"
+            className="w-8 h-8 rounded-full flex items-center justify-center border-2 border-[#cfc6b6] dark:border-[#423d36] bg-[#f5efe3] dark:bg-[#252320] text-[#5e5950] dark:text-[#d1ccc4] hover:text-[#181715] dark:hover:text-white transition-all active:scale-90 shadow-2xs cursor-pointer"
           >
             {isDark ? (
               <Sun className="w-4 h-4 text-amber-400" />
@@ -109,10 +116,10 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onToggleSound}
             aria-label={isSoundActive ? "Silenciar sonidos" : "Activar sonido de lápiz"}
             title={isSoundActive ? "Sonido de lápiz activado" : "Sonido silenciado"}
-            className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all active:scale-90 ${
+            className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all active:scale-90 cursor-pointer shadow-2xs ${
               isSoundActive
-                ? "bg-[#faf6ee] text-[#2d6a4f] border-[#ded7c8] hover:bg-[#f3ede0]"
-                : "bg-stone-100 text-stone-400 border-stone-200"
+                ? "bg-[#f5efe3] dark:bg-[#252320] text-[#245840] dark:text-emerald-400 border-[#cfc6b6] dark:border-[#423d36] hover:bg-[#ebe2d2]"
+                : "bg-stone-200/60 dark:bg-[#201e1b] text-stone-400 dark:text-stone-500 border-stone-300 dark:border-[#33302a]"
             }`}
           >
             {isSoundActive ? (
@@ -189,24 +196,24 @@ export const Header: React.FC<HeaderProps> = ({
       )}
 
       {/* Mini counter bar */}
-      <div className="mt-2.5 flex items-center justify-between text-xs text-[#746f66] border-b border-[#e2dcce]/70 pb-2">
+      <div className="mt-2.5 flex items-center justify-between text-xs text-[#5e5950] dark:text-[#b0a99c] border-b-2 border-[#dcd4c5] dark:border-[#38342e] pb-2">
         <div className="flex items-center gap-2.5">
-          <span className="font-medium text-[#22201d]">
+          <span className="font-bold text-[#181715] dark:text-[#f8f6f0]">
             {activeCount === 0
               ? "Todo listo"
               : `${activeCount} ${activeCount === 1 ? "pendiente" : "pendientes"}`}
           </span>
           {cartCount > 0 && (
             <>
-              <span className="text-stone-300">•</span>
-              <span className="text-emerald-700 font-medium">
+              <span className="text-[#a8a090] dark:text-[#5a544a]">•</span>
+              <span className="text-[#245840] dark:text-emerald-400 font-bold">
                 {cartCount} en el carro
               </span>
             </>
           )}
         </div>
-        <div className="text-[11px] text-[#a6a095] flex items-center gap-1">
-          <Sparkles className="w-3 h-3" />
+        <div className="text-[11px] font-semibold text-[#8c8577] dark:text-[#8a8478] flex items-center gap-1">
+          <Sparkles className="w-3 h-3 text-[#245840] dark:text-emerald-400" />
           <span>Fricción cero</span>
         </div>
       </div>

@@ -21,7 +21,7 @@ export const SmartSuggestions: React.FC<SmartSuggestionsProps> = ({
   const visibleItems = isExpanded ? suggestions : suggestions.slice(0, 6);
 
   return (
-    <section className="px-4 py-1.5 select-none" aria-label="Sugerencias de reposición">
+    <section className="px-1 sm:px-2 py-1.5 select-none" aria-label="Sugerencias de reposición">
       {/* Header bar */}
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#746f66]">

@@ -51,7 +51,7 @@ export const FinishPurchaseBar: React.FC<FinishPurchaseBarProps> = ({
   return (
     <>
       {/* Sticky Bottom Action Bar with notch / safe-area padding */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#faf8f5] dark:from-[#181716] via-[#faf8f5]/95 dark:via-[#181716]/95 to-transparent pb-[calc(1rem+env(safe-area-inset-bottom))] z-30 pointer-events-none">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#fdfbf7] dark:from-[#181715] via-[#fdfbf7]/95 dark:via-[#181715]/95 to-transparent pb-[calc(1rem+env(safe-area-inset-bottom))] z-30 pointer-events-none">
         <div className="max-w-md mx-auto pointer-events-auto">
           <button
             type="button"
