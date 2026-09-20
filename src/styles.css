@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @source "../src";
 
+@variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --paper-bg: #faf8f5;
@@ -14,6 +16,18 @@
     --accent-stamp: #2d6a4f;
   }
 
+  .dark {
+    --paper-bg: #181716;
+    --paper-card: #22201e;
+    --paper-line: rgba(75, 71, 64, 0.35);
+    --paper-margin: rgba(230, 95, 95, 0.45);
+    --ink-primary: #f5f2eb;
+    --ink-secondary: #b3aca0;
+    --ink-muted: #807a70;
+    --pencil-strike: #8c8579;
+    --accent-stamp: #40916c;
+  }
+
   body {
     background-color: var(--paper-bg);
     color: var(--ink-primary);
@@ -23,6 +37,7 @@
     user-select: none;
     touch-action: manipulation;
     overflow-x: hidden;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   h1, h2, h3, .font-heading {
@@ -30,13 +45,87 @@
   }
 }
 
-/* Papel de libreta con micro-textura y margen sutil */
+/* Papel de libreta claro */
 .notebook-bg {
   background-color: #faf8f5;
   background-image: 
     radial-gradient(ellipse at top left, rgba(245, 238, 224, 0.6) 0%, transparent 60%),
     linear-gradient(180deg, transparent 31px, rgba(224, 218, 206, 0.3) 32px);
   background-size: 100% 100%, 100% 32px;
+}
+
+/* Papel pizarra / grafito oscuro */
+.dark .notebook-bg {
+  background-color: #181716;
+  background-image: 
+    radial-gradient(ellipse at top left, rgba(40, 38, 35, 0.8) 0%, transparent 60%),
+    linear-gradient(180deg, transparent 31px, rgba(60, 56, 50, 0.35) 32px);
+  background-size: 100% 100%, 100% 32px;
+}
+
+/* Adaptaciones de componentes en modo oscuro */
+.dark .bg-white {
+  background-color: #22201e !important;
+  color: #f5f2eb !important;
+}
+
+.dark .bg-\[\#f5f2eb\] {
+  background-color: #2a2825 !important;
+}
+
+.dark .bg-\[\#f4efe4\] {
+  background-color: #2a2825 !important;
+  color: #b3aca0 !important;
+}
+
+.dark .bg-\[\#faf6ee\] {
+  background-color: #2a2825 !important;
+}
+
+.dark .bg-\[\#fbf7ee\] {
+  background-color: #252320 !important;
+}
+
+.dark .bg-\[\#f4f1ea\]\/75 {
+  background-color: rgba(36, 34, 31, 0.75) !important;
+}
+
+.dark .bg-stone-100 {
+  background-color: #2a2825 !important;
+  color: #b3aca0 !important;
+}
+
+.dark .border-\[\#ded8cb\],
+.dark .border-\[\#e2dcce\],
+.dark .border-\[\#e5dcce\],
+.dark .border-\[\#e5dfd2\],
+.dark .border-\[\#ded7c8\],
+.dark .border-stone-200 {
+  border-color: #383530 !important;
+}
+
+.dark .text-\[\#22201d\] {
+  color: #f5f2eb !important;
+}
+
+.dark .text-\[\#746f66\] {
+  color: #b3aca0 !important;
+}
+
+.dark .text-\[\#a6a095\] {
+  color: #857e72 !important;
+}
+
+.dark .text-\[\#8c8577\] {
+  color: #857e72 !important;
+}
+
+.dark input {
+  color: #f5f2eb !important;
+}
+
+.dark input::placeholder {
+  color: #736c61 !important;
 }
 
 /* Efecto de tachado suave con lápiz */

@@ -1,5 +1,16 @@
 import React from "react";
-import { Wifi, WifiOff, Sparkles, Smartphone, Volume2, VolumeX } from "lucide-react";
+import {
+  Wifi,
+  WifiOff,
+  Sparkles,
+  Smartphone,
+  Volume2,
+  VolumeX,
+  Share2,
+  Moon,
+  Sun,
+  Check,
+} from "lucide-react";
 
 interface HeaderProps {
   activeCount: number;
@@ -12,6 +23,10 @@ interface HeaderProps {
   onToggleWakeLock: () => void;
   isSoundActive: boolean;
   onToggleSound: () => void;
+  isDark: boolean;
+  onToggleDark: () => void;
+  onShare: () => void;
+  shareCopied: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -25,6 +40,10 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleWakeLock,
   isSoundActive,
   onToggleSound,
+  isDark,
+  onToggleDark,
+  onShare,
+  shareCopied,
 }) => {
   const todayFormatted = new Intl.DateTimeFormat("es-ES", {
     weekday: "long",
@@ -49,6 +68,41 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Controls and Status indicators */}
         <div className="flex items-center gap-1.5">
+          {/* Share / WhatsApp button */}
+          <button
+            type="button"
+            onClick={onShare}
+            disabled={activeCount === 0}
+            aria-label="Compartir lista por WhatsApp"
+            title="Compartir o copiar lista para WhatsApp"
+            className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all active:scale-90 relative ${
+              shareCopied
+                ? "bg-emerald-600 text-white border-emerald-600"
+                : "bg-[#faf6ee] text-[#2d6a4f] border-[#ded7c8] hover:bg-[#f3ede0] disabled:opacity-30 disabled:pointer-events-none"
+            }`}
+          >
+            {shareCopied ? (
+              <Check className="w-4 h-4 stroke-[3]" />
+            ) : (
+              <Share2 className="w-3.5 h-3.5" />
+            )}
+          </button>
+
+          {/* Theme toggle: Light paper vs Dark blackboard */}
+          <button
+            type="button"
+            onClick={onToggleDark}
+            aria-label={isDark ? "Cambiar a modo papel claro" : "Cambiar a modo pizarra oscura"}
+            title={isDark ? "Modo Pizarra Oscura activado" : "Modo Papel Claro"}
+            className="w-8 h-8 rounded-full flex items-center justify-center border border-[#ded7c8] bg-[#faf6ee] text-[#746f66] hover:text-[#22201d] transition-all active:scale-90"
+          >
+            {isDark ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-3.5 h-3.5" />
+            )}
+          </button>
+
           {/* Sound toggle button */}
           <button
             type="button"
@@ -62,9 +116,9 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             {isSoundActive ? (
-              <Volume2 className="w-4 h-4" />
+              <Volume2 className="w-3.5 h-3.5" />
             ) : (
-              <VolumeX className="w-4 h-4" />
+              <VolumeX className="w-3.5 h-3.5" />
             )}
           </button>
 
@@ -93,7 +147,7 @@ export const Header: React.FC<HeaderProps> = ({
                   : "bg-stone-100 text-stone-400 border-stone-200"
               }`}
             >
-              <Smartphone className="w-4 h-4" />
+              <Smartphone className="w-3.5 h-3.5" />
             </button>
           )}
 
@@ -126,6 +180,13 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Toast popup when list is copied to clipboard */}
+      {shareCopied && (
+        <div className="mt-2 py-1 px-3 rounded-xl bg-emerald-700 text-white text-xs font-medium text-center shadow-md animate-in fade-in slide-in-from-top-1">
+          ¡Lista copiada con formato para WhatsApp!
+        </div>
+      )}
 
       {/* Mini counter bar */}
       <div className="mt-2.5 flex items-center justify-between text-xs text-[#746f66] border-b border-[#e2dcce]/70 pb-2">

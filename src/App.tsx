@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { useProducts } from "@/hooks/useProducts";
 import { useWakeLock } from "@/hooks/useWakeLock";
+import { useDarkMode } from "@/hooks/useDarkMode";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/soundEffects";
+import { shareShoppingList } from "@/lib/shareList";
+import { triggerHaptic } from "@/hooks/useHaptic";
 import { Header } from "@/components/Header";
 import { QuickAddInput } from "@/components/QuickAddInput";
 import { SmartSuggestions } from "@/components/SmartSuggestions";
@@ -29,6 +32,9 @@ export function App() {
     refresh,
   } = useProducts();
 
+  // Dark Blackboard Theme
+  const { isDark, toggleDark } = useDarkMode();
+
   // Screen Wake Lock: keeps screen awake in the supermarket when items are pending
   const {
     isSupported: isWakeLockSupported,
@@ -48,6 +54,19 @@ export function App() {
     });
   };
 
+  // WhatsApp Share state
+  const [shareCopied, setShareCopied] = useState(false);
+
+  const handleShare = async () => {
+    triggerHaptic(15);
+    const result = await shareShoppingList(activeProducts);
+    if (result.copied) {
+      triggerHaptic([20, 40]);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2500);
+    }
+  };
+
   return (
     <div className="min-h-screen notebook-bg flex flex-col items-center">
       {/* Container constrained to mobile phone width for optimal one-hand ergonomics */}
@@ -64,6 +83,10 @@ export function App() {
           onToggleWakeLock={toggleWakeLock}
           isSoundActive={soundActive}
           onToggleSound={handleToggleSound}
+          isDark={isDark}
+          onToggleDark={toggleDark}
+          onShare={handleShare}
+          shareCopied={shareCopied}
         />
 
         {/* Error notification banner if Supabase fails */}
