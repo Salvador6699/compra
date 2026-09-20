@@ -17,12 +17,12 @@ TRUNCATE TABLE public.purchase_history, public.products CASCADE;
 INSERT INTO public.products (
     id, name, cantidad, en_lista, comprado, ultima_compra, 
     ultima_cantidad_comprada, dias_por_unidad, intervalo_dias_promedio, 
-    total_compras, total_unidades_compradas, orden_recorrido
+    total_compras, total_unidades_compradas, orden_recorrido, en_lista_at
 ) VALUES
     -- A. PRODUCTOS PENDIENTES EN LA LISTA DE HOY
-    ('a0000001-0000-0000-0000-000000000001', 'Pan de barra', 2, true, false, CURRENT_DATE - 3, 2, 1.5, 3, 6, 12, 30.0),
-    ('a0000001-0000-0000-0000-000000000002', 'Leche entera (brick)', 3, true, false, CURRENT_DATE - 6, 3, 2.0, 6, 4, 12, 50.0),
-    ('a0000001-0000-0000-0000-000000000003', 'Manzanas Fuji', 1, true, false, CURRENT_DATE - 7, 1, 7.0, 7, 3, 3, 15.0),
+    ('a0000001-0000-0000-0000-000000000001', 'Pan de barra', 2, true, false, CURRENT_DATE - 3, 2, 1.5, 3, 6, 12, 30.0, timezone('utc'::text, now()) - interval '3 hours'),
+    ('a0000001-0000-0000-0000-000000000002', 'Leche entera (brick)', 3, true, false, CURRENT_DATE - 6, 3, 2.0, 6, 4, 12, 50.0, timezone('utc'::text, now()) - interval '2 hours'),
+    ('a0000001-0000-0000-0000-000000000003', 'Manzanas Fuji', 1, true, false, CURRENT_DATE - 7, 1, 7.0, 7, 3, 3, 15.0, timezone('utc'::text, now()) - interval '1 hour'),
 
     -- B. PRODUCTOS YA TACHADOS EN EL CARRITO (Para probar el tachado y "Finalizar compra")
     ('a0000001-0000-0000-0000-000000000004', 'Yogures naturales (pack 8)', 1, true, true, CURRENT_DATE - 8, 1, 7.0, 7, 3, 3, 55.0),

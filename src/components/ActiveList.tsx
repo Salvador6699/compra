@@ -1,11 +1,11 @@
 import React from "react";
 import { Product } from "@/types/database";
-import { X, Check, Plus, Minus, Navigation, ArrowDownAZ } from "lucide-react";
+import { X, Check, Plus, Minus, Navigation, Clock } from "lucide-react";
 import { triggerHaptic } from "@/hooks/useHaptic";
 
 interface ActiveListProps {
   products: Product[];
-  sortMode?: "route" | "alpha";
+  sortMode?: "route" | "added";
   onToggleSortMode?: () => void;
   onToggle: (productId: string) => void;
   onRemove: (productId: string) => void;
@@ -14,7 +14,7 @@ interface ActiveListProps {
 
 export const ActiveList: React.FC<ActiveListProps> = ({
   products,
-  sortMode = "route",
+  sortMode = "added",
   onToggleSortMode,
   onToggle,
   onRemove,
@@ -52,8 +52,8 @@ export const ActiveList: React.FC<ActiveListProps> = ({
             }}
             title={
               sortMode === "route"
-                ? "Ordenado según tu recorrido habitual por el supermercado. Pulsa para ordenar A-Z."
-                : "Ordenado alfabéticamente. Pulsa para ordenar por recorrido del súper."
+                ? "Ordenado según tu recorrido habitual por el supermercado. Pulsa para ver por orden de adición."
+                : "Ordenado conforme se añadieron a la lista (recientes arriba). Pulsa para ordenar por recorrido del súper."
             }
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#f0ece1] hover:bg-[#e7e2d5] text-[#555047] active:scale-95 transition-all cursor-pointer font-medium"
           >
@@ -64,8 +64,8 @@ export const ActiveList: React.FC<ActiveListProps> = ({
               </>
             ) : (
               <>
-                <ArrowDownAZ className="w-3.5 h-3.5 text-[#2d6a4f]" />
-                <span>A - Z</span>
+                <Clock className="w-3 h-3 text-[#2d6a4f]" />
+                <span>Como se añadió</span>
               </>
             )}
           </button>

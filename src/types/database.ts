@@ -11,6 +11,7 @@ export interface Product {
   total_compras: number;
   total_unidades_compradas: number;
   orden_recorrido?: number;
+  en_lista_at?: string;
   created_at: string;
 }
 

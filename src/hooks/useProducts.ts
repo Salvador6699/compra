@@ -117,13 +117,13 @@ export function useProducts() {
   const [error, setError] = useState<string | null>(null);
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
 
-  // Sorting mode: 'route' (learned walking path in supermarket) or 'alpha' (A-Z)
-  const [sortMode, setSortMode] = useState<"route" | "alpha">(() => {
+  // Modo de ordenación: 'added' (conforme se añadió a la lista, más recientes al principio) o 'route' (recorrido del súper)
+  const [sortMode, setSortMode] = useState<"route" | "added">(() => {
     try {
       const cachedMode = localStorage.getItem("libreta_sort_mode");
-      return cachedMode === "alpha" ? "alpha" : "route";
+      return cachedMode === "route" ? "route" : "added";
     } catch {
-      return "route";
+      return "added";
     }
   });
 
@@ -132,7 +132,7 @@ export function useProducts() {
 
   const toggleSortMode = useCallback(() => {
     setSortMode((prev) => {
-      const next = prev === "route" ? "alpha" : "route";
+      const next = prev === "added" ? "route" : "added";
       try {
         localStorage.setItem("libreta_sort_mode", next);
       } catch {}
@@ -194,6 +194,7 @@ export function useProducts() {
         dias_por_unidad: Number(p.dias_por_unidad ?? p.intervalo_dias_promedio ?? 7),
         total_unidades_compradas: p.total_unidades_compradas ?? p.total_compras ?? 0,
         orden_recorrido: Number(p.orden_recorrido ?? 100),
+        en_lista_at: p.en_lista_at ?? p.created_at ?? new Date().toISOString(),
       }));
 
       setProducts(normalized);
@@ -260,9 +261,7 @@ export function useProducts() {
             const newProduct = payload.new as Product;
             setProducts((prev) => {
               if (prev.some((p) => p.id === newProduct.id)) return prev;
-              return [...prev, newProduct].sort((a, b) =>
-                a.name.localeCompare(b.name, "es", { sensitivity: "base" })
-              );
+              return [newProduct, ...prev];
             });
           } else if (payload.eventType === "UPDATE") {
             const updated = payload.new as Product;
@@ -287,19 +286,32 @@ export function useProducts() {
   // Derived lists
   const activeProducts = useMemo(() => {
     const list = products.filter((p) => p.en_lista && !p.comprado);
-    if (sortMode === "alpha") {
-      return [...list].sort((a, b) =>
-        a.name.localeCompare(b.name, "es", { sensitivity: "base" })
-      );
+    if (sortMode === "route") {
+      return [...list].sort((a, b) => {
+        const orderA = a.orden_recorrido ?? 100;
+        const orderB = b.orden_recorrido ?? 100;
+        if (orderA !== orderB) {
+          return orderA - orderB;
+        }
+        const timeA = a.en_lista_at ? new Date(a.en_lista_at).getTime() : 0;
+        const timeB = b.en_lista_at ? new Date(b.en_lista_at).getTime() : 0;
+        return timeB - timeA;
+      });
     }
-    // Route mode: by orden_recorrido ASC, with alphabetical tiebreaker
+
+    // Modo "added" (conforme se añadió a la lista): recién añadidos arriba (al principio)
     return [...list].sort((a, b) => {
-      const orderA = a.orden_recorrido ?? 100;
-      const orderB = b.orden_recorrido ?? 100;
-      if (orderA !== orderB) {
-        return orderA - orderB;
-      }
-      return a.name.localeCompare(b.name, "es", { sensitivity: "base" });
+      const timeA = a.en_lista_at
+        ? new Date(a.en_lista_at).getTime()
+        : a.created_at
+        ? new Date(a.created_at).getTime()
+        : 0;
+      const timeB = b.en_lista_at
+        ? new Date(b.en_lista_at).getTime()
+        : b.created_at
+        ? new Date(b.created_at).getTime()
+        : 0;
+      return timeB - timeA;
     });
   }, [products, sortMode]);
 
@@ -368,6 +380,7 @@ export function useProducts() {
       // For single item, explicitQty overrides if specified
       const finalQuantity = Math.max(1, items.length === 1 && explicitQty ? explicitQty : item.quantity);
       const name = item.name;
+      const now = new Date(Date.now() + i).toISOString();
 
       // Check if product already exists (case-insensitive)
       const existing = products.find(
@@ -375,14 +388,11 @@ export function useProducts() {
       );
 
       if (existing) {
-        // Optimistic update
-        setProducts((prev) =>
-          prev.map((p) =>
-            p.id === existing.id
-              ? { ...p, en_lista: true, comprado: false, cantidad: finalQuantity }
-              : p
-          )
-        );
+        // Optimistic update: reactivar y colocar al principio
+        setProducts((prev) => [
+          { ...existing, en_lista: true, comprado: false, cantidad: finalQuantity, en_lista_at: now },
+          ...prev.filter((p) => p.id !== existing.id),
+        ]);
 
         const { error: updateErr } = await supabase
           .from("products")
@@ -390,6 +400,7 @@ export function useProducts() {
             en_lista: true,
             comprado: false,
             cantidad: finalQuantity,
+            en_lista_at: now,
           })
           .eq("id", existing.id);
 
@@ -411,14 +422,12 @@ export function useProducts() {
           total_compras: 0,
           total_unidades_compradas: 0,
           orden_recorrido: 100,
-          created_at: new Date().toISOString(),
+          en_lista_at: now,
+          created_at: now,
         };
 
-        setProducts((prev) =>
-          [...prev, newProd].sort((a, b) =>
-            a.name.localeCompare(b.name, "es", { sensitivity: "base" })
-          )
-        );
+        // Añadir al principio de la lista
+        setProducts((prev) => [newProd, ...prev]);
 
         const { data, error: insertErr } = await supabase
           .from("products")
@@ -433,6 +442,7 @@ export function useProducts() {
             total_compras: 0,
             total_unidades_compradas: 0,
             orden_recorrido: 100,
+            en_lista_at: now,
           })
           .select()
           .single();
@@ -525,22 +535,22 @@ export function useProducts() {
     }
   };
 
-  // Add suggestion to list (strictly 1 unit)
+  // Add suggestion to list (strictly 1 unit, colocada al principio)
   const addSuggestion = async (productId: string) => {
     triggerHaptic(20);
     playPencilStroke();
+    const now = new Date().toISOString();
 
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === productId
-          ? { ...p, en_lista: true, comprado: false, cantidad: 1 }
-          : p
-      )
-    );
+    setProducts((prev) => {
+      const prod = prev.find((p) => p.id === productId);
+      if (!prod) return prev;
+      const updated = { ...prod, en_lista: true, comprado: false, cantidad: 1, en_lista_at: now };
+      return [updated, ...prev.filter((p) => p.id !== productId)];
+    });
 
     const { error: err } = await supabase
       .from("products")
-      .update({ en_lista: true, comprado: false, cantidad: 1 })
+      .update({ en_lista: true, comprado: false, cantidad: 1, en_lista_at: now })
       .eq("id", productId);
 
     if (err) {
@@ -552,20 +562,21 @@ export function useProducts() {
   const addDirectToCart = async (productId: string) => {
     triggerHaptic([20, 30]);
     playPencilStroke();
+    const now = new Date().toISOString();
 
     setSessionCheckOrder((prev) => (prev.includes(productId) ? prev : [...prev, productId]));
 
     setProducts((prev) =>
       prev.map((p) =>
         p.id === productId
-          ? { ...p, en_lista: true, comprado: true, cantidad: 1 }
+          ? { ...p, en_lista: true, comprado: true, cantidad: 1, en_lista_at: now }
           : p
       )
     );
 
     const { error: err } = await supabase
       .from("products")
-      .update({ en_lista: true, comprado: true, cantidad: 1 })
+      .update({ en_lista: true, comprado: true, cantidad: 1, en_lista_at: now })
       .eq("id", productId);
 
     if (err) {
