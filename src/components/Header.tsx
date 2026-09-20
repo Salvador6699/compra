@@ -1,5 +1,5 @@
 import React from "react";
-import { Wifi, WifiOff, Sparkles, Sun, Volume2, VolumeX } from "lucide-react";
+import { Wifi, WifiOff, Sparkles, Smartphone, Volume2, VolumeX } from "lucide-react";
 
 interface HeaderProps {
   activeCount: number;
@@ -80,20 +80,20 @@ export const Header: React.FC<HeaderProps> = ({
               }
               title={
                 isWakeLockActive
-                  ? "Pantalla siempre encendida (modo supermercado activo)"
+                  ? "Pantalla siempre encendida: ACTIVA (no se apagará sola en el súper)"
                   : isWakeLockEnabled
-                  ? "Pantalla encendida habilitada"
+                  ? "Pantalla siempre encendida habilitada"
                   : "Pantalla siempre encendida desactivada"
               }
               className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all active:scale-90 ${
                 isWakeLockActive
-                  ? "bg-amber-50 text-amber-600 border-amber-300 shadow-xs ring-2 ring-amber-200/60"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-300 shadow-xs ring-2 ring-emerald-200/60"
                   : isWakeLockEnabled
-                  ? "bg-[#faf6ee] text-amber-600/70 border-[#ded7c8]"
+                  ? "bg-[#faf6ee] text-emerald-700/70 border-[#ded7c8]"
                   : "bg-stone-100 text-stone-400 border-stone-200"
               }`}
             >
-              <Sun className={`w-4 h-4 ${isWakeLockActive ? "animate-spin-slow" : ""}`} />
+              <Smartphone className="w-4 h-4" />
             </button>
           )}
 
