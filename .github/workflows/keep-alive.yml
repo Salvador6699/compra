@@ -12,11 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Realizar consulta Keep-Alive a Supabase
+        env:
+          SUPABASE_KEY: 'sb_publishable_ZMilzyij7w4DKs9pTJNEUA_8J5GAfBG'
         run: |
           echo "Enviando ping de actividad a Supabase..."
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "apikey: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_ZMilzyij7w4DKs9pTJNEUA_8J5GAfBG' }}" \
-            -H "Authorization: Bearer ${{ secrets.VITE_SUPABASE_ANON_KEY || 'sb_publishable_ZMilzyij7w4DKs9pTJNEUA_8J5GAfBG' }}" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY" \
             "https://pobuahqtimuiftfuvmfm.supabase.co/rest/v1/products?select=id&limit=1")
 
           echo "Código de respuesta Supabase: $HTTP_STATUS"
