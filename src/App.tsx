@@ -31,7 +31,12 @@ export function App() {
     adjustQuantity,
     toggleComprado,
     removeFromList,
+    deleteProduct,
     addSuggestion,
+    addAllSuggestions,
+    snoozeSuggestion,
+    unSnoozeSuggestion,
+    snoozedProducts,
     addDirectToCart,
     finalizePurchase,
     refresh,
@@ -75,7 +80,7 @@ export function App() {
   return (
     <div className="min-h-screen desk-bg flex flex-col items-center justify-start p-0 sm:py-6 sm:px-4">
       {/* Libreta con gusanillo lateral sutil, efecto taco de papel y sombra realista */}
-      <main className="w-full max-w-md min-h-screen sm:min-h-[92vh] flex flex-col pb-28 relative notebook-shell bg-[#fdfbf7] dark:bg-[#181715] rounded-none sm:rounded-3xl sm:rounded-l-lg overflow-hidden">
+      <main className="w-full max-w-md min-h-screen sm:min-h-[92vh] flex flex-col pb-28 relative notebook-shell bg-[#fdfbf7] dark:bg-[#181715] rounded-none sm:rounded-3xl sm:rounded-l-lg">
         {/* Gusanillo metálico en el lateral izquierdo */}
         <SpiralBinding />
 
@@ -127,6 +132,11 @@ export function App() {
           <SmartSuggestions
             suggestions={suggestedProducts}
             onAddSuggestion={addSuggestion}
+            onAddAllSuggestions={addAllSuggestions}
+            onSnoozeSuggestion={snoozeSuggestion}
+            onUnSnoozeSuggestion={unSnoozeSuggestion}
+            onDeleteProduct={deleteProduct}
+            snoozedProducts={snoozedProducts}
           />
 
           {/* Loading skeleton or Lists */}

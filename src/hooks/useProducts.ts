@@ -140,6 +140,70 @@ export function useProducts() {
     });
   }, []);
 
+  const SNOOZE_STORAGE_KEY = "compra_snoozed_products";
+
+  // Snoozed suggestions tracking (productId -> ISO date until which snoozed)
+  const [snoozedMap, setSnoozedMap] = useState<Record<string, string>>(() => {
+    try {
+      const raw = localStorage.getItem("compra_snoozed_products");
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const saveSnoozes = useCallback((next: Record<string, string>) => {
+    setSnoozedMap(next);
+    try {
+      localStorage.setItem("compra_snoozed_products", JSON.stringify(next));
+    } catch {}
+  }, []);
+
+  const snoozeSuggestion = useCallback(
+    (productId: string, days: number = 3) => {
+      triggerHaptic(15);
+      const until = new Date();
+      until.setDate(until.getDate() + days);
+      until.setHours(23, 59, 59, 999);
+
+      saveSnoozes({
+        ...snoozedMap,
+        [productId]: until.toISOString(),
+      });
+    },
+    [snoozedMap, saveSnoozes]
+  );
+
+  const unSnoozeSuggestion = useCallback((productId: string) => {
+    triggerHaptic(15);
+    setSnoozedMap((prev) => {
+      if (!prev[productId]) return prev;
+      const next = { ...prev };
+      delete next[productId];
+      try {
+        localStorage.setItem("compra_snoozed_products", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  const snoozedProducts = useMemo(() => {
+    const now = Date.now();
+    const list: (Product & { snoozedUntil: string; daysLeft: number })[] = [];
+
+    for (const [id, dateStr] of Object.entries(snoozedMap)) {
+      const targetTime = new Date(dateStr).getTime();
+      if (targetTime > now) {
+        const prod = products.find((p) => p.id === id);
+        if (prod && !prod.en_lista) {
+          const daysLeft = Math.max(1, Math.ceil((targetTime - now) / (1000 * 60 * 60 * 24)));
+          list.push({ ...prod, snoozedUntil: dateStr, daysLeft });
+        }
+      }
+    }
+    return list;
+  }, [products, snoozedMap]);
+
   // Sincronización condicional: si hay conexión, borrar local; si no hay conexión, persistir local
   useEffect(() => {
     if (!isOnline) {
@@ -326,11 +390,20 @@ export function useProducts() {
   const suggestedProducts = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const nowTime = Date.now();
 
     const list: SuggestionProduct[] = [];
 
     for (const product of products) {
       if (product.en_lista) continue;
+
+      // Descartar si está pospuesto temporalmente ("Aún me queda")
+      if (snoozedMap[product.id]) {
+        const snoozeTime = new Date(snoozedMap[product.id]).getTime();
+        if (snoozeTime > nowTime) {
+          continue;
+        }
+      }
 
       // Solo sugerir si se ha comprado al menos 2 veces para confirmar un hábito periódico
       // Las compras únicas o esporádicas se quedan en el catálogo para autocompletar, no en sugerencias
@@ -360,14 +433,14 @@ export function useProducts() {
       }
     }
 
-    // Sort by most overdue first
+    // Ordenar: primero las que tocan hoy (o más recientes), luego las más retrasadas (+4d, +7d, etc.)
     return list.sort(
       (a, b) =>
-        b.dias_desde_compra -
-        b.duracion_esperada -
-        (a.dias_desde_compra - a.duracion_esperada)
+        a.dias_desde_compra -
+        a.duracion_esperada -
+        (b.dias_desde_compra - b.duracion_esperada)
     );
-  }, [products]);
+  }, [products, snoozedMap]);
 
   // Quick Add / Reactivate with Quantity (supports single or multi-item bulk entry)
   const addProduct = async (rawInput: string, explicitQty?: number) => {
@@ -542,26 +615,160 @@ export function useProducts() {
     }
   };
 
-  // Add suggestion to list (strictly 1 unit, colocada al principio)
-  const addSuggestion = async (productId: string) => {
+  // Permanently delete product from database and catalog
+  const deleteProduct = async (productId: string) => {
+    triggerHaptic([20, 30]);
+    playEraseSound();
+
+    // Clean up local snooze if exists
+    if (snoozedMap[productId]) {
+      setSnoozedMap((prev) => {
+        const next = { ...prev };
+        delete next[productId];
+        try {
+          localStorage.setItem(SNOOZE_STORAGE_KEY, JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+    }
+
+    setSessionCheckOrder((prev) => prev.filter((id) => id !== productId));
+    setProducts((prev) => prev.filter((p) => p.id !== productId));
+
+    const { error: err } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", productId);
+
+    if (err) {
+      console.warn("Error deleting product from database:", err);
+    }
+  };
+
+  // Add suggestion to list (supports custom quantity or defaults to habitual quantity)
+  const addSuggestion = async (productId: string, customQty?: number) => {
     triggerHaptic(20);
     playPencilStroke();
     const now = new Date().toISOString();
 
+    // Clear snooze if exists
+    if (snoozedMap[productId]) {
+      setSnoozedMap((prev) => {
+        const next = { ...prev };
+        delete next[productId];
+        try {
+          localStorage.setItem(SNOOZE_STORAGE_KEY, JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+    }
+
+    const prod = products.find((p) => p.id === productId);
+    const targetQty = customQty !== undefined
+      ? Math.max(1, customQty)
+      : Math.max(1, prod?.ultima_cantidad_comprada || 1);
+
     setProducts((prev) => {
-      const prod = prev.find((p) => p.id === productId);
-      if (!prod) return prev;
-      const updated = { ...prod, en_lista: true, comprado: false, comprado_at: null, cantidad: 1, en_lista_at: now };
+      const current = prev.find((p) => p.id === productId);
+      if (!current) return prev;
+      const updated = {
+        ...current,
+        en_lista: true,
+        comprado: false,
+        comprado_at: null,
+        cantidad: targetQty,
+        en_lista_at: now,
+      };
       return [updated, ...prev.filter((p) => p.id !== productId)];
     });
 
     const { error: err } = await supabase
       .from("products")
-      .update({ en_lista: true, comprado: false, comprado_at: null, cantidad: 1, en_lista_at: now })
+      .update({
+        en_lista: true,
+        comprado: false,
+        comprado_at: null,
+        cantidad: targetQty,
+        en_lista_at: now,
+      })
       .eq("id", productId);
 
     if (err) {
       console.warn("Error adding suggestion (saved locally):", err);
+    }
+  };
+
+  // Add all suggestions to list at once
+  const addAllSuggestions = async (items?: { id: string; quantity?: number }[]) => {
+    triggerHaptic([25, 40]);
+    playPencilStroke();
+    const now = new Date().toISOString();
+
+    const targets = items ?? suggestedProducts.map((p) => ({
+      id: p.id,
+      quantity: Math.max(1, p.ultima_cantidad_comprada || 1),
+    }));
+
+    if (targets.length === 0) return;
+
+    const targetMap = new Map(targets.map((t) => [t.id, t.quantity || 1]));
+    const targetIds = Array.from(targetMap.keys());
+
+    // Clear snoozes
+    setSnoozedMap((prev) => {
+      let changed = false;
+      const copy = { ...prev };
+      for (const id of targetIds) {
+        if (copy[id]) {
+          delete copy[id];
+          changed = true;
+        }
+      }
+      if (changed) {
+        try {
+          localStorage.setItem(SNOOZE_STORAGE_KEY, JSON.stringify(copy));
+        } catch {}
+        return copy;
+      }
+      return prev;
+    });
+
+    setProducts((prev) => {
+      const addedList: Product[] = [];
+      const rest: Product[] = [];
+
+      for (const p of prev) {
+        if (targetMap.has(p.id)) {
+          addedList.push({
+            ...p,
+            en_lista: true,
+            comprado: false,
+            comprado_at: null,
+            cantidad: targetMap.get(p.id) || 1,
+            en_lista_at: now,
+          });
+        } else {
+          rest.push(p);
+        }
+      }
+
+      return [...addedList, ...rest];
+    });
+
+    for (const item of targets) {
+      supabase
+        .from("products")
+        .update({
+          en_lista: true,
+          comprado: false,
+          comprado_at: null,
+          cantidad: item.quantity || 1,
+          en_lista_at: now,
+        })
+        .eq("id", item.id)
+        .then(({ error }) => {
+          if (error) console.warn("Supabase batch suggestion add error:", error);
+        });
     }
   };
 
@@ -695,7 +902,12 @@ export function useProducts() {
     adjustQuantity,
     toggleComprado,
     removeFromList,
+    deleteProduct,
     addSuggestion,
+    addAllSuggestions,
+    snoozeSuggestion,
+    unSnoozeSuggestion,
+    snoozedProducts,
     addDirectToCart,
     finalizePurchase,
     refresh: fetchProducts,
